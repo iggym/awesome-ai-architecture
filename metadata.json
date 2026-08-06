@@ -1,0 +1,11 @@
+{
+  "site": {
+    "repo_name": "awesome-ai-architecture",
+    "title": "Awesome AI Architecture",
+    "tagline": "Curated by failure mode, not vendor category.",
+    "base_url": "https://iggym.github.io/awesome-ai-architecture/",
+    "audience": "Top-of-funnel, SEO, vendor evaluators",
+    "description": "A curated, opinionated map of AI infrastructure tooling, organized by the specific failure mode each tool addresses — with an explicit exclusion criteria, not an exhaustive link dump."
+  },
+  "articles": []
+}
