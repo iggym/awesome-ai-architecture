@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Where Agents Break Free — Awesome AI Architecture</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Source+Serif+4:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+/* ── Reset & Variables ── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0a08;--bg-surface:#131311;--bg-card:#1a1a17;--bg-elevated:#222220;
+  --fg:#ede9e0;--fg-sec:#b5b0a5;--fg-muted:#6b6760;
+  --accent:#d4943a;--accent-hover:#e5a54b;--accent-dim:rgba(212,148,58,.12);
+  --border:#2a2824;--border-light:#3a3834;
+  --success:#5cb870;--danger:#d45a3a;--gold:#c4a035;--olive:#8a9a6a;
+  --glass:rgba(13,13,11,.78);
+  --font-display:'Space Grotesk',system-ui,sans-serif;
+  --font-body:'Source Serif 4',Georgia,serif;
+  --radius:8px;--radius-lg:14px;
+}
+html{scroll-behavior:smooth;scroll-padding-top:72px}
+body{font-family:var(--font-body);background:var(--bg);color:var(--fg);line-height:1.72;font-size:17px;overflow-x:hidden;
+  background-image:radial-gradient(ellipse at 15% 50%,rgba(212,148,58,.04) 0%,transparent 55%),radial-gradient(ellipse at 85% 15%,rgba(212,148,58,.025) 0%,transparent 45%)}
+body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;
+  background:repeating-conic-gradient(rgba(255,255,255,.008) 0% 25%,transparent 0% 50%) 0 0/4px 4px;opacity:.5}
+a{color:var(--accent);text-decoration:none;transition:color .2s}
+a:hover{color:var(--accent-hover)}
+h1,h2,h3,h4,h5,h6{font-family:var(--font-display);line-height:1.2;color:var(--fg)}
+img{max-width:100%;display:block}
+button{font-family:var(--font-display);cursor:pointer;border:none;background:none;color:inherit}
+
+/* ── Progress Bar ── */
+#progress{position:fixed;top:0;left:0;height:3px;width:0;background:linear-gradient(90deg,var(--accent),var(--gold));z-index:10001;transition:width .15s linear;will-change:width}
+
+/* ── Topbar ── */
+#topbar{position:fixed;top:3px;left:0;right:0;z-index:10000;
+  background:var(--glass);backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);
+  border-bottom:1px solid var(--border);padding:0 24px;height:56px;display:flex;align-items:center;gap:16px}
+#topbar .home-link{font-family:var(--font-display);font-weight:600;font-size:14px;color:var(--accent);white-space:nowrap;letter-spacing:-.02em}
+#topbar .breadcrumb{font-size:13px;color:var(--fg-muted);display:flex;align-items:center;gap:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#topbar .breadcrumb span{color:var(--fg-sec)}
+#topbar .reading-time{margin-left:auto;font-size:12px;color:var(--fg-muted);font-family:var(--font-display);white-space:nowrap}
+#hamburger{display:none;width:36px;height:36px;flex-shrink:0;border-radius:var(--radius);border:1px solid var(--border);align-items:center;justify-content:center;transition:background .2s}
+#hamburger:hover{background:var(--bg-elevated)}
+#hamburger svg{width:18px;height:18px;stroke:var(--fg-sec)}
+
+/* ── Drawer & Overlay ── */
+#overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9998;opacity:0;pointer-events:none;transition:opacity .3s}
+#overlay.open{opacity:1;pointer-events:auto}
+#drawer{position:fixed;top:0;right:0;bottom:0;width:360px;max-width:90vw;background:var(--bg-surface);z-index:9999;
+  transform:translateX(100%);transition:transform .35s cubic-bezier(.4,0,.2,1);overflow-y:auto;padding:72px 20px 40px;border-left:1px solid var(--border)}
+#drawer.open{transform:translateX(0)}
+#drawer h3{font-size:15px;font-weight:600;color:var(--accent);margin-bottom:16px;text-transform:uppercase;letter-spacing:.06em}
+#drawer-close{position:absolute;top:16px;right:16px;width:32px;height:32px;border-radius:var(--radius);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;transition:background .2s}
+#drawer-close:hover{background:var(--bg-elevated)}
+#drawer-close svg{width:16px;height:16px;stroke:var(--fg-sec)}
+
+/* ── Main Layout ── */
+main{max-width:1200px;margin:0 auto;padding:80px 24px 60px}
+.content-grid{display:grid;grid-template-columns:1fr 380px;gap:48px;align-items:start}
+.article-body{min-width:0}
+.sidebar{position:sticky;top:72px;display:flex;flex-direction:column;gap:32px}
+
+/* ── Hero ── */
+.hero{margin-bottom:56px}
+.hero h1{font-size:clamp(2.1rem,5vw,3.1rem);font-weight:700;letter-spacing:-.03em;margin-bottom:12px}
+.hero .subtitle{font-size:18px;color:var(--fg-sec);max-width:600px;margin-bottom:40px;font-style:italic}
+
+/* ── Spectrum Widget ── */
+.spectrum{margin-bottom:40px;padding:24px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg)}
+.spectrum-header{display:flex;justify-content:space-between;font-family:var(--font-display);font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--fg-muted);margin-bottom:14px}
+.spectrum-bar{display:flex;height:32px;border-radius:6px;overflow:hidden;gap:2px}
+.spectrum-legacy,.spectrum-modern{display:flex;flex-direction:column;gap:1px;padding:2px}
+.spectrum-legacy{flex:1}
+.spectrum-modern{flex:2.5}
+.spectrum-gradient{width:40px;flex-shrink:0;background:linear-gradient(90deg,var(--fg-muted),var(--accent));opacity:.15;border-radius:4px}
+.layer-stripe{flex:1;border-radius:3px;min-height:4px;transition:transform .3s,opacity .3s}
+.layer-stripe:hover{transform:scaleY(1.4)}
+.spectrum-labels{display:flex;justify-content:space-between;font-size:11px;color:var(--fg-muted);margin-top:10px;font-family:var(--font-display)}
+.stripe-input{background:var(--fg-muted)}
+.stripe-output{background:var(--success)}
+.stripe-exec{background:var(--danger)}
+.stripe-capability{background:var(--gold)}
+.stripe-audit{background:var(--olive)}
+
+/* ── Pull Quote ── */
+.pull-quote{border-left:3px solid var(--accent);padding:16px 24px;margin-bottom:36px;background:var(--accent-dim);border-radius:0 var(--radius) var(--radius) 0;font-style:italic;font-size:19px;color:var(--fg);line-height:1.55}
+
+/* ── Share Block ── */
+.share-block{display:flex;align-items:center;gap:12px;padding:16px 20px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius)}
+.share-block label{font-family:var(--font-display);font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--fg-muted);white-space:nowrap}
+.share-input{flex:1;background:var(--bg-elevated);border:1px solid var(--border);border-radius:var(--radius);padding:8px 12px;color:var(--fg-sec);font-size:13px;font-family:var(--font-body);outline:none;min-width:0}
+.share-input:focus{border-color:var(--accent)}
+#copy-btn{padding:8px 16px;background:var(--accent);color:var(--bg);font-size:13px;font-weight:600;border-radius:var(--radius);transition:background .2s,transform .15s;white-space:nowrap}
+#copy-btn:hover{background:var(--accent-hover)}
+#copy-btn:active{transform:scale(.96)}
+#copy-btn.copied{background:var(--success)}
+
+/* ── Article Sections ── */
+.article-body section{margin-bottom:48px}
+.article-body h2{font-size:1.65rem;font-weight:700;letter-spacing:-.02em;margin-bottom:20px;padding-bottom:10px;border-bottom:1px solid var(--border)}
+.article-body h3{font-size:1.15rem;font-weight:600;margin:32px 0 16px;color:var(--accent)}
+.article-body p{margin-bottom:16px;color:var(--fg-sec)}
+.article-body strong{color:var(--fg);font-weight:600}
+.article-body code{font-family:'SF Mono',Consolas,'Liberation Mono',monospace;background:var(--bg-elevated);padding:2px 7px;border-radius:4px;font-size:.88em;color:var(--accent)}
+
+/* ── Tool Cards ── */
+.tool-entry{padding:20px 24px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);margin-bottom:16px;transition:border-color .25s}
+.tool-entry:hover{border-color:var(--border-light)}
+.tool-entry h4{font-size:1.1rem;font-weight:700;margin-bottom:4px}
+.tool-meta{font-size:13px;color:var(--fg-muted);margin-bottom:12px;font-family:var(--font-display)}
+.tool-entry p{margin-bottom:8px;font-size:.95em}
+.tool-entry p:last-child{margin-bottom:0}
+
+/* ── Trade-off Table ── */
+.trade-table{width:100%;border-collapse:collapse;font-size:.92em;margin:20px 0}
+.trade-table th{text-align:left;font-family:var(--font-display);font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--fg-muted);padding:10px 12px;border-bottom:2px solid var(--border);background:var(--bg-surface)}
+.trade-table td{padding:10px 12px;border-bottom:1px solid var(--border);color:var(--fg-sec)}
+.trade-table tr:hover td{background:var(--accent-dim)}
+.trade-table td:first-child{font-weight:600;color:var(--fg);font-family:var(--font-display);font-size:.9em}
+.rec-box{padding:16px 20px;background:var(--accent-dim);border:1px solid rgba(212,148,58,.25);border-radius:var(--radius);margin-top:16px;font-size:.95em;color:var(--fg-sec)}
+
+/* ── Sidebar Widgets ── */
+.widget{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px;overflow:hidden}
+.widget h3{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--accent);margin-bottom:16px}
+
+/* ── Architecture Map ── */
+.map-filters{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px}
+.filter-btn{padding:5px 10px;font-size:11px;font-weight:600;border-radius:20px;border:1px solid var(--border);background:var(--bg-elevated);color:var(--fg-muted);transition:all .2s;white-space:nowrap}
+.filter-btn:hover{border-color:var(--accent);color:var(--fg-sec)}
+.filter-btn.active{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+.matrix-grid{display:grid;grid-template-columns:100px repeat(5,1fr);gap:3px;font-family:var(--font-display);font-size:11px}
+.matrix-cell{padding:8px 6px;text-align:center;border-radius:4px;transition:all .3s;min-height:36px;display:flex;align-items:center;justify-content:center}
+.matrix-header{font-weight:700;color:var(--fg-muted);text-transform:uppercase;letter-spacing:.04em;font-size:9px;line-height:1.3}
+.matrix-tool{font-weight:600;color:var(--fg-sec);justify-content:flex-end;padding-right:10px;font-size:11px}
+.cell-full{background:rgba(212,148,58,.25);color:var(--accent);font-weight:600}
+.cell-partial{background:rgba(212,148,58,.1);color:var(--fg-muted)}
+.cell-empty{background:transparent}
+.cell-full.dimmed,.cell-partial.dimmed{opacity:.12}
+.matrix-tool.dimmed{opacity:.25}
+.gap-col{position:relative}
+.gap-col::after{content:'';position:absolute;left:-4px;top:0;bottom:0;width:2px;background:repeating-linear-gradient(to bottom,var(--danger) 0 3px,transparent 3px 7px);opacity:.5}
+.map-legend{display:flex;gap:14px;margin-top:12px;font-size:10px;color:var(--fg-muted);font-family:var(--font-display)}
+.legend-dot{width:10px;height:10px;border-radius:2px;display:inline-block;margin-right:4px;vertical-align:middle}
+.legend-full{background:rgba(212,148,58,.25)}
+.legend-partial{background:rgba(212,148,58,.1)}
+
+/* ── Comparison Table ── */
+.comp-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.comp-table{width:100%;border-collapse:collapse;font-size:12px;font-family:var(--font-display)}
+.comp-table th{text-align:left;padding:8px 10px;font-weight:700;color:var(--fg-muted);text-transform:uppercase;letter-spacing:.04em;font-size:10px;border-bottom:2px solid var(--border);cursor:pointer;user-select:none;white-space:nowrap;transition:color .2s;position:relative}
+.comp-table th:hover{color:var(--accent)}
+.comp-table th .sort-arrow{margin-left:4px;opacity:.3;font-size:9px}
+.comp-table th.sorted .sort-arrow{opacity:1;color:var(--accent)}
+.comp-table td{padding:8px 10px;border-bottom:1px solid var(--border);color:var(--fg-sec);white-space:nowrap}
+.comp-table tr:hover td{background:var(--accent-dim)}
+.comp-table td:first-child{font-weight:600;color:var(--fg)}
+.type-runtime{color:var(--danger);font-weight:600}
+.type-llm{color:var(--success);font-weight:600}
+
+/* ── Footer ── */
+footer{max-width:1200px;margin:0 auto;padding:32px 24px 48px;border-top:1px solid var(--border)}
+.citations{font-size:13px;color:var(--fg-muted);line-height:1.8;margin-bottom:24px}
+.citations a{color:var(--fg-sec)}
+.footer-actions{display:flex;gap:12px;align-items:center}
+#back-to-top{padding:8px 18px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);font-size:13px;font-weight:600;color:var(--fg-sec);transition:all .2s}
+#back-to-top:hover{border-color:var(--accent);color:var(--accent)}
+.footer-home{font-size:13px;font-weight:600;color:var(--accent)}
+
+/* ── Responsive ── */
+@media(max-width:880px){
+  #hamburger{display:flex}
+  .content-grid{grid-template-columns:1fr}
+  .sidebar{display:none}
+  #drawer .sidebar-content{display:flex;flex-direction:column;gap:32px}
+  .hero h1{font-size:clamp(1.8rem,6vw,2.6rem)}
+  .pull-quote{font-size:16px;padding:14px 18px}
+  .share-block{flex-wrap:wrap}
+  .share-block label{width:100%}
+  .trade-table{font-size:.82em}
+  .trade-table th,.trade-table td{padding:6px 8px}
+}
+@media(max-width:520px){
+  #topbar{padding:0 14px;gap:10px}
+  #topbar .breadcrumb{display:none}
+  main{padding:72px 16px 40px}
+  .matrix-grid{grid-template-columns:80px repeat(5,1fr);font-size:9px}
+  .matrix-cell{padding:6px 3px;min-height:30px}
+}
+
+/* ── Reduced Motion ── */
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
+  #progress{display:none}
+}
+
+/* ── Animations ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+.fade-up{opacity:0;animation:fadeUp .6s ease forwards}
+.fade-up.d1{animation-delay:.1s}
+.fade-up.d2{animation-delay:.2s}
+.fade-up.d3{animation-delay:.3s}
+.fade-up.d4{animation-delay:.4s}
+</style>
+</head>
+<body>
+
+<!-- Progress Bar -->
+<div id="progress" role="progressbar" aria-label="Reading progress"></div>
+
+<!-- Topbar -->
+<header id="topbar">
+  <a href="https://iggym.github.io/awesome-ai-architecture/" class="home-link">Awesome AI Architecture</a>
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="https://iggym.github.io/awesome-ai-architecture/">Home</a>
+    <span aria-hidden="true">/</span>
+    <span>Where Agents Break Free</span>
+  </nav>
+  <span class="reading-time" aria-label="Reading time">5 min read</span>
+  <button id="hamburger" aria-label="Open sidebar menu" aria-expanded="false">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+  </button>
+</header>
+
+<!-- Drawer Overlay -->
+<div id="overlay" aria-hidden="true"></div>
+
+<!-- Mobile Drawer -->
+<aside id="drawer" role="dialog" aria-label="Sidebar content">
+  <button id="drawer-close" aria-label="Close sidebar">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+  </button>
+  <div class="sidebar-content">
+    <!-- Cloned sidebar widgets go here via JS -->
+  </div>
+</aside>
+
+<main>
+  <article>
+    <!-- Hero -->
+    <header class="hero fade-up">
+      <h1>Where Agents Break Free</h1>
+      <p class="subtitle">Agent security's blind spot — and the five tools that actually matter</p>
+
+      <!-- Spectrum Widget -->
+      <div class="spectrum fade-up d1">
+        <div class="spectrum-header">
+          <span>Legacy Stack</span>
+          <span>Modern Stack</span>
+        </div>
+        <div class="spectrum-bar">
+          <div class="spectrum-legacy">
+            <div class="layer-stripe stripe-input" title="Input Gate"></div>
+            <div class="layer-stripe stripe-output" title="Output Gate"></div>
+          </div>
+          <div class="spectrum-gradient"></div>
+          <div class="spectrum-modern">
+            <div class="layer-stripe stripe-input" title="Input Gate"></div>
+            <div class="layer-stripe stripe-output" title="Output Gate"></div>
+            <div class="layer-stripe stripe-exec" title="Execution Boundary"></div>
+            <div class="layer-stripe stripe-capability" title="Capability Fence"></div>
+            <div class="layer-stripe stripe-audit" title="Audit Trail"></div>
+          </div>
+        </div>
+        <div class="spectrum-labels">
+          <span>LLM guard only</span>
+          <span>Full defense-in-depth</span>
+        </div>
+      </div>
+
+      <!-- Pull Quote -->
+      <blockquote class="pull-quote fade-up d2">
+        A prompt guardrail cannot stop an agent from opening a network socket.
+      </blockquote>
+
+      <!-- Share Block -->
+      <div class="share-block fade-up d3">
+        <label for="share-text">Share</label>
+        <input class="share-input" type="text" id="share-text" readonly value="Prompt guardrails don't stop rm -rf /. Most agent stacks secure the LLM layer and leave the runtime wide open — here's what defense-in-depth actually looks like.">
+        <button id="copy-btn" type="button">Copy</button>
+      </div>
+    </header>
+
+    <!-- Two-Column Grid -->
+    <div class="content-grid">
+      <!-- Article Body -->
+      <div class="article-body">
+        <section class="fade-up d1" id="thesis">
+          <h2>The Real Threat</h2>
+          <p>Every CTO running agents in production shares one nightmare scenario: an LLM generates a <code>rm -rf /</code> wrapped in plausible-looking code, and your infrastructure either catches it or doesn't. The problem isn't that teams ignore security—it's that they systematically secure the wrong layer. Based on patterns observed across teams shipping agents at scale, the vast majority of security investment flows into prompt guardrails and output filtering—what we'll call LLM-layer security. Meanwhile, the runtime where agents actually execute code—the shell, the filesystem, the network socket—gets a <code>docker run --rm</code> and a prayer.</p>
+          <p>Standard "awesome" lists compound this failure by lumping prompt-injection defenses next to sandbox runtimes as if they solve the same problem. They don't. A prompt guardrail cannot stop an agent from opening a network socket to exfiltrate data. A sandbox cannot detect that an agent's tool response contains subtly encoded instructions designed to manipulate a downstream human reviewer. These are fundamentally different threat classes requiring fundamentally different architectures, and treating them as interchangeable is the most expensive mistake in the current agent stack.</p>
+          <p>This guide maps five tools across two architectural camps so you can identify gaps in your stack with precision rather than guesswork.</p>
+        </section>
+
+        <section id="exclusions">
+          <h2>What We Cut</h2>
+          <p>Deliberately excluded: general-purpose container security tools not evaluated in agent contexts (Falco, Aqua Security), prompt-injection detection frameworks without runtime integration (Promptfoo's injection tests used in isolation), and supply-chain security tools (Sigstore, SLSA frameworks). Also excluded: proprietary platform sandboxes that don't expose architectural details (OpenAI Code Interpreter's internal sandbox). If we can't evaluate the architectural trade-off, it doesn't belong here.</p>
+        </section>
+
+        <section id="taxonomy">
+          <h2>The Two Camps</h2>
+          <p>Agent security splits into two fundamentally different architectures. Conflating them is the single most expensive mistake in current stack design.</p>
+
+          <h3>Runtime Boundaries</h3>
+          <p>These tools enforce isolation at the execution layer—where the agent's generated code actually runs. They answer the question: if the LLM produces malicious code, what can it reach?</p>
+
+          <div class="tool-entry">
+            <h4>E2B</h4>
+            <p class="tool-meta">github.com/e2b-dev/e2b &middot; Firecracker microVM per session</p>
+            <p><strong>Strengths:</strong> Purpose-built for agents—per-session isolation maps directly to conversation boundaries, language-agnostic SDK (Python, JS, Go), open-core with self-host path, 150ms cold start.</p>
+            <p><strong>Trade-offs:</strong> Self-hosted mode demands Kubernetes plus Firecracker infrastructure; cloud-hosted introduces per-session cost and network latency; no built-in structured audit logging beyond stdout capture.</p>
+            <p><strong>Exclude if:</strong> your agents need GPU access inside sandboxes.</p>
+          </div>
+
+          <div class="tool-entry">
+            <h4>gVisor</h4>
+            <p class="tool-meta">github.com/google/gvisor &middot; Application kernel syscall interception</p>
+            <p><strong>Strengths:</strong> Drops into existing Kubernetes with zero code changes, ~70% kernel attack surface reduction, GPU support via NVIDIA Container Toolkit, CNCF graduated with years of production hardening at Google scale.</p>
+            <p><strong>Trade-offs:</strong> 5–15% performance overhead on syscall-heavy workloads, no agent-aware features (no per-conversation isolation, no LLM response auditing), requires Kubernetes context to deliver value.</p>
+            <p><strong>Exclude if:</strong> your team lacks container orchestration infrastructure.</p>
+          </div>
+
+          <div class="tool-entry">
+            <h4>Wasmtime</h4>
+            <p class="tool-meta">github.com/bytecodealliance/wasmtime &middot; Capability-based Wasm sandbox</p>
+            <p><strong>Strengths:</strong> Minimal attack surface with no Linux kernel exposure, sub-millisecond instantiation, deterministic execution enables full replay-based auditing, language-agnostic compilation target.</p>
+            <p><strong>Trade-offs:</strong> Near-zero AI/ML ecosystem support in Wasm—no PyTorch, no NumPy without significant porting effort, fundamentally unsuitable for agents invoking the Python data science stack.</p>
+            <p><strong>Exclude if:</strong> your agents rely on any non-trivial Python package ecosystem.</p>
+          </div>
+
+          <h3>LLM-Layer Shields</h3>
+          <p>These tools operate on the LLM's input and output streams—filtering, classifying, and validating before and after inference. They answer the question: should this prompt be sent, and is this response safe?</p>
+
+          <div class="tool-entry">
+            <h4>Llama Guard 2</h4>
+            <p class="tool-meta">huggingface.co/meta-llama/Llama-Guard-2-8B &middot; 8B-param safety classifier</p>
+            <p><strong>Strengths:</strong> Open-weights with permissive license, fine-tunable for custom policies, catches semantic risks pattern-matching cannot (e.g., "write a script that slowly degrades system performance" passes regex but fails intent classification).</p>
+            <p><strong>Trade-offs:</strong> Adds a full 8B-parameter inference pass per request—roughly doubles latency and compute cost, categorical taxonomy may miss domain-specific threats without fine-tuning, bypassable via obfuscated multi-turn instructions.</p>
+            <p><strong>Exclude if:</strong> your agent operates in latency-sensitive real-time loops where doubling request time is unacceptable.</p>
+          </div>
+
+          <div class="tool-entry">
+            <h4>Guardrails AI</h4>
+            <p class="tool-meta">github.com/guardrails-ai/guardrails &middot; Structured output validation</p>
+            <p><strong>Strengths:</strong> Ensures structural correctness of tool calls—malformed JSON is a top agent failure mode, composable validator chains, streaming validation support for long outputs.</p>
+            <p><strong>Trade-offs:</strong> Cannot detect semantic risks—validates form, not intent; adds pipeline complexity with its own failure modes; misconfigured validators silently reject valid outputs or accept dangerous ones.</p>
+            <p><strong>Exclude if:</strong> evaluating as a standalone security solution—must be paired with runtime isolation.</p>
+          </div>
+        </section>
+
+        <section id="tradeoffs">
+          <h2>Pick Your Wall</h2>
+          <p>The decision isn't runtime <em>or</em> LLM-layer—it's which you deploy first, because sequencing matters.</p>
+          <table class="trade-table">
+            <thead><tr><th>Factor</th><th>Runtime Boundary</th><th>LLM-Layer Shield</th></tr></thead>
+            <tbody>
+              <tr><td>Stops <code>rm -rf /</code></td><td>Yes</td><td>No</td></tr>
+              <tr><td>Catches data exfiltration</td><td>Partial (audit logs)</td><td>Partial (semantic)</td></tr>
+              <tr><td>Adds latency</td><td>150ms–1s (session start)</td><td>50–500ms (per-turn)</td></tr>
+              <tr><td>Self-hostable</td><td>E2B (complex), gVisor/Wasm (yes)</td><td>Both yes</td></tr>
+              <tr><td>Blocks prompt injection</td><td>No</td><td>Partially</td></tr>
+              <tr><td>Infra investment</td><td>Medium–High</td><td>Low</td></tr>
+            </tbody>
+          </table>
+          <p>Runtime boundaries are load-bearing walls. LLM-layer shields are insulation. Both are necessary, but you frame walls before you insulate. Most teams do the opposite.</p>
+          <div class="rec-box"><strong>Recommendation:</strong> If you run code-executing agents in production with only LLM-layer guards, add E2B or gVisor this quarter. If you have neither, start with gVisor (assuming Kubernetes) or E2B (if cloud-native), then layer Llama Guard 2 and Guardrails AI the following quarter.</div>
+        </section>
+
+        <section id="cta">
+          <h2>One Move Now</h2>
+          <p>Audit one agent in production: trace a single tool-call path from LLM output to code execution and name every security boundary it crosses. If the count is zero runtime boundaries, you have your next quarter's priority.</p>
+        </section>
+      </div>
+
+      <!-- Sidebar -->
+      <aside class="sidebar" id="sidebar">
+        <!-- Architecture Map Widget -->
+        <div class="widget" id="arch-map-widget">
+          <h3>Security Architecture Map</h3>
+          <div class="map-filters" role="group" aria-label="Filter by security layer">
+            <button class="filter-btn active" data-layer="all">All Layers</button>
+            <button class="filter-btn" data-layer="input">Input Gate</button>
+            <button class="filter-btn" data-layer="output">Output Gate</button>
+            <button class="filter-btn" data-layer="exec">Execution</button>
+            <button class="filter-btn" data-layer="capability">Capability</button>
+            <button class="filter-btn" data-layer="audit">Audit</button>
+          </div>
+          <div class="matrix-grid" id="matrix-grid" role="grid" aria-label="Tool-to-layer coverage matrix">
+            <!-- Headers -->
+            <div class="matrix-cell"></div>
+            <div class="matrix-cell matrix-header">Input Gate</div>
+            <div class="matrix-cell matrix-header">Output Gate</div>
+            <div class="matrix-cell matrix-header gap-col">Execution</div>
+            <div class="matrix-cell matrix-header gap-col">Capability</div>
+            <div class="matrix-cell matrix-header gap-col">Audit</div>
+            <!-- E2B -->
+            <div class="matrix-cell matrix-tool" data-tool="e2b">E2B</div>
+            <div class="matrix-cell cell-empty" data-tool="e2b" data-layer="input"></div>
+            <div class="matrix-cell cell-empty" data-tool="e2b" data-layer="output"></div>
+            <div class="matrix-cell cell-full" data-tool="e2b" data-layer="exec">&#10003;</div>
+            <div class="matrix-cell cell-full" data-tool="e2b" data-layer="capability">&#10003;</div>
+            <div class="matrix-cell cell-partial" data-tool="e2b" data-layer="audit">~</div>
+            <!-- gVisor -->
+            <div class="matrix-cell matrix-tool" data-tool="gvisor">gVisor</div>
+            <div class="matrix-cell cell-empty" data-tool="gvisor" data-layer="input"></div>
+            <div class="matrix-cell cell-empty" data-tool="gvisor" data-layer="output"></div>
+            <div class="matrix-cell cell-full" data-tool="gvisor" data-layer="exec">&#10003;</div>
+            <div class="matrix-cell cell-full" data-tool="gvisor" data-layer="capability">&#10003;</div>
+            <div class="matrix-cell cell-partial" data-tool="gvisor" data-layer="audit">~</div>
+            <!-- Wasmtime -->
+            <div class="matrix-cell matrix-tool" data-tool="wasmtime">Wasmtime</div>
+            <div class="matrix-cell cell-empty" data-tool="wasmtime" data-layer="input"></div>
+            <div class="matrix-cell cell-empty" data-tool="wasmtime" data-layer="output"></div>
+            <div class="matrix-cell cell-full" data-tool="wasmtime" data-layer="exec">&#10003;</div>
+            <div class="matrix-cell cell-full" data-tool="wasmtime" data-layer="capability">&#10003;</div>
+            <div class="matrix-cell cell-empty" data-tool="wasmtime" data-layer="audit"></div>
+            <!-- Llama Guard 2 -->
+            <div class="matrix-cell matrix-tool" data-tool="llama">Llama Guard 2</div>
+            <div class="matrix-cell cell-full" data-tool="llama" data-layer="input">&#10003;</div>
+            <div class="matrix-cell cell-full" data-tool="llama" data-layer="output">&#10003;</div>
+            <div class="matrix-cell cell-empty" data-tool="llama" data-layer="exec"></div>
+            <div class="matrix-cell cell-empty" data-tool="llama" data-layer="capability"></div>
+            <div class="matrix-cell cell-empty" data-tool="llama" data-layer="audit"></div>
+            <!-- Guardrails AI -->
+            <div class="matrix-cell matrix-tool" data-tool="guardrails">Guardrails AI</div>
+            <div class="matrix-cell cell-full" data-tool="guardrails" data-layer="input">&#10003;</div>
+            <div class="matrix-cell cell-full" data-tool="guardrails" data-layer="output">&#10003;</div>
+            <div class="matrix-cell cell-empty" data-tool="guardrails" data-layer="exec"></div>
+            <div class="matrix-cell cell-empty" data-tool="guardrails" data-layer="capability"></div>
+            <div class="matrix-cell cell-empty" data-tool="guardrails" data-layer="audit"></div>
+          </div>
+          <div class="map-legend">
+            <span><span class="legend-dot legend-full"></span>Full coverage</span>
+            <span><span class="legend-dot legend-partial"></span>Partial</span>
+            <span style="margin-left:auto;opacity:.5">Dashed line = security gap</span>
+          </div>
+        </div>
+
+        <!-- Comparison Table Widget -->
+        <div class="widget" id="comp-widget">
+          <h3>Tool Comparison</h3>
+          <div class="comp-table-wrap">
+            <table class="comp-table" id="comp-table">
+              <thead>
+                <tr>
+                  <th data-col="name" class="sorted" data-dir="asc">Tool <span class="sort-arrow">&#9650;</span></th>
+                  <th data-col="type">Type <span class="sort-arrow">&#9650;</span></th>
+                  <th data-col="isolation">Isolation <span class="sort-arrow">&#9650;</span></th>
+                  <th data-col="latency">Latency <span class="sort-arrow">&#9650;</span></th>
+                  <th data-col="selfhost">Self-Host <span class="sort-arrow">&#9650;</span></th>
+                </tr>
+              </thead>
+              <tbody id="comp-tbody">
+                <tr data-name="E2B"><td>E2B</td><td class="type-runtime">Runtime</td><td>MicroVM</td><td>150ms cold</td><td>Partial</td></tr>
+                <tr data-name="gVisor"><td>gVisor</td><td class="type-runtime">Runtime</td><td>App kernel</td><td>5-15% over.</td><td>Yes</td></tr>
+                <tr data-name="Wasmtime"><td>Wasmtime</td><td class="type-runtime">Runtime</td><td>Capability</td><td>&lt;1ms init</td><td>Yes</td></tr>
+                <tr data-name="Llama Guard 2"><td>Llama Guard 2</td><td class="type-llm">LLM-Layer</td><td>Classification</td><td>+50-500ms</td><td>Yes</td></tr>
+                <tr data-name="Guardrails AI"><td>Guardrails AI</td><td class="type-llm">LLM-Layer</td><td>Schema valid.</td><td>&lt;10ms</td><td>Yes</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </article>
+</main>
+
+<!-- Footer -->
+<footer>
+  <div class="citations">
+    <strong style="color:var(--fg-sec)">Citations:</strong><br>
+    E2B — <a href="https://github.com/e2b-dev/e2b" target="_blank" rel="noopener">github.com/e2b-dev/e2b</a><br>
+    gVisor — <a href="https://github.com/google/gvisor" target="_blank" rel="noopener">github.com/google/gvisor</a><br>
+    Wasmtime — <a href="https://github.com/bytecodealliance/wasmtime" target="_blank" rel="noopener">github.com/bytecodealliance/wasmtime</a><br>
+    Llama Guard 2 — <a href="https://huggingface.co/meta-llama/Llama-Guard-2-8B" target="_blank" rel="noopener">huggingface.co/meta-llama/Llama-Guard-2-8B</a><br>
+    Guardrails AI — <a href="https://github.com/guardrails-ai/guardrails" target="_blank" rel="noopener">github.com/guardrails-ai/guardrails</a>
+  </div>
+  <div class="footer-actions">
+    <button id="back-to-top" type="button">Back to top</button>
+    <a href="https://iggym.github.io/awesome-ai-architecture/" class="footer-home">Home</a>
+  </div>
+</footer>
+
+<script>
+(function(){
+  'use strict';
+
+  /* ── Reduced Motion Check ── */
+  var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ── Progress Bar ── */
+  var prog = document.getElementById('progress');
+  function updateProgress(){
+    if(reduced) return;
+    var h = document.documentElement.scrollHeight - window.innerHeight;
+    var s = h > 0 ? (window.scrollY / h) * 100 : 0;
+    prog.style.width = s + '%';
+  }
+  window.addEventListener('scroll', updateProgress, {passive:true});
+  updateProgress();
+
+  /* ── Scroll Reveal ── */
+  if(!reduced){
+    var obs = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){
+        if(e.isIntersecting){
+          e.target.style.animationPlayState = 'running';
+          obs.unobserve(e.target);
+        }
+      });
+    },{threshold:0.15});
+    document.querySelectorAll('.fade-up').forEach(function(el){
+      el.style.animationPlayState = 'paused';
+      obs.observe(el);
+    });
+  } else {
+    document.querySelectorAll('.fade-up').forEach(function(el){
+      el.style.opacity = '1';
+      el.style.animation = 'none';
+    });
+  }
+
+  /* ── Drawer ── */
+  var hamburger = document.getElementById('hamburger');
+  var drawer = document.getElementById('drawer');
+  var overlay = document.getElementById('overlay');
+  var drawerClose = document.getElementById('drawer-close');
+  var sidebar = document.getElementById('sidebar');
+
+  function openDrawer(){
+    /* Clone sidebar content into drawer */
+    var sc = drawer.querySelector('.sidebar-content');
+    if(sc && !sc.hasChildNodes()){
+      var clone = sidebar.cloneNode(true);
+      clone.removeAttribute('id');
+      clone.style.display = 'flex';
+      clone.style.flexDirection = 'column';
+      clone.style.gap = '32px';
+      sc.appendChild(clone);
+      /* Re-bind comparison table sort in drawer */
+      bindCompSort(clone);
+      /* Re-bind map filters in drawer */
+      bindMapFilters(clone);
+    }
+    drawer.classList.add('open');
+    overlay.classList.add('open');
+    hamburger.setAttribute('aria-expanded','true');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeDrawer(){
+    drawer.classList.remove('open');
+    overlay.classList.remove('open');
+    hamburger.setAttribute('aria-expanded','false');
+    document.body.style.overflow = '';
+  }
+  hamburger.addEventListener('click', openDrawer);
+  drawerClose.addEventListener('click', closeDrawer);
+  overlay.addEventListener('click', closeDrawer);
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape' && drawer.classList.contains('open')) closeDrawer();
+  });
+
+  /* ── Architecture Map Filtering ── */
+  function bindMapFilters(root){
+    var btns = root.querySelectorAll('.filter-btn');
+    var cells = root.querySelectorAll('.matrix-cell[data-tool]');
+    var tools = root.querySelectorAll('.matrix-tool');
+
+    btns.forEach(function(btn){
+      btn.addEventListener('click', function(){
+        btns.forEach(function(b){ b.classList.remove('active'); });
+        btn.classList.add('active');
+        var layer = btn.dataset.layer;
+
+        if(layer === 'all'){
+          cells.forEach(function(c){ c.classList.remove('dimmed'); });
+          tools.forEach(function(t){ t.classList.remove('dimmed'); });
+        } else {
+          cells.forEach(function(c){
+            if(c.dataset.layer === layer){
+              c.classList.remove('dimmed');
+            } else {
+              c.classList.add('dimmed');
+            }
+          });
+          tools.forEach(function(t){
+            /* Show tool if it has any non-dimmed cell */
+            var hasActive = false;
+            cells.forEach(function(c){
+              if(c.dataset.tool === t.dataset.tool && c.dataset.layer === layer && !c.classList.contains('cell-empty')){
+                hasActive = true;
+              }
+            });
+            t.classList.toggle('dimmed', !hasActive);
+          });
+        }
+      });
+    });
+
+    /* Tool click to highlight its row */
+    tools.forEach(function(t){
+      t.style.cursor = 'pointer';
+      t.addEventListener('click', function(){
+        var toolName = t.dataset.tool;
+        /* Reset filter buttons */
+        btns.forEach(function(b){ b.classList.remove('active'); });
+        btns[0].classList.add('active');
+        /* Dim non-matching */
+        cells.forEach(function(c){
+          c.classList.toggle('dimmed', c.dataset.tool !== toolName);
+        });
+        tools.forEach(function(tt){
+          tt.classList.toggle('dimmed', tt.dataset.tool !== toolName);
+        });
+      });
+    });
+  }
+  bindMapFilters(document);
+
+  /* ── Comparison Table Sorting ── */
+  function bindCompSort(root){
+    var ths = root.querySelectorAll('.comp-table th[data-col]');
+    ths.forEach(function(th){
+      th.addEventListener('click', function(){
+        var col = th.dataset.col;
+        var tbody = th.closest('table').querySelector('tbody');
+        var rows = Array.from(tbody.querySelectorAll('tr'));
+        var dir = th.dataset.dir === 'asc' ? 'desc' : 'asc';
+        th.dataset.dir = dir;
+
+        /* Update header visuals */
+        ths.forEach(function(h){
+          h.classList.remove('sorted');
+          h.querySelector('.sort-arrow').innerHTML = '&#9650;';
+        });
+        th.classList.add('sorted');
+        th.querySelector('.sort-arrow').innerHTML = dir === 'asc' ? '&#9650;' : '&#9660;';
+
+        rows.sort(function(a,b){
+          var aVal = a.querySelector('td:nth-child(' + (getIndex(col)+1) + ')').textContent.trim();
+          var bVal = b.querySelector('td:nth-child(' + (getIndex(col)+1) + ')').textContent.trim();
+          var cmp = aVal.localeCompare(bVal, undefined, {numeric:true});
+          return dir === 'asc' ? cmp : -cmp;
+        });
+
+        rows.forEach(function(r){ tbody.appendChild(r); });
+      });
+    });
+
+    function getIndex(col){
+      var map = {name:0,type:1,isolation:2,latency:3,selfhost:4};
+      return map[col] !== undefined ? map[col] : 0;
+    }
+  }
+  bindCompSort(document);
+
+  /* ── Copy Button ── */
+  var copyBtn = document.getElementById('copy-btn');
+  var shareText = document.getElementById('share-text');
+  copyBtn.addEventListener('click', function(){
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(shareText.value).then(function(){
+        showCopied();
+      });
+    } else {
+      shareText.select();
+      document.execCommand('copy');
+      showCopied();
+    }
+  });
+  function showCopied(){
+    copyBtn.textContent = 'Copied';
+    copyBtn.classList.add('copied');
+    setTimeout(function(){
+      copyBtn.textContent = 'Copy';
+      copyBtn.classList.remove('copied');
+    }, 2000);
+  }
+
+  /* ── Back to Top ── */
+  document.getElementById('back-to-top').addEventListener('click', function(){
+    window.scrollTo({top:0, behavior: reduced ? 'auto' : 'smooth'});
+  });
+
+})();
+</script>
+</body>
+</html>
