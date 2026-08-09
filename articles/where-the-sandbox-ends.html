@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Where the Sandbox Ends — Awesome AI Architecture</title>
+<style>
+:root {
+  --bg:#0c0c0e;--surface:#161619;--surface-2:#1e1e22;--border:#2a2a30;
+  --fg:#e8e4dc;--fg-muted:#8a8690;--accent:#e89b20;--accent-glow:rgba(232,155,32,0.13);
+  --teal:#20c9a0;--teal-glow:rgba(32,201,160,0.12);--danger:#e84040;
+  --radius:8px;--font:'Segoe UI',system-ui,-apple-system,sans-serif;
+  --mono:'SF Mono','Cascadia Code','Fira Code',monospace;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--font);background:var(--bg);color:var(--fg);line-height:1.7;-webkit-font-smoothing:antialiased}
+#progress{position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,var(--accent),var(--teal));width:0%;z-index:1001;transition:width .1s linear}
+#topbar{position:sticky;top:0;z-index:1000;background:rgba(12,12,14,.75);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:0 24px;height:56px;display:flex;align-items:center}
+#topbar nav{width:100%;max-width:1200px;margin:0 auto;display:flex;align-items:center;gap:16px}
+.home-link{color:var(--accent);text-decoration:none;font-weight:600;font-size:.9rem;white-space:nowrap}
+.breadcrumb{color:var(--fg-muted);font-size:.8rem;display:flex;align-items:center;gap:6px}
+.breadcrumb span{opacity:.5}
+.reading-time{color:var(--fg-muted);font-size:.8rem;margin-left:auto;white-space:nowrap}
+.hamburger{display:none;background:none;border:1px solid var(--border);color:var(--fg);font-size:1.2rem;cursor:pointer;padding:4px 10px;border-radius:var(--radius)}
+#drawer{position:fixed;top:56px;left:0;right:0;bottom:0;background:rgba(12,12,14,.95);backdrop-filter:blur(20px);z-index:999;padding:24px;transform:translateX(-100%);transition:transform .3s ease;overflow-y:auto}
+#drawer.open{transform:translateX(0)}
+#drawer h3{color:var(--accent);font-size:.85rem;text-transform:uppercase;letter-spacing:.05em;margin-bottom:12px}
+#drawer ul{list-style:none}
+#drawer li{margin-bottom:8px}
+#drawer a{color:var(--fg-muted);text-decoration:none;font-size:.9rem;transition:color .2s}
+#drawer a:hover{color:var(--fg)}
+.page-grid{max-width:1200px;margin:0 auto;padding:40px 24px;display:grid;grid-template-columns:1fr 280px;gap:48px}
+main{min-width:0}
+.hero-title{font-size:clamp(2.1rem,5vw,3.1rem);font-weight:800;line-height:1.15;margin-bottom:16px;background:linear-gradient(135deg,var(--fg) 0%,var(--accent) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero-meta{color:var(--fg-muted);font-size:.85rem;margin-bottom:32px;display:flex;gap:16px;flex-wrap:wrap}
+h2{font-size:1.5rem;font-weight:700;margin:48px 0 20px;color:var(--fg);position:relative;padding-left:16px}
+h2::before{content:'';position:absolute;left:0;top:4px;bottom:4px;width:3px;background:var(--accent);border-radius:2px}
+h3{font-size:1.15rem;font-weight:600;margin:28px 0 12px;color:var(--fg)}
+h4{font-size:1rem;font-weight:600;margin:20px 0 8px;color:var(--teal)}
+p{margin-bottom:16px;color:var(--fg);opacity:.92}
+.tool-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin:16px 0;transition:border-color .2s}
+.tool-card:hover{border-color:var(--accent)}
+.tool-name{font-size:1.1rem;font-weight:700;color:var(--accent);margin-bottom:4px}
+.tool-url{font-family:var(--mono);font-size:.78rem;color:var(--fg-muted);margin-bottom:12px;display:block}
+.tool-section{margin-bottom:10px}
+.tool-label{font-size:.75rem;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--fg-muted);margin-bottom:4px}
+.tool-text{font-size:.88rem;color:var(--fg);opacity:.88;line-height:1.6}
+.tool-text strong{color:var(--teal);font-weight:600}
+.tool-text em{color:var(--danger);font-style:normal;font-weight:500}
+.spectrum-widget{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin:24px 0}
+.spectrum-title{font-size:.78rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--fg-muted);margin-bottom:16px}
+.spectrum-labels{display:flex;justify-content:space-between;font-size:.78rem;margin-bottom:12px}
+.spectrum-labels .legacy{color:var(--danger)}
+.spectrum-labels .modern{color:var(--teal)}
+.spectrum-bar{height:8px;background:linear-gradient(90deg,var(--danger) 0%,#e88020 33%,var(--accent) 66%,var(--teal) 100%);border-radius:4px;position:relative;margin-bottom:28px}
+.spectrum-markers{position:relative;height:48px}
+.spectrum-marker{position:absolute;transform:translateX(-50%);text-align:center}
+.spectrum-marker .dot{width:12px;height:12px;border-radius:50%;background:var(--fg);border:2px solid var(--bg);margin:0 auto 6px;transition:transform .2s}
+.spectrum-marker:hover .dot{transform:scale(1.3)}
+.spectrum-marker .label{font-size:.68rem;color:var(--fg-muted);white-space:nowrap}
+.pull-quote{border-left:3px solid var(--accent);padding:20px 24px;margin:32px 0;background:var(--accent-glow);border-radius:0 var(--radius) var(--radius) 0;font-size:1.1rem;font-weight:500;line-height:1.6;color:var(--fg)}
+.share-block{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px 20px;margin:24px 0;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.share-label{font-size:.8rem;color:var(--fg-muted);white-space:nowrap}
+.share-block input{flex:1;min-width:200px;background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:8px 12px;color:var(--fg);font-family:var(--mono);font-size:.76rem;outline:none}
+.share-block input:focus{border-color:var(--accent)}
+.share-btn{background:var(--accent);color:var(--bg);border:none;padding:8px 16px;border-radius:4px;font-weight:600;font-size:.8rem;cursor:pointer;transition:opacity .2s;white-space:nowrap;font-family:var(--font)}
+.share-btn:hover{opacity:.85}
+.exclusion-list{list-style:none;margin:16px 0}
+.exclusion-list li{padding:8px 0 8px 20px;position:relative;font-size:.9rem;color:var(--fg);opacity:.88;border-bottom:1px solid var(--border)}
+.exclusion-list li:last-child{border-bottom:none}
+.exclusion-list li::before{content:'\00d7';position:absolute;left:0;color:var(--danger);font-weight:700}
+.gap-callout{background:var(--surface);border:1px solid var(--danger);border-radius:var(--radius);padding:20px;margin:24px 0;border-left:3px solid var(--danger)}
+.gap-callout h4{color:var(--danger);margin-top:0}
+.arch-map{margin:40px 0}
+.arch-filters{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap}
+.af-btn{background:var(--surface);border:1px solid var(--border);color:var(--fg-muted);padding:6px 14px;border-radius:20px;font-size:.8rem;cursor:pointer;transition:all .2s;font-family:var(--font)}
+.af-btn:hover{border-color:var(--fg-muted);color:var(--fg)}
+.af-btn.active{background:var(--accent);border-color:var(--accent);color:var(--bg)}
+.arch-layers{display:flex;flex-direction:column;gap:2px}
+.arch-layer{border-radius:var(--radius);padding:20px;position:relative;min-height:72px;transition:opacity .3s}
+.arch-layer.dimmed{opacity:.12}
+.arch-layer-label{font-size:.72rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;opacity:.7;margin-bottom:12px}
+.arch-layer-tools{display:flex;gap:10px;flex-wrap:wrap}
+.arch-tool-chip{background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.1);padding:8px 14px;border-radius:6px;font-size:.82rem;font-weight:500;transition:all .3s}
+.arch-tool-chip.chip-hidden{display:none}
+.layer-llm{background:linear-gradient(135deg,rgba(232,155,32,.12),rgba(232,64,64,.08))}
+.layer-llm .arch-layer-label{color:var(--accent)}
+.layer-llm .arch-tool-chip{border-color:rgba(232,155,32,.3);color:var(--accent)}
+.layer-gap{background:repeating-linear-gradient(45deg,transparent,transparent 4px,rgba(232,64,64,.04) 4px,rgba(232,64,64,.04) 8px);text-align:center;padding:10px;font-size:.72rem;color:var(--danger);font-weight:700;letter-spacing:.1em;text-transform:uppercase}
+.layer-orch{background:linear-gradient(135deg,rgba(138,134,144,.12),rgba(138,134,144,.06))}
+.layer-orch .arch-layer-label{color:var(--fg-muted)}
+.layer-orch .arch-tool-chip{border-color:rgba(138,134,144,.3);color:var(--fg-muted);font-style:italic}
+.layer-runtime{background:linear-gradient(135deg,rgba(32,201,160,.12),rgba(32,201,160,.06))}
+.layer-runtime .arch-layer-label{color:var(--teal)}
+.layer-runtime .arch-tool-chip{border-color:rgba(32,201,160,.3);color:var(--teal)}
+.layer-ext{background:linear-gradient(135deg,rgba(232,228,220,.06),rgba(232,228,220,.02))}
+.layer-ext .arch-layer-label{color:var(--fg);opacity:.5}
+.layer-ext .arch-tool-chip{border-color:rgba(232,228,220,.1);color:var(--fg-muted);font-style:italic}
+.comparison-section{margin:40px 0}
+.table-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:var(--radius)}
+table{width:100%;border-collapse:collapse;font-size:.82rem}
+thead th{background:var(--surface-2);padding:12px 14px;text-align:left;font-weight:600;color:var(--fg-muted);font-size:.73rem;text-transform:uppercase;letter-spacing:.04em;cursor:pointer;user-select:none;white-space:nowrap;border-bottom:1px solid var(--border);transition:color .2s}
+thead th:hover{color:var(--fg)}
+.sort-arrow{margin-left:4px;opacity:.3;font-size:.7rem}
+thead th.sorted .sort-arrow{opacity:1;color:var(--accent)}
+tbody td{padding:12px 14px;border-bottom:1px solid var(--border);color:var(--fg);opacity:.88;vertical-align:top}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover td{opacity:1}
+tbody tr.row-hidden{display:none}
+.table-filter{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:.72rem;font-weight:600}
+.badge-llm{background:rgba(232,155,32,.15);color:var(--accent)}
+.badge-runtime{background:rgba(32,201,160,.15);color:var(--teal)}
+.decision-matrix{overflow-x:auto;margin:16px 0;border:1px solid var(--border);border-radius:var(--radius)}
+.decision-matrix th{background:var(--surface-2);padding:10px 14px;text-align:left;font-size:.76rem;color:var(--fg-muted);font-weight:600;border-bottom:1px solid var(--border)}
+.decision-matrix td{padding:10px 14px;font-size:.84rem;border-bottom:1px solid var(--border);color:var(--fg);opacity:.88}
+.decision-matrix tr:last-child td{border-bottom:none}
+.decision-matrix td:first-child{font-weight:500;color:var(--fg);opacity:1}
+aside{position:relative}
+.sidebar-sticky{position:sticky;top:72px}
+.toc{margin-bottom:32px}
+.toc h3{font-size:.75rem;text-transform:uppercase;letter-spacing:.06em;color:var(--fg-muted);margin-bottom:12px}
+.toc ul{list-style:none}
+.toc li{margin-bottom:6px}
+.toc a{color:var(--fg-muted);text-decoration:none;font-size:.85rem;transition:color .2s;display:block;padding:3px 0}
+.toc a:hover{color:var(--fg)}
+.toc a.active{color:var(--accent)}
+.sidebar-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:16px}
+.sidebar-card h4{font-size:.75rem;text-transform:uppercase;letter-spacing:.05em;color:var(--fg-muted);margin-bottom:8px}
+.sidebar-stat{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:.82rem}
+.sidebar-stat:last-child{border-bottom:none}
+.sidebar-stat .val{color:var(--accent);font-weight:600}
+footer{max-width:1200px;margin:60px auto 0;padding:32px 24px;border-top:1px solid var(--border)}
+.footer-citations{margin-bottom:20px}
+.footer-citations h4{font-size:.75rem;text-transform:uppercase;letter-spacing:.05em;color:var(--fg-muted);margin-bottom:8px}
+.footer-citations ol{list-style:decimal;padding-left:20px;font-size:.8rem;color:var(--fg-muted);line-height:1.8}
+.footer-citations a{color:var(--accent);text-decoration:none}
+.footer-citations a:hover{text-decoration:underline}
+.footer-links{display:flex;gap:20px;font-size:.82rem}
+.footer-links a{color:var(--fg-muted);text-decoration:none;transition:color .2s}
+.footer-links a:hover{color:var(--fg)}
+.toast{position:fixed;bottom:24px;right:24px;background:var(--surface-2);border:1px solid var(--accent);color:var(--fg);padding:12px 20px;border-radius:var(--radius);font-size:.85rem;z-index:2000;opacity:0;transform:translateY(10px);transition:all .3s;pointer-events:none}
+.toast.show{opacity:1;transform:translateY(0);pointer-events:auto}
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}
+  html{scroll-behavior:auto}
+}
+@media(max-width:880px){
+  .hamburger{display:block}
+  .breadcrumb,.reading-time{display:none}
+  .page-grid{grid-template-columns:1fr;padding:24px 16px;gap:24px}
+  aside{display:none}
+  .arch-layer-tools{flex-direction:column}
+  .share-block{flex-direction:column;align-items:stretch}
+  .share-block input{min-width:0}
+}
+</style>
+</head>
+<body>
+
+<div id="progress" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+
+<header id="topbar">
+  <nav>
+    <a href="https://iggym.github.io/awesome-ai-architecture/" class="home-link" aria-label="Home">Awesome AI Architecture</a>
+    <div class="breadcrumb">Articles <span>/</span> Agent Security</div>
+    <div class="reading-time" aria-label="Reading time">8 min read</div>
+    <button class="hamburger" aria-label="Open menu" aria-expanded="false" onclick="toggleDrawer()">&#9776;</button>
+  </nav>
+</header>
+
+<nav id="drawer" aria-label="Mobile navigation">
+  <h3>Contents</h3>
+  <ul>
+    <li><a href="#thesis" onclick="toggleDrawer()">Trust Is Not Armor</a></li>
+    <li><a href="#exclusions" onclick="toggleDrawer()">What We Cut</a></li>
+    <li><a href="#taxonomy" onclick="toggleDrawer()">Two Walls, One Gap</a></li>
+    <li><a href="#tradeoffs" onclick="toggleDrawer()">Pick Your Failure Mode</a></li>
+    <li><a href="#cta" onclick="toggleDrawer()">Map Your Gap Now</a></li>
+    <li><a href="#archmap" onclick="toggleDrawer()">Architecture Map</a></li>
+    <li><a href="#comparison" onclick="toggleDrawer()">Tool Comparison</a></li>
+  </ul>
+</nav>
+
+<div class="page-grid">
+  <main>
+    <h1 class="hero-title">Where the Sandbox Ends</h1>
+    <div class="hero-meta">
+      <span>April 14, 2025</span>
+      <span>Agent Security &amp; Sandboxing</span>
+    </div>
+
+    <!-- Spectrum Widget -->
+    <div class="spectrum-widget" aria-label="Legacy to modern agent security spectrum">
+      <div class="spectrum-title">Legacy vs. Modern Agent Security</div>
+      <div class="spectrum-labels">
+        <span class="legacy">Trust the LLM</span>
+        <span class="modern">Sandbox everything</span>
+      </div>
+      <div class="spectrum-bar"></div>
+      <div class="spectrum-markers">
+        <div class="spectrum-marker" style="left:15%" title="Lakera Guard: LLM-layer API filtering">
+          <div class="dot"></div>
+          <div class="label">Lakera</div>
+        </div>
+        <div class="spectrum-marker" style="left:25%" title="NeMo Guardrails: Declarative LLM guardrails">
+          <div class="dot"></div>
+          <div class="label">NeMo</div>
+        </div>
+        <div class="spectrum-marker" style="left:75%" title="WasmEdge: Wasm runtime sandbox">
+          <div class="dot"></div>
+          <div class="label">WasmEdge</div>
+        </div>
+        <div class="spectrum-marker" style="left:88%" title="E2B: MicroVM per-request sandbox">
+          <div class="dot"></div>
+          <div class="label">E2B</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pull Quote -->
+    <blockquote class="pull-quote">
+      Neither layer catches the semantic violation because that intent is distributed across the boundary.
+    </blockquote>
+
+    <!-- Share Block -->
+    <div class="share-block">
+      <span class="share-label">Share</span>
+      <input type="text" id="shareInput" readonly value="Every sandbox you deployed is theater if your LLM guardrails can't stop the prompt that makes the agent ask the sandbox to do the wrong thing." aria-label="Share text">
+      <button class="share-btn" onclick="copyShare()">Copy</button>
+    </div>
+
+    <!-- Section 1: Thesis -->
+    <section id="thesis">
+      <h2>Trust Is Not Armor</h2>
+      <p>Standard lists of "AI security tools" commit a category error: they stack LLM guardrails alongside runtime sandboxes as if they solve the same problem. They don't.</p>
+      <p>Consider a concrete failure: an agent receives a prompt that passes all LLM-layer guardrails — no known jailbreak patterns, on-topic, syntactically benign output. But the LLM generates a tool call that, while valid in structure, instructs the execution environment to exfiltrate data to an external endpoint. The LLM-layer guardrail sees a legitimate API call. The sandbox, if it exists, sees a legitimate network request. Neither layer catches the <em>semantic</em> violation because that intent is distributed across the boundary.</p>
+      <p>An LLM-layer guardrail prevents a model from <em>generating</em> a harmful instruction. A sandbox prevents that instruction from <em>executing</em> with real consequences. These are orthogonal defenses protecting different boundaries, and treating them as interchangeable leaves a gap exactly where attackers operate — in the space between what the LLM says and what the runtime does. Architecture leaders need to think in terms of two distinct enforcement layers with a deliberately managed gap between them, not a single "security" checkbox.</p>
+    </section>
+
+    <!-- Section 2: Exclusions -->
+    <section id="exclusions">
+      <h2>What We Cut</h2>
+      <ul class="exclusion-list">
+        <li><strong>General-purpose vulnerability scanners</strong> (Snyk, SonarQube): Static analysis for traditional code, not agent execution boundaries.</li>
+        <li><strong>Prompt injection benchmark datasets</strong> (HarmBench, IFEval): Research artifacts, not deployable defenses.</li>
+        <li><strong>Network-level security</strong> (mTLS, VPNs, zero-trust networks): Necessary infrastructure but orthogonal to the LLM-to-runtime execution boundary.</li>
+        <li><strong>Container orchestration platforms</strong> (Kubernetes, Nomad) without agent-specific isolation policies: Security properties depend entirely on configuration, not what the platform provides by default.</li>
+      </ul>
+    </section>
+
+    <!-- Section 3: Taxonomy -->
+    <section id="taxonomy">
+      <h2>Two Walls, One Gap</h2>
+
+      <h3>LLM-Layer Security: Stopping Harmful Intent at Generation</h3>
+
+      <article class="tool-card">
+        <div class="tool-name">NeMo Guardrails</div>
+        <span class="tool-url">github.com/NVIDIA/NeMo-Guardrails</span>
+        <div class="tool-section">
+          <div class="tool-label">Architectural Pattern</div>
+          <div class="tool-text">Colang-based dialogue flow controllers intercepting LLM inputs and outputs against programmable rails, implemented as middleware between application and LLM API.</div>
+        </div>
+        <div class="tool-section">
+          <div class="tool-label">Strengths</div>
+          <div class="tool-text">Declarative rail definitions let non-security engineers encode policies. Supports topical, safety, and factual consistency rails. Integrates with LangChain and LlamaIndex. Apache 2.0 open-source.</div>
+        </div>
+        <div class="tool-section">
+          <div class="tool-label">Production Trade-offs</div>
+          <div class="tool-text">Adds 50–200ms latency per turn. Rail definitions grow brittle as agent capabilities expand — every new tool requires explicit rail coverage. <em>Doesn't enforce anything at the execution layer; a prompt that bypasses rails but issues a valid tool call executes unimpeded.</em></div>
+        </div>
+      </article>
+
+      <article class="tool-card">
+        <div class="tool-name">Lakera Guard</div>
+        <span class="tool-url">lakera.ai</span>
+        <div class="tool-section">
+          <div class="tool-label">Architectural Pattern</div>
+          <div class="tool-text">API-first prompt injection and content filtering service classifying inputs across injection, jailbreak, and hallucination dimensions using ensemble detection models.</div>
+        </div>
+        <div class="tool-section">
+          <div class="tool-label">Strengths</div>
+          <div class="tool-text">Near-zero integration friction — drop-in API call. Continuous model updates without customer retraining. Low latency (30–80ms typical). Strong detection on published jailbreak benchmarks.</div>
+        </div>
+        <div class="tool-section">
+          <div class="tool-label">Production Trade-offs</div>
+          <div class="tool-text">Black-box detection; cannot inspect or modify classification logic. Cost scales linearly with request volume. <em>Operates entirely at the LLM layer — a bypassed filter has no downstream enforcement mechanism.</em></div>
+        </div>
+      </article>
+
+      <h3>Runtime Execution Boundary: Controlling What Actually Happens</h3>
+
+      <article class="tool-card">
+        <div class="tool-name">E2B</div>
+        <span class="tool-url">e2b.dev / github.com/e2b-dev</span>
+        <div class="tool-section">
+          <div class="tool-label">Architectural Pattern</div>
+          <div class="tool-text">Per-request Firecracker microVMs provisioned via API. Each agent action requiring code execution, file system access, or network calls receives an isolated VM with a time-boxed lifecycle (default 300s).</div>
+        </div>
+        <div class="tool-section">
+          <div class="tool-label">Strengths</div>
+          <div class="tool-text">Strongest isolation in this landscape — full VM boundary with its own kernel. Ephemeral and stateless by design, preventing persistence attacks. Python/JS SDK with template-based environments. Adopted as execution backend by multiple agent frameworks.</div>
+        </div>
+        <div class="tool-section">
+          <div class="tool-label">Production Trade-offs</div>
+          <div class="tool-text">Cold start of 500ms–2s per sandbox, partially mitigated by warm pooling. Non-trivial cost at scale. Network egress requires explicit configuration. <em>Doesn't address what the agent asks the sandbox to do — only constrains where it does it.</em></div>
+        </div>
+      </article>
+
+      <article class="tool-card">
+        <div class="tool-name">WasmEdge</div>
+        <span class="tool-url">github.com/WasmEdge/WasmEdge</span>
+        <div class="tool-section">
+          <div class="tool-label">Architectural Pattern</div>
+          <div class="tool-text">WebAssembly runtime with AI extension plugins. Agent tool code compiled to Wasm executes inside a capability-restricted sandbox with explicit limits on memory, CPU time, and permitted syscalls.</div>
+        </div>
+        <div class="tool-section">
+          <div class="tool-label">Strengths</div>
+          <div class="tool-text">Sub-millisecond cold start — orders of magnitude faster than microVMs. ~5MB base footprint. Deterministic execution enables reproducible security auditing. Apache 2.0 open-source.</div>
+        </div>
+        <div class="tool-section">
+          <div class="tool-label">Production Trade-offs</div>
+          <div class="tool-text">Wasm's capability model is still maturing for general agent tasks. File system and network access require careful capability granting that can inadvertently over-permit. Not all Python tool dependencies compile cleanly to Wasm. <em>Requires pre-compilation of agent tools to Wasm, limiting ad-hoc dynamic tool use.</em></div>
+        </div>
+      </article>
+
+      <!-- The Gap -->
+      <div class="gap-callout">
+        <h4>The Gap Between Walls</h4>
+        <p style="margin-bottom:0;opacity:.92">Neither layer addresses the <em>semantic</em> boundary — whether a validly-structured tool call, passing LLM guardrails and executing inside a sandbox, represents authorized intent. This is where most production incidents will occur. None of these tools provide unified policy spanning both layers. Until that changes, architecture teams must implement explicit cross-layer validation — logging every sandbox network request back to the LLM guardrail layer for post-hoc audit — rather than assuming either wall is sufficient.</p>
+      </div>
+    </section>
+
+    <!-- Section 4: Trade-offs -->
+    <section id="tradeoffs">
+      <h2>Pick Your Failure Mode</h2>
+      <div class="decision-matrix">
+        <table>
+          <thead>
+            <tr><th>Decision Factor</th><th>LLM-Layer Only</th><th>Runtime Only</th><th>Both Layers</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Latency budget</td><td>Low (50–200ms)</td><td>Medium (0.5ms–2s)</td><td>High (cumulative)</td></tr>
+            <tr><td>Isolation guarantee</td><td>None at execution</td><td>Strong (VM/Wasm)</td><td>Strongest</td></tr>
+            <tr><td>Primary bypass risk</td><td>Prompt engineering</td><td>Sandbox escape</td><td>Cross-layer semantic gap</td></tr>
+            <tr><td>Cost at scale</td><td>Per-request API</td><td>Per-sandbox compute</td><td>Both</td></tr>
+            <tr><td>Operational complexity</td><td>Low</td><td>Medium-High</td><td>Highest</td></tr>
+            <tr><td>Best suited for</td><td>Read-only agents</td><td>Code-execution agents</td><td>Production user-facing agents</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p><strong>Recommendation</strong>: If your agents execute read-only operations — retrieval, classification, summarization — LLM-layer guardrails alone suffice, and runtime sandboxing adds cost without proportional risk reduction. If agents execute code, modify files, or call external APIs, runtime sandboxing is non-negotiable, and LLM-layer guardrails remain necessary to reduce malicious inputs reaching the sandbox. The gap between layers is where your incident response playbook and cross-layer audit logging must live.</p>
+    </section>
+
+    <!-- Section 5: CTA -->
+    <section id="cta">
+      <h2>Map Your Gap Now</h2>
+      <p>Audit one agent in production: trace a single user request from LLM output through tool execution. Identify which layer — if any — would have stopped a malicious instruction. If the answer is "neither," you have work to do before your agent does.</p>
+    </section>
+
+    <!-- Architecture Map -->
+    <section id="archmap" class="arch-map">
+      <h2>State of the Stack</h2>
+      <div class="arch-filters" role="group" aria-label="Filter architecture layers">
+        <button class="af-btn active" data-filter="all" onclick="filterArch('all',this)">All Layers</button>
+        <button class="af-btn" data-filter="llm" onclick="filterArch('llm',this)">LLM Layer</button>
+        <button class="af-btn" data-filter="orchestration" onclick="filterArch('orchestration',this)">Orchestration</button>
+        <button class="af-btn" data-filter="gap" onclick="filterArch('gap',this)">The Gap</button>
+        <button class="af-btn" data-filter="runtime" onclick="filterArch('runtime',this)">Runtime</button>
+        <button class="af-btn" data-filter="external" onclick="filterArch('external',this)">External</button>
+      </div>
+      <div class="arch-layers">
+        <div class="arch-layer layer-llm" data-layer="llm">
+          <div class="arch-layer-label">LLM Layer — Intent Filtering</div>
+          <div class="arch-layer-tools">
+            <span class="arch-tool-chip" data-tool-layer="llm">NeMo Guardrails</span>
+            <span class="arch-tool-chip" data-tool-layer="llm">Lakera Guard</span>
+          </div>
+        </div>
+        <div class="arch-layer layer-orch" data-layer="orchestration">
+          <div class="arch-layer-label">Orchestration — Agent Loop Control</div>
+          <div class="arch-layer-tools">
+            <span class="arch-tool-chip" data-tool-layer="orchestration">Your Agent Framework</span>
+          </div>
+        </div>
+        <div class="arch-layer layer-gap" data-layer="gap" style="padding:10px 20px;min-height:auto">
+          <div class="arch-layer-label" style="margin-bottom:0;color:var(--danger);opacity:1">Unmonitored Semantic Gap</div>
+        </div>
+        <div class="arch-layer layer-runtime" data-layer="runtime">
+          <div class="arch-layer-label">Execution Boundary — Runtime Isolation</div>
+          <div class="arch-layer-tools">
+            <span class="arch-tool-chip" data-tool-layer="runtime">E2B (MicroVM)</span>
+            <span class="arch-tool-chip" data-tool-layer="runtime">WasmEdge (Wasm)</span>
+          </div>
+        </div>
+        <div class="arch-layer layer-ext" data-layer="external">
+          <div class="arch-layer-label">External Systems — APIs, Files, Network</div>
+          <div class="arch-layer-tools">
+            <span class="arch-tool-chip" data-tool-layer="external">User Databases</span>
+            <span class="arch-tool-chip" data-tool-layer="external">Third-party APIs</span>
+            <span class="arch-tool-chip" data-tool-layer="external">File Systems</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Comparison Table -->
+    <section id="comparison" class="comparison-section">
+      <h2>Tool Comparison</h2>
+      <div class="table-filter" role="group" aria-label="Filter tools by layer">
+        <button class="af-btn active" data-tfilter="all" onclick="filterTable('all',this)">All</button>
+        <button class="af-btn" data-tfilter="LLM" onclick="filterTable('LLM',this)">LLM Layer</button>
+        <button class="af-btn" data-tfilter="Runtime" onclick="filterTable('Runtime',this)">Runtime</button>
+      </div>
+      <div class="table-wrap">
+        <table id="compTable" aria-label="Tool comparison table">
+          <thead>
+            <tr>
+              <th onclick="sortTable(0)">Tool <span class="sort-arrow">&#9650;</span></th>
+              <th onclick="sortTable(1)">Layer <span class="sort-arrow">&#9650;</span></th>
+              <th onclick="sortTable(2)">Isolation Model <span class="sort-arrow">&#9650;</span></th>
+              <th onclick="sortTable(3)">Latency <span class="sort-arrow">&#9650;</span></th>
+              <th onclick="sortTable(4)">Cold Start <span class="sort-arrow">&#9650;</span></th>
+              <th onclick="sortTable(5)">License <span class="sort-arrow">&#9650;</span></th>
+              <th onclick="sortTable(6)">Maturity <span class="sort-arrow">&#9650;</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr data-tlayer="LLM">
+              <td><strong>NeMo Guardrails</strong></td>
+              <td><span class="badge badge-llm">LLM</span></td>
+              <td>Middleware I/O intercept</td>
+              <td>50–200ms</td>
+              <td>N/A</td>
+              <td>Apache 2.0</td>
+              <td>Production-ready</td>
+            </tr>
+            <tr data-tlayer="LLM">
+              <td><strong>Lakera Guard</strong></td>
+              <td><span class="badge badge-llm">LLM</span></td>
+              <td>API classification</td>
+              <td>30–80ms</td>
+              <td>N/A</td>
+              <td>Commercial</td>
+              <td>Production-ready</td>
+            </tr>
+            <tr data-tlayer="Runtime">
+              <td><strong>E2B</strong></td>
+              <td><span class="badge badge-runtime">Runtime</span></td>
+              <td>Firecracker microVM</td>
+              <td>Per-sandbox</td>
+              <td>500ms–2s</td>
+              <td>Open-source core</td>
+              <td>Production-ready</td>
+            </tr>
+            <tr data-tlayer="Runtime">
+              <td><strong>WasmEdge</strong></td>
+              <td><span class="badge badge-runtime">Runtime</span></td>
+              <td>Wasm capability sandbox</td>
+              <td>Per-execution</td>
+              <td>&lt;1ms</td>
+              <td>Apache 2.0</td>
+              <td>Maturing</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <aside>
+    <div class="sidebar-sticky">
+      <div class="toc">
+        <h3>Contents</h3>
+        <ul>
+          <li><a href="#thesis">Trust Is Not Armor</a></li>
+          <li><a href="#exclusions">What We Cut</a></li>
+          <li><a href="#taxonomy">Two Walls, One Gap</a></li>
+          <li><a href="#tradeoffs">Pick Your Failure Mode</a></li>
+          <li><a href="#cta">Map Your Gap Now</a></li>
+          <li><a href="#archmap">Architecture Map</a></li>
+          <li><a href="#comparison">Tool Comparison</a></li>
+        </ul>
+      </div>
+      <div class="sidebar-card">
+        <h4>At a Glance</h4>
+        <div class="sidebar-stat"><span>Tools evaluated</span><span class="val">4</span></div>
+        <div class="sidebar-stat"><span>Architectural layers</span><span class="val">2 + gap</span></div>
+        <div class="sidebar-stat"><span>Open-source</span><span class="val">3 of 4</span></div>
+        <div class="sidebar-stat"><span>Cold-start range</span><span class="val">&lt;1ms–2s</span></div>
+        <div class="sidebar-stat"><span>Key finding</span><span class="val">Gap unmonitored</span></div>
+      </div>
+      <div class="sidebar-card">
+        <h4>Research Window</h4>
+        <div class="sidebar-stat"><span>From</span><span class="val">2025-03-10</span></div>
+        <div class="sidebar-stat"><span>To</span><span class="val">2025-04-14</span></div>
+      </div>
+    </div>
+  </aside>
+</div>
+
+<footer>
+  <div class="footer-citations">
+    <h4>Citations</h4>
+    <ol>
+      <li>E2B — "Code Interpretation Sandboxes for AI Agents," <a href="https://e2b.dev" target="_blank" rel="noopener">e2b.dev</a>, accessed within research window.</li>
+      <li>WasmEdge — "WasmEdge: Lightweight, High-Performance, and Extensible WebAssembly Runtime," <a href="https://github.com/WasmEdge/WasmEdge" target="_blank" rel="noopener">github.com/WasmEdge/WasmEdge</a>, accessed within research window.</li>
+      <li>NVIDIA NeMo Guardrails — "Programmable Guardrails for LLM Applications," <a href="https://github.com/NVIDIA/NeMo-Guardrails" target="_blank" rel="noopener">github.com/NVIDIA/NeMo-Guardrails</a>, accessed within research window.</li>
+      <li>Lakera Guard — "AI Security Platform," <a href="https://lakera.ai" target="_blank" rel="noopener">lakera.ai</a>, accessed within research window.</li>
+    </ol>
+  </div>
+  <div class="footer-links">
+    <a href="#">Back to top</a>
+    <a href="https://iggym.github.io/awesome-ai-architecture/" target="_blank" rel="noopener">Home</a>
+  </div>
+</footer>
+
+<div class="toast" id="toast" role="alert" aria-live="polite">Copied to clipboard</div>
+
+<script>
+/* Progress bar */
+(function(){
+  var bar=document.getElementById('progress');
+  function update(){
+    var h=document.documentElement.scrollHeight-window.innerHeight;
+    var s=window.scrollY;
+    var p=h>0?Math.min((s/h)*100,100):0;
+    bar.style.width=p+'%';
+    bar.setAttribute('aria-valuenow',Math.round(p));
+  }
+  window.addEventListener('scroll',update,{passive:true});
+  update();
+})();
+
+/* Mobile drawer */
+function toggleDrawer(){
+  var d=document.getElementById('drawer');
+  var btn=document.querySelector('.hamburger');
+  var open=d.classList.toggle('open');
+  btn.setAttribute('aria-expanded',open);
+}
+
+/* Share copy */
+function copyShare(){
+  var inp=document.getElementById('shareInput');
+  inp.select();
+  try{navigator.clipboard.writeText(inp.value)}catch(e){document.execCommand('copy')}
+  var t=document.getElementById('toast');
+  t.classList.add('show');
+  setTimeout(function(){t.classList.remove('show')},2000);
+}
+
+/* Architecture map filter */
+function filterArch(layer,btn){
+  document.querySelectorAll('.arch-filters .af-btn').forEach(function(b){b.classList.remove('active')});
+  btn.classList.add('active');
+  document.querySelectorAll('.arch-layer').forEach(function(el){
+    if(layer==='all'){
+      el.classList.remove('dimmed');
+      el.querySelectorAll('.arch-tool-chip').forEach(function(c){c.classList.remove('chip-hidden')});
+    }else{
+      var match=el.dataset.layer===layer;
+      el.classList.toggle('dimmed',!match);
+      el.querySelectorAll('.arch-tool-chip').forEach(function(c){
+        c.classList.toggle('chip-hidden',!match);
+      });
+    }
+  });
+}
+
+/* Comparison table filter */
+function filterTable(layer,btn){
+  document.querySelectorAll('.table-filter .af-btn').forEach(function(b){b.classList.remove('active')});
+  btn.classList.add('active');
+  document.querySelectorAll('#compTable tbody tr').forEach(function(tr){
+    if(layer==='all'){tr.classList.remove('row-hidden')}
+    else{tr.classList.toggle('row-hidden',tr.dataset.tlayer!==layer)}
+  });
+}
+
+/* Comparison table sort */
+var sortDir=[];
+function sortTable(col){
+  if(!sortDir[col])sortDir[col]=1;
+  else sortDir[col]*=-1;
+  var dir=sortDir[col];
+  var table=document.getElementById('compTable');
+  var tbody=table.querySelector('tbody');
+  var rows=Array.prototype.slice.call(tbody.querySelectorAll('tr'));
+  rows.sort(function(a,b){
+    var aText=a.cells[col].textContent.trim();
+    var bText=b.cells[col].textContent.trim();
+    /* Numeric extraction for latency */
+    var aNum=parseFloat(aText.replace(/[^0-9.\-]/g,''));
+    var bNum=parseFloat(bText.replace(/[^0-9.\-]/g,''));
+    if(!isNaN(aNum)&&!isNaN(bNum)&&aNum!==0&&bNum!==0){
+      return (aNum-bNum)*dir;
+    }
+    return aText.localeCompare(bText)*dir;
+  });
+  rows.forEach(function(r){tbody.appendChild(r)});
+  /* Update header arrows */
+  table.querySelectorAll('thead th').forEach(function(th,i){
+    th.classList.toggle('sorted',i===col);
+    var arrow=th.querySelector('.sort-arrow');
+    if(arrow)arrow.innerHTML=i===col?(dir===1?'&#9650;':'&#9660;'):'&#9650;';
+  });
+}
+
+/* Active TOC highlighting */
+(function(){
+  var tocLinks=document.querySelectorAll('.toc a');
+  var sections=[];
+  tocLinks.forEach(function(a){
+    var id=a.getAttribute('href').slice(1);
+    var el=document.getElementById(id);
+    if(el)sections.push({link:a,el:el});
+  });
+  function update(){
+    var scrollY=window.scrollY+100;
+    var current=null;
+    sections.forEach(function(s){
+      if(s.el.offsetTop<=scrollY)current=s;
+    });
+    tocLinks.forEach(function(a){a.classList.remove('active')});
+    if(current)current.link.classList.add('active');
+  }
+  window.addEventListener('scroll',update,{passive:true});
+  update();
+})();
+
+/* Back to top */
+document.querySelector('.footer-links a[href="#"]').addEventListener('click',function(e){
+  e.preventDefault();
+  window.scrollTo({top:0,behavior:'smooth'});
+});
+</script>
+</body>
+</html>
