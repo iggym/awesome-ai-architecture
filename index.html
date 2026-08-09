@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Awesome AI Architecture</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cream:#FAF6EE; --ink:#1F2421; --teal:#1F7A6C; --coral:#E4633B; --muted:#8A8578;
+    --display:'Space Grotesk',sans-serif; --body:'Inter',sans-serif; --mono:'IBM Plex Mono',monospace;
+  }
+  *{box-sizing:border-box;}
+  @media (prefers-reduced-motion: reduce){ *{animation-duration:.001ms !important; transition-duration:.001ms !important;} }
+  body{ margin:0; background:var(--cream); color:var(--ink); font-family:var(--body); line-height:1.6; }
+  a{color:inherit;}
+  .topbar{ position:sticky; top:0; z-index:20; background:rgba(250,246,238,0.92); backdrop-filter:blur(6px); border-bottom:1px solid rgba(31,36,33,0.12); padding:14px 24px; display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap; }
+  .topbar .mark{ font-family:var(--display); font-weight:700; font-size:14px; text-decoration:none; color:var(--ink); }
+  .searchbox{ font-family:var(--mono); font-size:12.5px; border:1px solid rgba(31,36,33,0.25); background:#fff; padding:7px 12px; border-radius:20px; width:220px; outline:none; transition:border-color .2s ease; }
+  .searchbox:focus{ border-color:var(--teal); }
+
+  header{ padding:76px 24px 14px; max-width:760px; margin:0 auto; }
+  .eyebrow{ font-family:var(--mono); font-size:11.5px; color:var(--teal); letter-spacing:0.1em; text-transform:uppercase; margin-bottom:16px; }
+  h1{ font-family:var(--display); font-weight:700; font-size:clamp(2.2rem,5.5vw,3.4rem); margin:0 0 16px; letter-spacing:-0.01em; }
+  .tagline{ font-size:1.1rem; color:#4B4738; max-width:520px; margin:0 0 8px; }
+  .desc{ font-size:14.5px; color:var(--muted); max-width:500px; }
+
+  main{ max-width:1000px; margin:0 auto; padding:30px 24px 100px; }
+
+  .filters{ display:flex; gap:8px; flex-wrap:wrap; margin-bottom:28px; }
+  .chip{
+    font-family:var(--mono); font-size:11.5px; padding:6px 14px; border-radius:20px;
+    border:1px solid rgba(31,36,33,0.25); background:#fff; cursor:pointer; color:var(--ink);
+    transition:all .2s ease; user-select:none;
+  }
+  .chip:hover{ border-color:var(--teal); }
+  .chip.active{ background:var(--teal); border-color:var(--teal); color:#fff; }
+
+  .section-label{ font-family:var(--mono); font-size:11px; letter-spacing:0.08em; text-transform:uppercase; color:var(--muted); border-bottom:1px solid rgba(31,36,33,0.15); padding-bottom:10px; margin-bottom:24px; display:flex; justify-content:space-between; }
+
+  .grid-feed{ display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:16px; transition:opacity .2s ease; }
+  .card{
+    background:#fff; border:1px solid rgba(31,36,33,0.14); border-radius:6px;
+    padding:20px; text-decoration:none; color:inherit;
+    transition:transform .18s ease, box-shadow .18s ease, opacity .2s ease;
+  }
+  .card:hover{ transform:translateY(-3px); box-shadow:0 8px 20px rgba(31,36,33,0.08); border-color:var(--teal); }
+  .card.pinned{ grid-column:1/-1; border-color:var(--coral); background:rgba(228,99,59,0.04); }
+  .card.hidden{ display:none; }
+  .card-meta{ font-family:var(--mono); font-size:10.5px; color:var(--muted); display:flex; gap:12px; margin-bottom:12px; }
+  h2{ font-family:var(--display); font-weight:700; font-size:1.15rem; margin:0 0 10px; line-height:1.3; }
+  p.hook{ font-size:14px; color:#4B4738; margin:0 0 14px; }
+  .tags{ display:flex; gap:6px; flex-wrap:wrap; }
+  .tag-pill{ font-family:var(--mono); font-size:9.5px; color:var(--teal); border:1px solid rgba(31,122,108,0.35); padding:3px 8px; border-radius:20px; cursor:pointer; }
+  .tag-pill:hover{ background:rgba(31,122,108,0.1); }
+
+  .empty{ text-align:center; padding:60px 20px; color:var(--muted); grid-column:1/-1; }
+  .empty .glyph{ font-family:var(--display); font-weight:700; color:var(--coral); margin-bottom:10px; font-size:1.1rem; }
+
+  footer{ border-top:1px solid rgba(31,36,33,0.14); padding:36px 24px; text-align:center; }
+  footer p{ font-size:13.5px; color:var(--muted); max-width:480px; margin:0 auto 14px; }
+  footer a.home{ font-family:var(--mono); font-size:12px; color:var(--teal); text-decoration:none; border-bottom:1px solid var(--teal); padding-bottom:2px; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a class="mark" href="https://iggym.github.io/awesome-ai-architecture/">Awesome AI Architecture</a>
+  <input class="searchbox" id="search" type="text" placeholder="filter by keyword…">
+</div>
+
+<header>
+  <div class="eyebrow">Curated Index</div>
+  <h1>Awesome AI Architecture</h1>
+  <p class="tagline">Curated by failure mode, not vendor category.</p>
+  <p class="desc" id="site-desc">A curated, opinionated map of AI infrastructure tooling.</p>
+</header>
+
+<main>
+  <div class="filters" id="filters"></div>
+  <div class="section-label"><span>Entries</span><span id="feed-count">loading…</span></div>
+  <div class="grid-feed" id="feed"></div>
+</main>
+
+<footer>
+  <p id="footer-desc">Awesome AI Architecture — the reference layer of an eight-repo portfolio on running AI in production.</p>
+  <a class="home" href="https://iggym.github.io/awesome-ai-architecture/">Back to top ↑</a>
+</footer>
+
+<script>
+(async function(){
+  const feedEl = document.getElementById('feed');
+  const countEl = document.getElementById('feed-count');
+  const filtersEl = document.getElementById('filters');
+  const searchEl = document.getElementById('search');
+  const descEl = document.getElementById('site-desc');
+  const footerDescEl = document.getElementById('footer-desc');
+
+  let allArticles = [];
+  let activeTag = null;
+
+  function fmtDate(iso){ try{ return new Date(iso+'T00:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}); }catch(e){return iso;} }
+
+  function cardHTML(a,isPinned){
+    const tags = (a.tags||[]).map(t=>`<span class="tag-pill" data-tag="${t}">${t}</span>`).join('');
+    return `
+      <a class="card ${isPinned?'pinned':''}" href="${a.path}" data-tags="${(a.tags||[]).join(',')}" data-search="${(a.title+' '+(a.hook||'')).toLowerCase()}">
+        <div class="card-meta"><span>${fmtDate(a.date)}</span><span>${a.reading_time_minutes||'—'} min</span></div>
+        <h2>${a.title}</h2>
+        <p class="hook">${a.hook||''}</p>
+        <div class="tags">${tags}</div>
+      </a>`;
+  }
+
+  function applyFilters(){
+    const q = searchEl.value.trim().toLowerCase();
+    document.querySelectorAll('.card').forEach(card=>{
+      const tags = (card.dataset.tags||'').split(',');
+      const matchesTag = !activeTag || tags.includes(activeTag);
+      const matchesSearch = !q || card.dataset.search.includes(q);
+      card.classList.toggle('hidden', !(matchesTag && matchesSearch));
+    });
+  }
+
+  function renderFilters(articles){
+    const tagSet = new Set();
+    articles.forEach(a => (a.tags||[]).forEach(t => tagSet.add(t)));
+    if(tagSet.size === 0){ filtersEl.innerHTML=''; return; }
+    let html = `<span class="chip active" data-tag="">all</span>`;
+    tagSet.forEach(t => { html += `<span class="chip" data-tag="${t}">${t}</span>`; });
+    filtersEl.innerHTML = html;
+    filtersEl.querySelectorAll('.chip').forEach(chip=>{
+      chip.addEventListener('click', ()=>{
+        filtersEl.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
+        chip.classList.add('active');
+        activeTag = chip.dataset.tag || null;
+        applyFilters();
+      });
+    });
+  }
+
+  function render(published, site){
+    if(site && site.description){ descEl.textContent = site.description; footerDescEl.textContent = site.description; }
+    allArticles = published;
+    if(published.length === 0){
+      feedEl.innerHTML = '<div class="empty"><div class="glyph">Index is empty.</div>First entries are being curated.</div>';
+      countEl.textContent = '0'; return;
+    }
+    const pinned = published.filter(a=>a.pinned);
+    const rest = published.filter(a=>!a.pinned).sort((a,b)=>new Date(b.date)-new Date(a.date));
+    countEl.textContent = published.length;
+    let html='';
+    pinned.forEach(a=>{ html += cardHTML(a,true); });
+    rest.forEach(a=>{ html += cardHTML(a,false); });
+    feedEl.innerHTML = html;
+    renderFilters(published);
+    feedEl.querySelectorAll('.tag-pill').forEach(pill=>{
+      pill.addEventListener('click', (e)=>{
+        e.preventDefault(); e.stopPropagation();
+        activeTag = pill.dataset.tag;
+        filtersEl.querySelectorAll('.chip').forEach(c=>c.classList.toggle('active', c.dataset.tag === activeTag));
+        applyFilters();
+      });
+    });
+  }
+
+  searchEl.addEventListener('input', applyFilters);
+
+  try{
+    const res = await fetch('./metadata.json');
+    if(!res.ok) throw new Error('not found');
+    const data = await res.json();
+    render((data.articles||[]).filter(a=>a.status==='published'), data.site);
+  }catch(err){
+    feedEl.innerHTML = '<div class="empty"><div class="glyph">Index is empty.</div>First entries are being curated.</div>';
+  }
+})();
+</script>
+</body>
+</html>
