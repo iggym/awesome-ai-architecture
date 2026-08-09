@@ -7,5 +7,16 @@
     "audience": "Top-of-funnel, SEO, vendor evaluators",
     "description": "A curated, opinionated map of AI infrastructure tooling, organized by the specific failure mode each tool addresses — with an explicit exclusion criteria, not an exhaustive link dump."
   },
-  "articles": []
+  "articles": [
+    {
+  "title": "Watchtower and Moat",
+  "hook": "Agent security isn't a tool choice — it's a layering problem. LLM-layer guards and runtime sandboxes solve different failure modes. Pick one, you get a speed bump. Stack both, you get an architecture.",
+  "date": "2025-04-14",
+  "status": "published",
+  "pinned": false,
+  "reading_time_minutes": 7,
+  "tags": ["agent-security", "sandboxing", "llm-guardrails", "runtime-boundary", "architecture-evaluation"],
+  "path": "articles/watchtower-and-moat.html"
+}
+  ]
 }
