@@ -26,6 +26,15 @@
   "reading_time_minutes": 6,
   "tags": ["multi-agent-orchestration", "observability", "debuggability", "agent-frameworks"],
   "path": "articles/smoke-signals-in-production.html"
+},{
+  "title": "Where the Sandbox Ends",
+  "hook": "Every sandbox you deployed is theater if your LLM guardrails can't stop the prompt that makes the agent ask the sandbox to do the wrong thing.",
+  "date": "2025-04-14",
+  "status": "published",
+  "pinned": false,
+  "reading_time_minutes": 8,
+  "tags": ["agent-security", "sandboxing", "llm-guardrails", "runtime-isolation"],
+  "path": "articles/where-the-sandbox-ends.html"
 }
   ]
 }
