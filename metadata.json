@@ -17,6 +17,15 @@
   "reading_time_minutes": 7,
   "tags": ["agent-security", "sandboxing", "llm-guardrails", "runtime-boundary", "architecture-evaluation"],
   "path": "articles/watchtower-and-moat.html"
+},{
+  "title": "Smoke Signals in Production",
+  "hook": "Multi-agent frameworks aren't ranked by what they build—they're ranked by what you can see when they break.",
+  "date": "2025-02-28",
+  "status": "published",
+  "pinned": false,
+  "reading_time_minutes": 6,
+  "tags": ["multi-agent-orchestration", "observability", "debuggability", "agent-frameworks"],
+  "path": "articles/smoke-signals-in-production.html"
 }
   ]
 }
