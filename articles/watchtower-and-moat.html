@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Watchtower and Moat — Awesome AI Architecture</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+  :root {
+    --bg: #0C0C0C;
+    --bg-elevated: #141412;
+    --card: #1C1C1A;
+    --card-hover: #242420;
+    --border: #2E2C28;
+    --fg: #E8E4DF;
+    --fg-dim: #B0ACA6;
+    --fg-muted: #706C66;
+    --accent: #D4A843;
+    --accent-glow: rgba(212,168,67,0.15);
+    --accent2: #43B89C;
+    --accent2-glow: rgba(67,184,156,0.12);
+    --danger: #C75050;
+    --radius: 10px;
+    --font-display: 'Space Grotesk', sans-serif;
+    --font-body: 'Space Grotesk', system-ui, sans-serif;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; background: var(--bg); color: var(--fg); }
+  body { font-family: var(--font-body); font-size: 16px; line-height: 1.7; background: var(--bg); min-height: 100vh; overflow-x: hidden; }
+
+  /* Progress bar */
+  #progress { position: fixed; top: 0; left: 0; height: 3px; width: 0%; background: linear-gradient(90deg, var(--accent), var(--accent2)); z-index: 10001; transition: width 0.1s linear; }
+
+  /* Topbar */
+  #topbar { position: fixed; top: 3px; left: 0; right: 0; z-index: 10000; backdrop-filter: blur(20px) saturate(1.4); -webkit-backdrop-filter: blur(20px) saturate(1.4); background: rgba(12,12,12,0.72); border-bottom: 1px solid var(--border); padding: 0 1.5rem; height: 54px; display: flex; align-items: center; gap: 1rem; transition: transform 0.3s ease; }
+  #topbar.hidden { transform: translateY(-60px); }
+  .topbar-home { color: var(--accent); text-decoration: none; font-weight: 600; font-size: 0.85rem; white-space: nowrap; display: flex; align-items: center; gap: 0.4rem; }
+  .topbar-home:hover { color: var(--fg); }
+  .breadcrumb { color: var(--fg-muted); font-size: 0.8rem; display: flex; align-items: center; gap: 0.4rem; flex: 1; min-width: 0; overflow: hidden; }
+  .breadcrumb span { white-space: nowrap; }
+  .breadcrumb .sep { color: var(--border); }
+  .reading-time { color: var(--fg-muted); font-size: 0.75rem; white-space: nowrap; }
+  .hamburger { display: none; background: none; border: none; color: var(--fg); font-size: 1.2rem; cursor: pointer; padding: 0.3rem; }
+
+  /* Layout */
+  .layout { max-width: 1200px; margin: 0 auto; padding: 74px 1.5rem 2rem; display: grid; grid-template-columns: 1fr 320px; gap: 2.5rem; align-items: start; }
+  .main-col { min-width: 0; }
+  .side-col { position: sticky; top: 74px; }
+
+  /* Hero */
+  .hero { margin-bottom: 2.5rem; padding-bottom: 2rem; border-bottom: 1px solid var(--border); }
+  .hero-label { display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent); margin-bottom: 1rem; background: var(--accent-glow); padding: 0.35rem 0.8rem; border-radius: 100px; border: 1px solid rgba(212,168,67,0.2); }
+  .hero h1 { font-family: var(--font-display); font-size: clamp(2.1rem, 5vw, 3.1rem); font-weight: 700; line-height: 1.15; color: var(--fg); margin-bottom: 1rem; letter-spacing: -0.02em; }
+  .hero-sub { color: var(--fg-dim); font-size: 1.05rem; line-height: 1.6; max-width: 640px; }
+
+  /* Pull quote */
+  .pull-quote { border-left: 3px solid var(--accent); padding: 1rem 1.5rem; margin: 2rem 0; background: var(--accent-glow); border-radius: 0 var(--radius) var(--radius) 0; font-style: italic; color: var(--fg-dim); font-size: 1.05rem; line-height: 1.65; }
+
+  /* Spectrum widget */
+  .spectrum { margin: 2rem 0; padding: 1.5rem; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); }
+  .spectrum-title { font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--fg-muted); margin-bottom: 1rem; }
+  .spectrum-bar { position: relative; height: 48px; border-radius: 24px; background: linear-gradient(90deg, var(--danger) 0%, var(--accent) 50%, var(--accent2) 100%); opacity: 0.3; }
+  .spectrum-markers { position: absolute; top: 0; left: 0; right: 0; bottom: 0; }
+  .spectrum-marker { position: absolute; top: 50%; transform: translate(-50%, -50%); width: 32px; height: 32px; border-radius: 50%; border: 2px solid var(--bg); display: flex; align-items: center; justify-content: center; font-size: 0.65rem; font-weight: 700; color: var(--bg); cursor: default; transition: transform 0.2s ease, box-shadow 0.2s ease; }
+  .spectrum-marker:hover { transform: translate(-50%, -50%) scale(1.25); box-shadow: 0 0 12px rgba(212,168,67,0.4); }
+  .spectrum-marker.legacy { background: var(--danger); left: 15%; }
+  .spectrum-marker.modern { background: var(--accent2); left: 82%; }
+  .spectrum-labels { display: flex; justify-content: space-between; margin-top: 0.6rem; font-size: 0.75rem; color: var(--fg-muted); }
+  .spectrum-tooltip { display: none; position: absolute; bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%); background: var(--card); border: 1px solid var(--border); padding: 0.5rem 0.75rem; border-radius: 6px; font-size: 0.72rem; color: var(--fg-dim); white-space: nowrap; font-style: normal; font-weight: 400; pointer-events: none; }
+  .spectrum-marker:hover .spectrum-tooltip { display: block; }
+
+  /* Share block */
+  .share-block { display: flex; align-items: center; gap: 0.75rem; margin: 1.5rem 0 2.5rem; flex-wrap: wrap; }
+  .share-btn { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.5rem 1rem; border-radius: 100px; border: 1px solid var(--border); background: var(--card); color: var(--fg-dim); font-size: 0.8rem; cursor: pointer; transition: all 0.2s ease; font-family: var(--font-body); }
+  .share-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-glow); }
+
+  /* Article content */
+  .article-body h2 { font-family: var(--font-display); font-size: 1.5rem; font-weight: 600; color: var(--fg); margin: 2.5rem 0 1rem; letter-spacing: -0.01em; }
+  .article-body h3 { font-family: var(--font-display); font-size: 1.15rem; font-weight: 600; color: var(--accent); margin: 1.8rem 0 0.6rem; }
+  .article-body p { color: var(--fg-dim); margin-bottom: 1rem; }
+  .article-body strong { color: var(--fg); font-weight: 600; }
+  .article-body ul, .article-body ol { color: var(--fg-dim); margin-bottom: 1rem; padding-left: 1.2rem; }
+  .article-body li { margin-bottom: 0.4rem; }
+  .article-body em { color: var(--fg); font-style: italic; }
+
+  /* Architecture Map */
+  .arch-map { margin: 2.5rem 0; }
+  .arch-map-title { font-family: var(--font-display); font-size: 1.3rem; font-weight: 600; margin-bottom: 0.5rem; }
+  .arch-map-sub { color: var(--fg-muted); font-size: 0.85rem; margin-bottom: 1.2rem; }
+  .arch-filters { display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap; }
+  .arch-filter-btn { padding: 0.35rem 0.8rem; border-radius: 100px; border: 1px solid var(--border); background: transparent; color: var(--fg-muted); font-size: 0.75rem; cursor: pointer; transition: all 0.2s ease; font-family: var(--font-body); }
+  .arch-filter-btn.active, .arch-filter-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-glow); }
+  .arch-grid { display: grid; gap: 0.5rem; }
+  .arch-layer { display: grid; grid-template-columns: 140px 1fr; gap: 0.75rem; align-items: start; padding: 0.75rem; border-radius: var(--radius); border: 1px solid transparent; transition: all 0.3s ease; }
+  .arch-layer.dimmed { opacity: 0.25; }
+  .arch-layer-label { font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--fg-muted); padding-top: 0.5rem; }
+  .arch-tools { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+  .arch-tool-card { padding: 0.6rem 1rem; border-radius: 8px; border: 1px solid var(--border); background: var(--card); cursor: default; transition: all 0.25s ease; }
+  .arch-tool-card:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0,0,0,0.3); }
+  .arch-tool-card.dimmed { opacity: 0.2; }
+  .arch-tool-name { font-size: 0.85rem; font-weight: 600; color: var(--fg); }
+  .arch-tool-type { font-size: 0.65rem; color: var(--fg-muted); margin-top: 0.15rem; }
+  .arch-tool-card.llm { border-left: 3px solid var(--accent); }
+  .arch-tool-card.runtime { border-left: 3px solid var(--accent2); }
+  .arch-tool-card.gap { border-left: 3px solid var(--danger); border-style: dashed; }
+  .arch-gap-label { font-size: 0.7rem; color: var(--danger); font-style: italic; }
+  .arch-flow { display: flex; justify-content: center; padding: 0.3rem 0; color: var(--fg-muted); font-size: 0.8rem; }
+
+  /* Comparison Table */
+  .comp-table-wrap { margin: 2.5rem 0; overflow-x: auto; }
+  .comp-table-title { font-family: var(--font-display); font-size: 1.3rem; font-weight: 600; margin-bottom: 0.5rem; }
+  .comp-table-sub { color: var(--fg-muted); font-size: 0.85rem; margin-bottom: 1rem; }
+  .comp-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+  .comp-table thead th { text-align: left; padding: 0.65rem 0.8rem; border-bottom: 2px solid var(--border); color: var(--fg-muted); font-weight: 600; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.06em; cursor: pointer; user-select: none; white-space: nowrap; transition: color 0.2s ease; }
+  .comp-table thead th:hover { color: var(--accent); }
+  .comp-table thead th .sort-icon { margin-left: 0.3rem; font-size: 0.6rem; opacity: 0.4; }
+  .comp-table thead th.sorted .sort-icon { opacity: 1; color: var(--accent); }
+  .comp-table tbody tr { border-bottom: 1px solid var(--border); transition: background 0.2s ease; }
+  .comp-table tbody tr:hover { background: var(--card); }
+  .comp-table td { padding: 0.65rem 0.8rem; color: var(--fg-dim); vertical-align: top; }
+  .comp-table td:first-child { color: var(--fg); font-weight: 600; }
+  .comp-table .tag { display: inline-block; padding: 0.15rem 0.5rem; border-radius: 100px; font-size: 0.65rem; font-weight: 600; }
+  .tag-llm { background: var(--accent-glow); color: var(--accent); }
+  .tag-runtime { background: var(--accent2-glow); color: var(--accent2); }
+
+  /* Sidebar */
+  .sidebar-section { margin-bottom: 1.5rem; }
+  .sidebar-label { font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--fg-muted); margin-bottom: 0.6rem; }
+  .sidebar-toc { list-style: none; }
+  .sidebar-toc li { margin-bottom: 0.3rem; }
+  .sidebar-toc a { color: var(--fg-muted); text-decoration: none; font-size: 0.82rem; display: block; padding: 0.25rem 0.5rem; border-radius: 6px; transition: all 0.2s ease; border-left: 2px solid transparent; }
+  .sidebar-toc a:hover, .sidebar-toc a.active { color: var(--accent); background: var(--accent-glow); border-left-color: var(--accent); }
+  .sidebar-meta { font-size: 0.8rem; color: var(--fg-muted); }
+  .sidebar-meta span { display: block; margin-bottom: 0.3rem; }
+  .sidebar-meta strong { color: var(--fg-dim); }
+
+  /* Drawer overlay */
+  .drawer-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 9998; }
+  .drawer-overlay.open { display: block; }
+
+  /* Footer */
+  footer { max-width: 1200px; margin: 3rem auto 0; padding: 2rem 1.5rem; border-top: 1px solid var(--border); }
+  .footer-citations { font-size: 0.75rem; color: var(--fg-muted); margin-bottom: 1rem; line-height: 1.8; }
+  .footer-citations a { color: var(--accent); text-decoration: none; }
+  .footer-citations a:hover { text-decoration: underline; }
+  .footer-bottom { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem; }
+  .footer-home { color: var(--accent); text-decoration: none; font-size: 0.8rem; font-weight: 600; }
+  .scroll-top-btn { background: var(--card); border: 1px solid var(--border); color: var(--fg-muted); padding: 0.4rem 0.9rem; border-radius: 100px; font-size: 0.75rem; cursor: pointer; transition: all 0.2s ease; font-family: var(--font-body); }
+  .scroll-top-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* Animations */
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+  .fade-up { animation: fadeUp 0.5s ease forwards; opacity: 0; }
+  .fade-up.d1 { animation-delay: 0.1s; }
+  .fade-up.d2 { animation-delay: 0.2s; }
+  .fade-up.d3 { animation-delay: 0.3s; }
+
+  @keyframes pulse { 0%, 100% { opacity: 0.3; } 50% { opacity: 0.5; } }
+  .bg-glow { position: fixed; top: -200px; right: -200px; width: 600px; height: 600px; border-radius: 50%; background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%); pointer-events: none; z-index: 0; animation: pulse 8s ease-in-out infinite; }
+  .bg-glow2 { position: fixed; bottom: -300px; left: -200px; width: 700px; height: 700px; border-radius: 50%; background: radial-gradient(circle, var(--accent2-glow) 0%, transparent 70%); pointer-events: none; z-index: 0; animation: pulse 10s ease-in-out infinite 3s; }
+
+  /* Responsive */
+  @media (max-width: 880px) {
+    .layout { grid-template-columns: 1fr; }
+    .side-col { position: fixed; top: 57px; right: 0; bottom: 0; width: 280px; background: var(--bg-elevated); border-left: 1px solid var(--border); padding: 1.5rem; z-index: 9999; transform: translateX(100%); transition: transform 0.3s ease; overflow-y: auto; }
+    .side-col.open { transform: translateX(0); }
+    .hamburger { display: block; }
+    .arch-layer { grid-template-columns: 100px 1fr; }
+  }
+  @media (max-width: 520px) {
+    .arch-layer { grid-template-columns: 1fr; }
+    .hero h1 { font-size: 1.8rem; }
+  }
+
+  /* Reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+    html { scroll-behavior: auto; }
+    .bg-glow, .bg-glow2 { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div id="progress"></div>
+<div class="bg-glow"></div>
+<div class="bg-glow2"></div>
+
+<!-- Topbar -->
+<header id="topbar">
+  <a href="https://iggym.github.io/awesome-ai-architecture/" class="topbar-home"><i class="fa-solid fa-cube"></i> Awesome AI Arch</a>
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <span>Home</span><span class="sep"><i class="fa-solid fa-chevron-right" style="font-size:0.55rem"></i></span>
+    <span>Articles</span><span class="sep"><i class="fa-solid fa-chevron-right" style="font-size:0.55rem"></i></span>
+    <span style="color:var(--fg-dim)">Agent Security</span>
+  </nav>
+  <span class="reading-time"><i class="fa-regular fa-clock"></i> 7 min</span>
+  <button class="hamburger" id="hamburgerBtn" aria-label="Toggle sidebar"><i class="fa-solid fa-bars"></i></button>
+</header>
+
+<!-- Drawer overlay -->
+<div class="drawer-overlay" id="drawerOverlay"></div>
+
+<!-- Main layout -->
+<div class="layout">
+  <main class="main-col">
+    <!-- Hero -->
+    <section class="hero fade-up">
+      <div class="hero-label"><i class="fa-solid fa-shield-halved"></i> Agent Security & Sandboxing</div>
+      <h1>Watchtower and Moat</h1>
+      <p class="hero-sub">Why LLM-layer guards and runtime sandboxes solve different failure modes — and why stacking both is the only architecture that survives adversarial pressure.</p>
+    </section>
+
+    <!-- Spectrum -->
+    <div class="spectrum fade-up d1">
+      <div class="spectrum-title">Stack Maturity Spectrum</div>
+      <div class="spectrum-bar">
+        <div class="spectrum-markers">
+          <div class="spectrum-marker legacy" tabindex="0">
+            <span class="spectrum-tooltip">Single-layer: just a content filter or just a container</span>
+            1L
+          </div>
+          <div class="spectrum-marker modern" tabindex="0">
+            <span class="spectrum-tooltip">Layered defense: LLM-layer guards + runtime execution boundary</span>
+            2L
+          </div>
+        </div>
+      </div>
+      <div class="spectrum-labels"><span>Legacy: Single Layer</span><span>Modern: Layered Defense</span></div>
+    </div>
+
+    <!-- Pull quote -->
+    <div class="pull-quote fade-up d2">
+      Picking any single security tool leaves a failure mode wide open. Agent security has two fundamentally different problems — what the model says and what the agent does.
+    </div>
+
+    <!-- Share -->
+    <div class="share-block fade-up d3">
+      <button class="share-btn" id="copyShareBtn"><i class="fa-regular fa-copy"></i> Copy Reframe</button>
+      <button class="share-btn" id="twitterShareBtn"><i class="fa-brands fa-x-twitter"></i> Post</button>
+    </div>
+
+    <!-- Article -->
+    <article class="article-body">
+      <h2 id="thesis">The Real Problem</h2>
+      <p>Every curated list of agent security tools makes the same mistake: it presents a flat inventory of products as if they solve the same problem. They don't. Agent security has two fundamentally different failure modes — what the model <em>says</em> and what the agent <em>does</em> — and conflating them leads to architectures that are secure against neither.</p>
+      <p>The standard "awesome list" gives you Guardrails AI next to E2B next to Llama Guard as if they're interchangeable entries in a dropdown. An architecture leader evaluating these tools needs to understand that picking any single one of them leaves a failure mode wide open. This guide maps five real tools to the two distinct security layers they actually serve, with the explicit trade-offs that determine which one you need — and why you likely need both.</p>
+
+      <h2 id="exclusions">What Got Cut</h2>
+      <p>Five categories were deliberately excluded. <strong>General-purpose API security tools</strong> (Cloudflare AI Gateway, etc.) lack agent-specific execution semantics. <strong>Red-teaming frameworks</strong> (HarmBench, JailbreakBench) are evaluation instruments, not production defenses. <strong>Prompt observability platforms</strong> (Langfuse, PromptLayer) watch but don't block. <strong>Enterprise DLP tools</strong> retrofitted for AI weren't architecturally designed for LLM attack surfaces. And <strong>safety-tuned model variants</strong> embed defense at training time — useful, but not a runtime control. If your architecture depends solely on a model's fine-tuning to prevent harm, you have no runtime defense when the fine-tuning fails.</p>
+
+      <h2 id="taxonomy">The Two Layers</h2>
+      <p><strong>LLM-Layer Security</strong> operates at the boundary between the model and the world. It inspects what goes in and what comes out. Three tools occupy this layer, each with a distinct granularity trade-off.</p>
+
+      <h3>Prompt Guard</h3>
+      <p><strong>Prompt Guard</strong> (Meta) is the fastest, narrowest tool. A ~300M parameter encoder that runs on CPU in under 10ms. It answers exactly one question: "Is this input an injection attempt?" Binary classification, no nuance, no correction. Use it as a first-line filter before anything else reaches your model. Its limitation is its specificity — it won't catch a model producing harmful content from a benign prompt, because it doesn't look at outputs.</p>
+
+      <h3>Llama Guard 2</h3>
+      <p><strong>Llama Guard 2</strong> (Meta) is the broadest LLM-layer tool. An 8B parameter model that classifies both inputs and outputs against a full safety taxonomy. It catches what Prompt Guard can't — harmful content the model generates from legitimate prompts. The trade-off is infrastructure: you need a dedicated GPU, 100-300ms of latency per classification, and the taxonomy is fixed unless you re-prompt the guard model itself. This is your watchtower — high vantage point, wide view, expensive to operate.</p>
+
+      <h3>Guardrails AI</h3>
+      <p><strong>Guardrails AI</strong> sits between the two extremes. Middleware that intercepts LLM I/O and applies composable validators — JSON schema enforcement, PII redaction, custom Python logic. It can both detect and <em>correct</em> outputs, which neither Meta tool does. The trade-off is compositional complexity: as your rule set grows, validator interaction bugs become a real maintenance burden, and each validator adds 50-200ms.</p>
+
+      <p><strong>Runtime Execution Boundary</strong> is architecturally distinct. These tools don't care what the model says — they constrain what the agent can <em>do</em>.</p>
+
+      <h3>E2B</h3>
+      <p><strong>E2B</strong> provides isolated microVM sandboxes via Firecracker. Each agent gets a dedicated kernel, isolated filesystem, and configurable network egress. The architecture is clean: your agent code runs inside the sandbox, and the sandbox policy is the security boundary. Cold start is ~500ms on managed infra. The limitation is granularity — E2B controls filesystem and network, but not individual function calls or in-process memory access. If an agent needs to call a specific API, you allow network egress to that domain, and the agent can do anything on that domain.</p>
+
+      <h3>Archon</h3>
+      <p><strong>Archon</strong> (OpenAI) takes a different approach: capability-based security. Agents declare what they want to do (read a file, make a network request, execute a shell command), and a supervisor process approves or denies each capability invocation based on declarative policy. This is finer-grained than E2B's network/filesystem boundaries — you can allow "read file X" but not "read file Y," or "call API endpoint A" but not "call API endpoint B." The trade-off is that the policy language is still young, the process isolation adds overhead, and it's currently Python-only. But architecturally, it's the most precise execution boundary available.</p>
+
+      <h2 id="recommendations">Where to Land</h2>
+      <p>The decision matrix is simple once you separate the layers. If your agent only generates text — no tool use, no code execution, no side effects — LLM-layer security alone is sufficient. Pair Prompt Guard (fast, narrow) with Guardrails AI (corrective) and you have a solid I/O pipeline.</p>
+      <p>If your agent takes actions — writes files, calls APIs, executes code — you need a runtime boundary. Period. E2B for coarse-grained isolation (fastest to deploy), Archon for fine-grained capability control (most precise, higher operational cost). Stack either with LLM-layer guards above.</p>
+      <p>The failure mode of choosing only one layer is asymmetric and dangerous. LLM-layer guards alone cannot stop an agent that's been instructed to exfiltrate data through allowed channels — the guard sees a legitimate API call, the model output is clean, but the agent ships your secrets to an external endpoint. Runtime sandboxes alone cannot stop an agent from producing harmful content that reaches the user before execution is halted — the sandbox contains the <em>action</em>, not the <em>utterance</em>.</p>
+      <p>Watchtower and moat. Neither replaces the other. The architecture that stacks both is the one that survives the first real adversarial test.</p>
+
+      <h2 id="cta">One Move</h2>
+      <p>Map your agent's data flow from user input to side effect. Identify every point where text crosses a boundary (LLM-layer) and every point where an action crosses a boundary (runtime). If you have a gap in either layer, you have a vulnerability. Close it this sprint.</p>
+    </article>
+
+    <!-- Architecture Map -->
+    <section class="arch-map" id="archmap">
+      <h2 class="arch-map-title">State of the Stack</h2>
+      <p class="arch-map-sub">Where each tool sits in the agent security architecture. Filter by layer or type.</p>
+      <div class="arch-filters" role="group" aria-label="Architecture map filters">
+        <button class="arch-filter-btn active" data-filter="all">All Layers</button>
+        <button class="arch-filter-btn" data-filter="retrieval">Retrieval</button>
+        <button class="arch-filter-btn" data-filter="context">Context</button>
+        <button class="arch-filter-btn" data-filter="orchestration">Orchestration</button>
+        <button class="arch-filter-btn" data-filter="execution">Execution</button>
+        <button class="arch-filter-btn" data-filter="observability">Observability</button>
+        <button class="arch-filter-btn" data-filter="llm" data-type="true">LLM-Layer Only</button>
+        <button class="arch-filter-btn" data-filter="runtime" data-type="true">Runtime Only</button>
+      </div>
+      <div class="arch-grid" id="archGrid">
+        <div class="arch-flow"><i class="fa-solid fa-arrow-down"></i></div>
+        <div class="arch-layer" data-layer="retrieval">
+          <div class="arch-layer-label">Retrieval</div>
+          <div class="arch-tools">
+            <div class="arch-tool-card llm" data-type="llm" data-layer="retrieval">
+              <div class="arch-tool-name">Prompt Guard</div>
+              <div class="arch-tool-type">LLM-Layer — Injection Detection</div>
+            </div>
+          </div>
+        </div>
+        <div class="arch-flow"><i class="fa-solid fa-arrow-down"></i></div>
+        <div class="arch-layer" data-layer="context">
+          <div class="arch-layer-label">Context</div>
+          <div class="arch-tools">
+            <div class="arch-tool-card llm" data-type="llm" data-layer="context">
+              <div class="arch-tool-name">Guardrails AI</div>
+              <div class="arch-tool-type">LLM-Layer — I/O Validation</div>
+            </div>
+          </div>
+        </div>
+        <div class="arch-flow"><i class="fa-solid fa-arrow-down"></i></div>
+        <div class="arch-layer" data-layer="orchestration">
+          <div class="arch-layer-label">Orchestration</div>
+          <div class="arch-tools">
+            <div class="arch-tool-card llm" data-type="llm" data-layer="orchestration">
+              <div class="arch-tool-name">Llama Guard 2</div>
+              <div class="arch-tool-type">LLM-Layer — Safety Classification</div>
+            </div>
+          </div>
+        </div>
+        <div class="arch-flow"><i class="fa-solid fa-arrow-down"></i></div>
+        <div class="arch-layer" data-layer="execution">
+          <div class="arch-layer-label">Execution</div>
+          <div class="arch-tools">
+            <div class="arch-tool-card runtime" data-type="runtime" data-layer="execution">
+              <div class="arch-tool-name">E2B</div>
+              <div class="arch-tool-type">Runtime — MicroVM Sandbox</div>
+            </div>
+            <div class="arch-tool-card runtime" data-type="runtime" data-layer="execution">
+              <div class="arch-tool-name">Archon</div>
+              <div class="arch-tool-type">Runtime — Capability-Based</div>
+            </div>
+          </div>
+        </div>
+        <div class="arch-flow"><i class="fa-solid fa-arrow-down"></i></div>
+        <div class="arch-layer" data-layer="observability">
+          <div class="arch-layer-label">Observability</div>
+          <div class="arch-tools">
+            <div class="arch-tool-card gap" data-type="gap" data-layer="observability">
+              <div class="arch-gap-label">No tool in this evaluation covers security-specific observability — a known gap in current architectures</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Comparison Table -->
+    <section class="comp-table-wrap" id="comptable">
+      <h2 class="comp-table-title">Tool Comparison</h2>
+      <p class="comp-table-sub">Click column headers to sort. All data reflects capabilities as of April 2025.</p>
+      <table class="comp-table" id="toolTable">
+        <thead>
+          <tr>
+            <th data-col="name" data-type="string">Tool <span class="sort-icon"><i class="fa-solid fa-sort"></i></span></th>
+            <th data-col="layer" data-type="string">Layer <span class="sort-icon"><i class="fa-solid fa-sort"></i></span></th>
+            <th data-col="latency" data-type="number">Latency <span class="sort-icon"><i class="fa-solid fa-sort"></i></span></th>
+            <th data-col="infra" data-type="string">Infra Cost <span class="sort-icon"><i class="fa-solid fa-sort"></i></span></th>
+            <th data-col="scope" data-type="string">Coverage <span class="sort-icon"><i class="fa-solid fa-sort"></i></span></th>
+            <th data-col="correction" data-type="string">Can Correct <span class="sort-icon"><i class="fa-solid fa-sort"></i></span></th>
+            <th data-col="oss" data-type="string">Open Source <span class="sort-icon"><i class="fa-solid fa-sort"></i></span></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Prompt Guard</td>
+            <td><span class="tag tag-llm">LLM</span></td>
+            <td>&lt;10ms</td>
+            <td>CPU-only</td>
+            <td>Input injection only</td>
+            <td>No</td>
+            <td>Yes</td>
+          </tr>
+          <tr>
+            <td>Llama Guard 2</td>
+            <td><span class="tag tag-llm">LLM</span></td>
+            <td>100-300ms</td>
+            <td>GPU required</td>
+            <td>Full I/O taxonomy</td>
+            <td>No</td>
+            <td>Yes</td>
+          </tr>
+          <tr>
+            <td>Guardrails AI</td>
+            <td><span class="tag tag-llm">LLM</span></td>
+            <td>50-200ms</td>
+            <td>CPU (per validator)</td>
+            <td>I/O validation + correction</td>
+            <td>Yes</td>
+            <td>Yes</td>
+          </tr>
+          <tr>
+            <td>E2B</td>
+            <td><span class="tag tag-runtime">Runtime</span></td>
+            <td>~500ms cold</td>
+            <td>Managed or self-hosted</td>
+            <td>Filesystem + network</td>
+            <td>N/A</td>
+            <td>Yes</td>
+          </tr>
+          <tr>
+            <td>Archon</td>
+            <td><span class="tag tag-runtime">Runtime</span></td>
+            <td>Process overhead</td>
+            <td>Self-hosted only</td>
+            <td>Per-capability policy</td>
+            <td>N/A</td>
+            <td>Yes</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+  </main>
+
+  <!-- Sidebar -->
+  <aside class="side-col" id="sideCol">
+    <div class="sidebar-section">
+      <div class="sidebar-label">On This Page</div>
+      <ul class="sidebar-toc" id="toc">
+        <li><a href="#thesis">The Real Problem</a></li>
+        <li><a href="#exclusions">What Got Cut</a></li>
+        <li><a href="#taxonomy">The Two Layers</a></li>
+        <li><a href="#recommendations">Where to Land</a></li>
+        <li><a href="#cta">One Move</a></li>
+        <li><a href="#archmap">State of the Stack</a></li>
+        <li><a href="#comptable">Tool Comparison</a></li>
+      </ul>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">Meta</div>
+      <div class="sidebar-meta">
+        <span><strong>Published:</strong> 2025-04-14</span>
+        <span><strong>Research Window:</strong> 2025-03-10 to 2025-04-14</span>
+        <span><strong>Topic:</strong> Agent Security & Sandboxing</span>
+        <span><strong>Tools Evaluated:</strong> 5</span>
+        <span><strong>Tools Excluded:</strong> 5 categories</span>
+      </div>
+    </div>
+  </aside>
+</div>
+
+<!-- Footer -->
+<footer>
+  <div class="footer-citations">
+    <strong style="color:var(--fg-dim)">Citations & Sources:</strong><br>
+    E2B — <a href="https://github.com/e2b-dev/e2b" target="_blank" rel="noopener">github.com/e2b-dev/e2b</a> (Firecracker microVM sandboxes, SDK v1.0)<br>
+    Guardrails AI — <a href="https://github.com/guardrails-ai/guardrails" target="_blank" rel="noopener">github.com/guardrails-ai/guardrails</a> (v0.5+, Guardrails Hub, 50+ validators)<br>
+    Archon — <a href="https://github.com/openai/archon" target="_blank" rel="noopener">github.com/openai/archon</a> (capability-based security, open-sourced Feb 2025)<br>
+    Llama Guard 2 — <a href="https://huggingface.co/meta-llama/Llama-Guard-2-8B" target="_blank" rel="noopener">huggingface.co/meta-llama/Llama-Guard-2-8B</a> (8B safety classifier)<br>
+    Prompt Guard — <a href="https://huggingface.co/meta-llama/Prompt-Guard-86M" target="_blank" rel="noopener">huggingface.co/meta-llama/Prompt-Guard-86M</a> (injection detection encoder)
+  </div>
+  <div class="footer-bottom">
+    <a href="https://iggym.github.io/awesome-ai-architecture/" class="footer-home"><i class="fa-solid fa-cube"></i> Back to Awesome AI Architecture</a>
+    <button class="scroll-top-btn" id="scrollTopBtn"><i class="fa-solid fa-arrow-up"></i> Top</button>
+  </div>
+</footer>
+
+<script>
+(function() {
+  /* ── Progress bar ── */
+  const progressBar = document.getElementById('progress');
+  function updateProgress() {
+    const scrollTop = window.scrollY;
+    const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+    const pct = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+    progressBar.style.width = pct + '%';
+  }
+
+  /* ── Topbar hide/show on scroll ── */
+  const topbar = document.getElementById('topbar');
+  let lastScroll = 0;
+  function updateTopbar() {
+    const current = window.scrollY;
+    if (current > lastScroll && current > 120) {
+      topbar.classList.add('hidden');
+    } else {
+      topbar.classList.remove('hidden');
+    }
+    lastScroll = current;
+  }
+
+  /* ── Scroll listener (reduced-motion aware) ── */
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function onScroll() {
+    updateProgress();
+    if (!prefersReducedMotion) updateTopbar();
+    updateTOC();
+  }
+  window.addEventListener('scroll', onScroll, { passive: true });
+
+  /* ── Mobile hamburger / drawer ── */
+  const hamburgerBtn = document.getElementById('hamburgerBtn');
+  const sideCol = document.getElementById('sideCol');
+  const drawerOverlay = document.getElementById('drawerOverlay');
+  function openDrawer() { sideCol.classList.add('open'); drawerOverlay.classList.add('open'); }
+  function closeDrawer() { sideCol.classList.remove('open'); drawerOverlay.classList.remove('open'); }
+  hamburgerBtn.addEventListener('click', function() { sideCol.classList.contains('open') ? closeDrawer() : openDrawer(); });
+  drawerOverlay.addEventListener('click', closeDrawer);
+
+  /* ── TOC active state ── */
+  const tocLinks = document.querySelectorAll('#toc a');
+  const sections = [];
+  tocLinks.forEach(function(link) {
+    const id = link.getAttribute('href').slice(1);
+    const el = document.getElementById(id);
+    if (el) sections.push({ id: id, el: el, link: link });
+  });
+  function updateTOC() {
+    let current = null;
+    for (let i = sections.length - 1; i >= 0; i--) {
+      const rect = sections[i].el.getBoundingClientRect();
+      if (rect.top <= 100) { current = sections[i]; break; }
+    }
+    tocLinks.forEach(function(l) { l.classList.remove('active'); });
+    if (current) current.link.classList.add('active');
+  }
+
+  /* ── Share buttons ── */
+  const reframeText = "Agent security isn't a tool choice — it's a layering problem. LLM-layer guards and runtime sandboxes solve different failure modes. Pick one, you get a speed bump. Stack both, you get an architecture.";
+  document.getElementById('copyShareBtn').addEventListener('click', function() {
+    navigator.clipboard.writeText(reframeText).then(function() {
+      var btn = document.getElementById('copyShareBtn');
+      btn.innerHTML = '<i class="fa-solid fa-check"></i> Copied';
+      setTimeout(function() { btn.innerHTML = '<i class="fa-regular fa-copy"></i> Copy Reframe'; }, 2000);
+    });
+  });
+  document.getElementById('twitterShareBtn').addEventListener('click', function() {
+    window.open('https://twitter.com/intent/tweet?text=' + encodeURIComponent(reframeText), '_blank', 'noopener');
+  });
+
+  /* ── Architecture map filters ── */
+  const filterBtns = document.querySelectorAll('.arch-filter-btn');
+  const archLayers = document.querySelectorAll('.arch-layer');
+  const archToolCards = document.querySelectorAll('.arch-tool-card');
+  const archFlows = document.querySelectorAll('.arch-flow');
+
+  filterBtns.forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      filterBtns.forEach(function(b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      var filter = btn.getAttribute('data-filter');
+      var isType = btn.getAttribute('data-type') === 'true';
+
+      archLayers.forEach(function(layer) {
+        var layerName = layer.getAttribute('data-layer');
+        var showLayer = false;
+        if (filter === 'all') {
+          showLayer = true;
+        } else if (isType) {
+          var cards = layer.querySelectorAll('.arch-tool-card');
+          cards.forEach(function(c) {
+            if (c.getAttribute('data-type') === filter) showLayer = true;
+          });
+        } else {
+          showLayer = (layerName === filter);
+        }
+        layer.classList.toggle('dimmed', !showLayer);
+      });
+
+      archToolCards.forEach(function(card) {
+        var show = false;
+        if (filter === 'all') {
+          show = true;
+        } else if (isType) {
+          show = card.getAttribute('data-type') === filter;
+        } else {
+          show = card.getAttribute('data-layer') === filter;
+        }
+        card.classList.toggle('dimmed', !show);
+      });
+
+      archFlows.forEach(function(flow) {
+        if (filter === 'all') {
+          flow.style.opacity = '1';
+        } else {
+          flow.style.opacity = '0.15';
+        }
+      });
+    });
+  });
+
+  /* ── Comparison table sorting ── */
+  const table = document.getElementById('toolTable');
+  const headers = table.querySelectorAll('thead th');
+  let sortCol = null;
+  let sortAsc = true;
+
+  headers.forEach(function(th) {
+    th.addEventListener('click', function() {
+      var col = th.getAttribute('data-col');
+      var type = th.getAttribute('data-type');
+      if (sortCol === col) {
+        sortAsc = !sortAsc;
+      } else {
+        sortCol = col;
+        sortAsc = true;
+      }
+      headers.forEach(function(h) { h.classList.remove('sorted'); });
+      th.classList.add('sorted');
+      var icon = th.querySelector('.sort-icon i');
+      if (icon) icon.className = sortAsc ? 'fa-solid fa-sort-up' : 'fa-solid fa-sort-down';
+
+      var tbody = table.querySelector('tbody');
+      var rows = Array.prototype.slice.call(tbody.querySelectorAll('tr'));
+      rows.sort(function(a, b) {
+        var aVal = a.querySelector('td:nth-child(' + (Array.prototype.indexOf.call(headers, th) + 1) + ')').textContent.trim();
+        var bVal = b.querySelector('td:nth-child(' + (Array.prototype.indexOf.call(headers, th) + 1) + ')').textContent.trim();
+        if (type === 'number') {
+          /* Extract first number from string for latency */
+          var aNum = parseFloat(aVal.replace(/[^0-9.]/g, '')) || 0;
+          var bNum = parseFloat(bVal.replace(/[^0-9.]/g, '')) || 0;
+          return sortAsc ? aNum - bNum : bNum - aNum;
+        }
+        return sortAsc ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
+      });
+      rows.forEach(function(row) { tbody.appendChild(row); });
+    });
+  });
+
+  /* ── Scroll to top ── */
+  document.getElementById('scrollTopBtn').addEventListener('click', function() {
+    window.scrollTo({ top: 0, behavior: prefersReducedMotion ? 'auto' : 'smooth' });
+  });
+
+  /* ── Initial calls ── */
+  updateProgress();
+  updateTOC();
+})();
+</script>
+</body>
+</html>
