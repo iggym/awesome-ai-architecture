@@ -107,6 +107,44 @@
       "reading_time_minutes": 7,
       "pinned": false,
       "research_window": "2026-02-05 to 2026-03-12"
+    },
+    {
+      "id": "0003",
+      "slug": "llm-evaluation-testing-tools-mapped-by-failure-mode",
+      "title": "LLM Evaluation & Testing Tools, Mapped by Failure Mode",
+      "hook": "Most \"LLM evaluation\" tools are observability dashboards wearing a testing costume — this list keeps only the ones that can fail a build.",
+      "path": "articles/llm-evaluation-testing-tools-mapped-by-failure-mode.html",
+      "date": "2024-11-08",
+      "status": "published",
+      "format": "reference",
+      "tags": [
+        "evaluation",
+        "llm-testing",
+        "regression-testing",
+        "rag-eval",
+        "agent-eval"
+      ],
+      "reading_time_minutes": 6,
+      "pinned": false,
+      "research_window": "2024-10-04 to 2024-11-08"
+    },
+    {
+      "id": "0025",
+      "slug": "cost-governance-tooling-ai-mapped-by-failure-mode",
+      "title": "Cost-Governance Tooling for AI Systems, Mapped by Failure Mode",
+      "hook": "Most AI cost tooling monitors spend after it's gone — the tools that matter let you set a ceiling before the bill arrives.",
+      "path": "articles/cost-governance-tooling-ai-mapped-by-failure-mode.html",
+      "date": "2025-03-18",
+      "status": "published",
+      "format": "reference",
+      "tags": [
+        "cost-governance",
+        "ai-infrastructure",
+        "failure-mode-mapping"
+      ],
+      "reading_time_minutes": 5,
+      "pinned": false,
+      "research_window": "2025-02-11 to 2025-03-18"
     }
   ]
 }
