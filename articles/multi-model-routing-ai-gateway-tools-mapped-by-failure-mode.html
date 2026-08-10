@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-Model Routing & AI Gateway Tools, Mapped by Failure Mode</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0d1117;
+            --card-bg: #161b22;
+            --border: #30363d;
+            --text: #c9d1d9;
+            --text-muted: #8b949e;
+            --accent: #58a6ff;
+            --accent-hover: #79b8ff;
+            --tag-bg: #1f6feb33;
+            --tag-text: #79c0ff;
+            --callout-bg: #1c1e26;
+            --callout-border: #f78166;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+            padding-top: 70px;
+        }
+
+        #topbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 70px;
+            background-color: #010409;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            padding: 0 24px;
+            z-index: 1000;
+            justify-content: space-between;
+        }
+
+        .home-link {
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 700;
+            color: var(--accent);
+            text-decoration: none;
+            font-size: 1.2rem;
+            white-space: nowrap;
+        }
+
+        .search-container {
+            flex-grow: 1;
+            max-width: 500px;
+            margin: 0 24px;
+        }
+
+        #search-input {
+            width: 100%;
+            padding: 10px 16px;
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.95rem;
+            transition: border-color 0.2s;
+        }
+
+        #search-input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .hamburger {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--text);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        main {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 24px;
+        }
+
+        h1 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 2.5rem;
+            margin-bottom: 24px;
+            color: #f0f6fc;
+        }
+
+        .callout {
+            background-color: var(--callout-bg);
+            border-left: 4px solid var(--callout-border);
+            padding: 24px;
+            margin-bottom: 40px;
+            border-radius: 0 6px 6px 0;
+        }
+
+        .callout h2 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.1rem;
+            color: var(--callout-border);
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .callout p {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+        }
+
+        .social-share {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 40px;
+        }
+
+        .social-share h3 {
+            font-family: 'Space Grotesk', sans-serif;
+            margin-bottom: 12px;
+            font-size: 1.1rem;
+        }
+
+        .share-text {
+            background: #0d1117;
+            border: 1px solid var(--border);
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 16px;
+            font-style: italic;
+            color: var(--text-muted);
+        }
+
+        .share-buttons {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            background: #21262d;
+            color: var(--text);
+            border: 1px solid var(--border);
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-family: 'Inter', sans-serif;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            transition: background 0.2s, border-color 0.2s;
+        }
+
+        .btn:hover {
+            background: #30363d;
+            border-color: var(--accent);
+        }
+
+        .filter-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 32px;
+        }
+
+        .chip {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            transition: all 0.2s;
+        }
+
+        .chip.active, .chip:hover {
+            background: var(--tag-bg);
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 24px;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 24px;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+            border-color: var(--accent);
+        }
+
+        .card h3 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.25rem;
+            margin-bottom: 12px;
+            color: #f0f6fc;
+        }
+
+        .card p {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-bottom: 16px;
+            flex-grow: 1;
+        }
+
+        .tag {
+            display: inline-block;
+            background: var(--tag-bg);
+            color: var(--tag-text);
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            align-self: flex-start;
+        }
+
+        .gap-section {
+            margin-top: 60px;
+            padding: 24px;
+            background: rgba(31, 110, 235, 0.05);
+            border-top: 1px solid var(--border);
+        }
+
+        footer {
+            margin-top: 80px;
+            padding: 40px 24px;
+            background: #010409;
+            border-top: 1px solid var(--border);
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .footer-content h3 {
+            font-family: 'Space Grotesk', sans-serif;
+            margin-bottom: 16px;
+            color: #f0f6fc;
+        }
+
+        .footer-content ul {
+            list-style: none;
+            margin-bottom: 24px;
+        }
+
+        .footer-content li {
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .footer-content a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        .footer-content a:hover {
+            text-decoration: underline;
+        }
+
+        .scroll-top {
+            display: block;
+            margin: 20px auto 0;
+            background: var(--card-bg);
+            color: var(--text);
+            border: 1px solid var(--border);
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        @media (max-width: 768px) {
+            .hamburger {
+                display: block;
+            }
+            .search-container {
+                display: none;
+                position: absolute;
+                top: 70px;
+                left: 0;
+                width: 100%;
+                background: #010409;
+                padding: 16px;
+                border-bottom: 1px solid var(--border);
+            }
+            .search-container.active {
+                display: block;
+            }
+            h1 {
+                font-size: 1.8rem;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                transition: none !important;
+                animation: none !important;
+            }
+            .card:hover {
+                transform: none;
+                box-shadow: none;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="topbar">
+        <a href="https://iggym.github.io/awesome-ai-architecture/" class="home-link">← Awesome AI Architecture</a>
+        <div class="search-container">
+            <input type="text" id="search-input" placeholder="Search tools by name or failure mode...">
+        </div>
+        <button class="hamburger" onclick="toggleSearch()">☰</button>
+    </div>
+
+    <main>
+        <h1>Multi-Model Routing & AI Gateway Tools, Mapped by Failure Mode</h1>
+
+        <div class="callout">
+            <h2>Curator's Exclusion Standard</h2>
+            <p>Relying on a single LLM provider is a recipe for unexpected downtime and rigid billing structures. This reference filters out thin API wrappers, abandoned open-source proxies, and closed-beta vaporware that dominate generic search results. If a tool does not actively solve a distinct operational failure mode—like schema divergence, rate-limit cascades, or uncontrolled cost spikes—it is excluded. We omit horizontal API management tools that simply retrofitted "AI" into their marketing copy without native token awareness. The focus is strictly on solutions with verifiable adoption that allow engineering teams to migrate away from single-provider setups safely.</p>
+        </div>
+
+        <div class="social-share">
+            <h3>Share this reference</h3>
+            <div class="share-text" id="share-text">Multi-model gateways aren't about accessing more models; they're about surviving the inevitable failures, schema drift, and cost spikes of the ones you already use.</div>
+            <div class="share-buttons">
+                <button class="btn" onclick="copyShare()">Copy Text & Link</button>
+                <a href="#" class="btn" id="twitter-share" target="_blank">Share on X</a>
+                <a href="#" class="btn" id="linkedin-share" target="_blank">Share on LinkedIn</a>
+            </div>
+        </div>
+
+        <div class="filter-chips" id="filter-chips">
+            <div class="chip active" data-filter="all">All</div>
+            <div class="chip" data-filter="cascading">Cascading API Failures</div>
+            <div class="chip" data-filter="schema">Schema Divergence</div>
+            <div class="chip" data-filter="cost">Cost & Rate-Limit Spikes</div>
+            <div class="chip" data-filter="overpaying">Overpaying on Easy Prompts</div>
+        </div>
+
+        <div class="grid" id="tool-grid">
+            <!-- Cards will be injected by JS -->
+        </div>
+
+        <div class="gap-section">
+            <h3>Closing the Gap</h3>
+            <p>The most glaring gap in this space as of March 2024 is deterministic, eval-driven routing. Most gateways route based on simple failover or token cost, ignoring whether a model actually succeeds at a specific task. Until routing layers natively integrate with evaluation frameworks to route based on task-specific success rates, gateway selection will remain a blunt instrument rather than a precision tool.</p>
+        </div>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <h3>Evidence Log & Citations</h3>
+            <ul>
+                <li><strong>Portkey:</strong> Verified via portkey.ai/docs (Search: "Portkey AI gateway multi-model routing")</li>
+                <li><strong>Helicone:</strong> Verified via helicone.ai (Search: "Helicone LLM observability proxy routing")</li>
+                <li><strong>LiteLLM:</strong> Verified via litellm.ai/docs (Search: "LiteLLM proxy OpenAI format routing")</li>
+                <li><strong>Vercel AI SDK:</strong> Verified via sdk.vercel.ai/docs (Search: "Vercel AI SDK multi-model routing")</li>
+                <li><strong>Cloudflare AI Gateway:</strong> Verified via developers.cloudflare.com (Search: "Cloudflare AI Gateway caching rate limiting")</li>
+                <li><strong>Kong AI Gateway:</strong> Verified via konghq.com (Search: "Kong AI Gateway enterprise LLM routing")</li>
+                <li><strong>OpenRouter:</strong> Verified via openrouter.ai (Search: "OpenRouter API LLM gateway pricing")</li>
+                <li><strong>Martian:</strong> Verified via withmartian.com (Search: "Martian AI model router performance")</li>
+            </ul>
+            <a href="https://iggym.github.io/awesome-ai-architecture/" class="home-link">← Back to Awesome AI Architecture</a>
+            <button class="scroll-top" onclick="scrollTop()">Back to Top</button>
+        </div>
+    </footer>
+
+    <script>
+        const tools = [
+            {
+                name: "Portkey",
+                fit: "Handles provider outages by automatically falling over to backup endpoints; fits teams needing high availability without writing custom retry logic.",
+                tag: "Cascading API Failures",
+                filter: "cascading"
+            },
+            {
+                name: "Helicone",
+                fit: "Mitigates silent rate-limit drops by proxying requests with immediate failover; ideal for teams prioritizing usage tracking alongside routing resilience.",
+                tag: "Cascading API Failures",
+                filter: "cascading"
+            },
+            {
+                name: "LiteLLM",
+                fit: "Normalizes divergent provider schemas into a single OpenAI-compatible endpoint; fits dev teams standardizing interaction with 100+ different models.",
+                tag: "Schema Divergence",
+                filter: "schema"
+            },
+            {
+                name: "Vercel AI SDK",
+                fit: "Resolves front-end state desync when swapping models mid-session; fits React/Next.js developers streaming text directly to the UI.",
+                tag: "Schema Divergence",
+                filter: "schema"
+            },
+            {
+                name: "Cloudflare AI Gateway",
+                fit: "Prevents budget drain from redundant token generation via aggressive edge caching; fits edge-first applications needing tight rate limits.",
+                tag: "Cost & Rate-Limit Spikes",
+                filter: "cost"
+            },
+            {
+                name: "Kong AI Gateway",
+                fit: "Stops uncontrolled API sprawl by governing access keys at the infrastructure level; fits platform teams embedding AI routing into existing API management.",
+                tag: "Cost & Rate-Limit Spikes",
+                filter: "cost"
+            },
+            {
+                name: "OpenRouter",
+                fit: "Solves the barrier of high upfront commitments by offering pay-as-you-go access to diverse models; fits solo devs wanting varied model access without multiple billing relationships.",
+                tag: "Overpaying on Easy Prompts",
+                filter: "overpaying"
+            },
+            {
+                name: "Martian",
+                fit: "Attacks budget burn on easy prompts by automatically routing to the cheapest model that meets a latency threshold; fits teams wanting automated cost-performance optimization.",
+                tag: "Overpaying on Easy Prompts",
+                filter: "overpaying"
+            }
+        ];
+
+        const grid = document.getElementById('tool-grid');
+        const searchInput = document.getElementById('search-input');
+        const chips = document.querySelectorAll('.chip');
+        let activeFilter = 'all';
+
+        function renderGrid() {
+            const searchTerm = searchInput.value.toLowerCase();
+            grid.innerHTML = '';
+
+            tools.forEach(tool => {
+                const matchesFilter = activeFilter === 'all' || tool.filter === activeFilter;
+                const matchesSearch = tool.name.toLowerCase().includes(searchTerm) || tool.fit.toLowerCase().includes(searchTerm);
+
+                if (matchesFilter && matchesSearch) {
+                    const card = document.createElement('div');
+                    card.className = 'card';
+                    card.innerHTML = `
+                        <h3>${tool.name}</h3>
+                        <p>${tool.fit}</p>
+                        <span class="tag">${tool.tag}</span>
+                    `;
+                    grid.appendChild(card);
+                }
+            });
+        }
+
+        chips.forEach(chip => {
+            chip.addEventListener('click', () => {
+                chips.forEach(c => c.classList.remove('active'));
+                chip.classList.add('active');
+                activeFilter = chip.dataset.filter;
+                renderGrid();
+            });
+        });
+
+        searchInput.addEventListener('input', renderGrid);
+
+        function toggleSearch() {
+            const searchContainer = document.querySelector('.search-container');
+            searchContainer.classList.toggle('active');
+        }
+
+        function updateShareLinks() {
+            const text = document.getElementById('share-text').innerText;
+            const url = window.location.href;
+            const encodedText = encodeURIComponent(text);
+            const encodedUrl = encodeURIComponent(url);
+
+            document.getElementById('twitter-share').href = `https://x.com/intent/post?text=${encodedText}&url=${encodedUrl}`;
+            document.getElementById('linkedin-share').href = `https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}`;
+        }
+
+        function copyShare() {
+            const text = document.getElementById('share-text').innerText;
+            const url = window.location.href;
+            const fullText = `${text} ${url}`;
+            
+            navigator.clipboard.writeText(fullText).then(() => {
+                const btn = event.target;
+                const originalText = btn.innerText;
+                btn.innerText = 'Copied!';
+                setTimeout(() => {
+                    btn.innerText = originalText;
+                }, 2000);
+            }).catch(err => {
+                console.error('Failed to copy: ', err);
+            });
+        }
+
+        function scrollTop() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Initial render
+        renderGrid();
+        updateShareLinks();
+    </script>
+</body>
+</html>
