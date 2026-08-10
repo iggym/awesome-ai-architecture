@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Multi-Model Routing & AI Gateway Tools, Mapped by Failure Mode — awesome-ai-architecture</title>
+<meta name="description" content="A curated reference of multi-model routing and AI gateway tools, organized by the failure modes they address rather than marketing categories.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f1115;
+    --surface: #181b22;
+    --surface-2: #20242d;
+    --border: #2a2f3a;
+    --text: #e6e8ec;
+    --text-dim: #9aa3b2;
+    --accent: #6ee7b7;
+    --accent-2: #7dd3fc;
+    --warn: #fbbf24;
+    --danger: #f87171;
+    --chip-bg: #262b36;
+    --chip-active: #6ee7b7;
+    --chip-active-text: #0f1115;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+
+  /* TOPBAR */
+  #topbar {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(15, 17, 21, 0.92);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 0.75rem 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  #topbar .home {
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.95rem;
+    white-space: nowrap;
+  }
+  #topbar .home:hover { text-decoration: underline; }
+  #search {
+    flex: 1;
+    max-width: 480px;
+    padding: 0.55rem 0.9rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: inherit;
+    font-size: 0.9rem;
+    outline: none;
+    transition: border-color 0.15s ease;
+  }
+  #search:focus { border-color: var(--accent); }
+  #search::placeholder { color: var(--text-dim); }
+  .hamburger {
+    display: none;
+    background: none;
+    border: none;
+    color: var(--text);
+    font-size: 1.4rem;
+    cursor: pointer;
+    padding: 0.25rem 0.5rem;
+  }
+  @media (max-width: 640px) {
+    .hamburger { display: block; }
+    #search { max-width: 100%; }
+    #topbar { flex-wrap: wrap; }
+  }
+
+  /* LAYOUT */
+  main {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 2.5rem 1.25rem 4rem;
+  }
+  h1 {
+    font-size: clamp(1.75rem, 3.5vw, 2.4rem);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-bottom: 0.5rem;
+  }
+  .meta {
+    color: var(--text-dim);
+    font-size: 0.9rem;
+    margin-bottom: 2rem;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .meta span { margin-right: 1rem; }
+  .hook {
+    font-size: 1.15rem;
+    font-weight: 500;
+    padding: 1rem 1.25rem;
+    border-left: 3px solid var(--accent);
+    background: var(--surface);
+    border-radius: 0 8px 8px 0;
+    margin-bottom: 2rem;
+    color: var(--text);
+  }
+
+  /* EXCLUSION PREAMBLE */
+  .preamble {
+    background: linear-gradient(135deg, rgba(110, 231, 183, 0.06), rgba(125, 211, 252, 0.04));
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--warn);
+    padding: 1.5rem 1.75rem;
+    border-radius: 8px;
+    margin-bottom: 3rem;
+  }
+  .preamble .label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--warn);
+    margin-bottom: 0.75rem;
+    font-weight: 600;
+  }
+  .preamble p {
+    color: var(--text);
+    font-size: 0.98rem;
+    line-height: 1.7;
+  }
+
+  /* FILTER CHIPS */
+  .filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 2rem;
+  }
+  .chip {
+    background: var(--chip-bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 0.4rem 0.85rem;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.15s ease;
+    user-select: none;
+  }
+  .chip:hover { border-color: var(--accent); }
+  .chip.active {
+    background: var(--chip-active);
+    color: var(--chip-active-text);
+    border-color: var(--chip-active);
+    font-weight: 600;
+  }
+
+  /* CARD GRID */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1rem;
+  }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.1rem 1.2rem;
+    transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+  .card:hover {
+    transform: translateY(-3px);
+    border-color: var(--accent);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+  }
+  .card .tool-name {
+    font-weight: 600;
+    font-size: 1.05rem;
+    color: var(--text);
+  }
+  .card .tool-desc {
+    color: var(--text-dim);
+    font-size: 0.88rem;
+    line-height: 1.55;
+    flex: 1;
+  }
+  .card .tag {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    background: var(--surface-2);
+    color: var(--accent-2);
+    padding: 0.2rem 0.55rem;
+    border-radius: 4px;
+    align-self: flex-start;
+    margin-top: 0.2rem;
+  }
+  .card.hidden {
+    display: none;
+  }
+  .no-results {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 3rem 1rem;
+    color: var(--text-dim);
+    font-style: italic;
+  }
+
+  /* SECTIONS */
+  .section-heading {
+    margin-top: 3rem;
+    margin-bottom: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border);
+  }
+  .section-heading h2 {
+    font-size: 1.35rem;
+    font-weight: 600;
+    color: var(--accent);
+    margin-bottom: 0.5rem;
+    letter-spacing: -0.01em;
+  }
+  .section-heading p {
+    color: var(--text-dim);
+    font-size: 0.95rem;
+    max-width: 720px;
+    line-height: 1.6;
+  }
+
+  /* SHARE BLOCK */
+  .share-block {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.5rem;
+    margin: 3rem 0;
+  }
+  .share-block h3 {
+    font-size: 1.05rem;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+    color: var(--accent);
+  }
+  .share-text {
+    background: var(--surface-2);
+    padding: 0.9rem 1rem;
+    border-radius: 6px;
+    font-size: 0.92rem;
+    line-height: 1.55;
+    margin-bottom: 1rem;
+    border-left: 3px solid var(--accent);
+    color: var(--text);
+  }
+  .share-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .share-btn {
+    background: var(--chip-bg);
+    color: var(--text);
+    border: 1px solid var(--border);
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-family: inherit;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    transition: all 0.15s ease;
+  }
+  .share-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  .share-btn.primary {
+    background: var(--accent);
+    color: var(--bg);
+    border-color: var(--accent);
+    font-weight: 600;
+  }
+  .share-btn.primary:hover { opacity: 0.9; }
+  .toast {
+    position: fixed;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--accent);
+    color: var(--bg);
+    padding: 0.6rem 1.2rem;
+    border-radius: 6px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    pointer-events: none;
+    z-index: 200;
+  }
+  .toast.show { opacity: 1; }
+
+  /* FOOTER */
+  footer {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 2rem 1.25rem 3rem;
+    border-top: 1px solid var(--border);
+    color: var(--text-dim);
+    font-size: 0.88rem;
+  }
+  footer h4 {
+    color: var(--text);
+    font-size: 1rem;
+    margin: 1.5rem 0 0.75rem;
+    font-weight: 600;
+  }
+  footer ul { list-style: none; padding: 0; }
+  footer li { padding: 0.25rem 0; line-height: 1.5; }
+  footer a { color: var(--accent-2); text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
+  .footer-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+  }
+  .back-to-top {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-size: 1.2rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    transition: border-color 0.15s ease;
+  }
+  .back-to-top:hover { border-color: var(--accent); }
+</style>
+</head>
+<body>
+
+<div id="topbar">
+  <a href="https://iggym.github.io/awesome-ai-architecture/" class="home">← awesome-ai-architecture</a>
+  <input id="search" type="search" placeholder="Search tools or failure modes…" aria-label="Search tools">
+  <button class="hamburger" aria-label="Menu" onclick="document.getElementById('search').focus()">☰</button>
+</div>
+
+<main id="top">
+  <h1>Multi-Model Routing & AI Gateway Tools, Mapped by Failure Mode</h1>
+  <div class="meta">
+    <span>Research window: 2026-02-05 → 2026-03-12</span>
+    <span>Format: reference</span>
+  </div>
+
+  <div class="hook">
+    AI gateways have split into two camps: zero-ops marketplaces for teams wanting unified model access, and self-hosted control planes for teams treating routing as infrastructure. The middle is empty.
+  </div>
+
+  <section class="preamble">
+    <div class="label">⚠ Exclusion Criteria</div>
+    <p>This list deliberately leaves things out, and that's the point. Hyperscaler platforms like AWS Bedrock and Azure API Management offer model access, but routing is incidental to their marketplace function — they belong on a different list. IDE-embedded routers (Cursor, Entelligence, Factory) are thin model-selection wrappers, not independent routing infrastructure, and evaluating them against full gateways is a category error. Observability-first tools that added routing as an afterthought (Helicone) are excluded because their routing layer has no meaningful differentiation from the tools they proxy. We also skip "AI firewall" products that gate but don't route. What remains is a deliberately narrow set: tools whose primary value proposition is deciding which model handles which request, and doing it reliably at production scale. If you came here looking for the broadest possible survey, this isn't it.</p>
+  </section>
+
+  <div class="filters" id="filters">
+    <button class="chip active" data-filter="all">All</button>
+    <button class="chip" data-filter="lock-in">Single-Provider Dependency</button>
+    <button class="chip" data-filter="spend">Uncontrolled Spend</button>
+    <button class="chip" data-filter="hybrid">Hybrid Deployment</button>
+    <button class="chip" data-filter="edge">Edge Security Gaps</button>
+  </div>
+
+  <!-- Section 1 -->
+  <div class="section-heading">
+    <h2>Single-Provider Dependency</h2>
+    <p>The moment your application logic talks directly to one provider's API, their rate limit becomes your outage and their deprecation becomes your migration project.</p>
+  </div>
+  <div class="grid">
+    <div class="card" data-filter="lock-in">
+      <div class="tool-name">OpenRouter</div>
+      <div class="tool-desc">Addresses provider lock-in for product teams shipping fast who need instant access to 400+ models with built-in auto-fallback through one key.</div>
+      <span class="tag">lock-in</span>
+    </div>
+    <div class="card" data-filter="lock-in">
+      <div class="tool-name">LiteLLM</div>
+      <div class="tool-desc">Addresses provider lock-in for infrastructure teams who want a self-hosted proxy supporting 100+ providers under a single OpenAI-compatible endpoint.</div>
+      <span class="tag">lock-in</span>
+    </div>
+    <div class="card" data-filter="lock-in">
+      <div class="tool-name">Bifrost</div>
+      <div class="tool-desc">Addresses throughput bottlenecks for performance-critical teams who want the fastest open-source Go-based gateway to absorb high-RPS agentic traffic.</div>
+      <span class="tag">lock-in</span>
+    </div>
+    <div class="card" data-filter="lock-in">
+      <div class="tool-name">Vercel AI Gateway</div>
+      <div class="tool-desc">Addresses onboarding friction for Next.js shops who want zero-config model access with no markup, at the cost of platform lock-in.</div>
+      <span class="tag">lock-in</span>
+    </div>
+  </div>
+
+  <!-- Section 2 -->
+  <div class="section-heading">
+    <h2>Uncontrolled Spend</h2>
+    <p>LLM pricing tiers are opaque, and most teams discover their cost profile only after the invoice lands.</p>
+  </div>
+  <div class="grid">
+    <div class="card" data-filter="spend">
+      <div class="tool-name">RouteLLM</div>
+      <div class="tool-desc">Addresses blind spend by training custom routing models that send simple queries to cheaper endpoints, reserving frontier models for hard prompts.</div>
+      <span class="tag">spend</span>
+    </div>
+    <div class="card" data-filter="spend">
+      <div class="tool-name">Portkey</div>
+      <div class="tool-desc">Addresses uncontrolled enterprise spend by bundling semantic caching, guardrails, and cost attribution into a managed control plane.</div>
+      <span class="tag">spend</span>
+    </div>
+    <div class="card" data-filter="spend">
+      <div class="tool-name">OpenRouter</div>
+      <div class="tool-desc">Addresses price discovery for teams who want to benchmark real token costs across providers without maintaining their own metering.</div>
+      <span class="tag">spend</span>
+    </div>
+  </div>
+
+  <!-- Section 3 -->
+  <div class="section-heading">
+    <h2>Hybrid Deployment Complexity</h2>
+    <p>The cleanest architectures assume every model is reachable via HTTPS. Reality involves fine-tuned weights on local GPUs and air-gapped inference servers.</p>
+  </div>
+  <div class="grid">
+    <div class="card" data-filter="hybrid">
+      <div class="tool-name">ngrok AI Gateway</div>
+      <div class="tool-desc">Addresses hybrid routing by offering a single hosted endpoint that reaches both public providers and privately-hosted models without exposing ports.</div>
+      <span class="tag">hybrid</span>
+    </div>
+    <div class="card" data-filter="hybrid">
+      <div class="tool-name">LiteLLM</div>
+      <div class="tool-desc">Addresses hybrid complexity for teams who want to self-host a proxy that routes identically to Bedrock, Azure, and a private vLLM instance.</div>
+      <span class="tag">hybrid</span>
+    </div>
+  </div>
+
+  <!-- Section 4 -->
+  <div class="section-heading">
+    <h2>Edge Security Gaps</h2>
+    <p>Once LLM traffic leaves your VPC, caching, rate limiting, and DLP become either your problem to build or someone else's problem to guarantee.</p>
+  </div>
+  <div class="grid">
+    <div class="card" data-filter="edge">
+      <div class="tool-name">Cloudflare AI Gateway</div>
+      <div class="tool-desc">Addresses edge leakage for teams already on Cloudflare who want zero-infrastructure caching, rate limiting, and DLP without deploying new software.</div>
+      <span class="tag">edge</span>
+    </div>
+    <div class="card" data-filter="edge">
+      <div class="tool-name">Portkey</div>
+      <div class="tool-desc">Addresses governance gaps for teams that need semantic caching, prompt versioning, and guardrails as a managed service rather than in-house plumbing.</div>
+      <span class="tag">edge</span>
+    </div>
+  </div>
+
+  <!-- Share Block -->
+  <section class="share-block">
+    <h3>Share this reference</h3>
+    <div class="share-text" id="share-text">AI gateways have split into two camps: zero-ops marketplaces for teams wanting unified model access, and self-hosted control planes for teams treating routing as infrastructure. The middle is empty.</div>
+    <div class="share-buttons">
+      <button class="share-btn primary" id="copy-btn">📋 Copy Text & Link</button>
+      <a class="share-btn" id="share-x" target="_blank" rel="noopener">𝕏 Post to X</a>
+      <a class="share-btn" id="share-li" target="_blank" rel="noopener">in Share to LinkedIn</a>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <h4>Sources & Evidence</h4>
+  <ul>
+    <li><strong>OpenRouter</strong> — <a href="https://openrouter.ai/" target="_blank" rel="noopener">openrouter.ai</a>, <a href="https://openrouter.ai/docs/faq" target="_blank" rel="noopener">FAQ (5.5% fee)</a></li>
+    <li><strong>LiteLLM</strong> — <a href="https://github.com/BerriAI/liteLLM-proxy" target="_blank" rel="noopener">BerriAI/liteLLM-proxy on GitHub</a>, <a href="https://docs.litellm.ai/release_notes/" target="_blank" rel="noopener">release notes</a></li>
+    <li><strong>Portkey</strong> — <a href="https://docs.portkey.ai/docs/changelog/2026/january" target="_blank" rel="noopener">January 2026 MCP Gateway</a>, <a href="https://docs.portkey.ai/docs/changelog/2026/april" target="_blank" rel="noopener">April 2026 changelog</a></li>
+    <li><strong>Bifrost</strong> — <a href="https://github.com/maximhq/bifrost" target="_blank" rel="noopener">maximhq/bifrost on GitHub</a>, <a href="https://www.getmaxim.ai/bifrost" target="_blank" rel="noopener">getmaxim.ai/bifrost</a></li>
+    <li><strong>RouteLLM</strong> — <a href="https://github.com/lm-sys/RouteLLM" target="_blank" rel="noopener">lm-sys/RouteLLM on GitHub</a>, <a href="https://arxiv.org/html/2406.18665v4" target="_blank" rel="noopener">arXiv 2406.18665</a></li>
+    <li><strong>ngrok AI Gateway</strong> — <a href="https://ngrok.com/docs/ai-gateway/overview" target="_blank" rel="noopener">ngrok docs</a>, <a href="https://ngrok.ai/" target="_blank" rel="noopener">ngrok.ai</a></li>
+    <li><strong>Cloudflare AI Gateway</strong> — <a href="https://developers.cloudflare.com/ai-gateway/" target="_blank" rel="noopener">developers.cloudflare.com/ai-gateway</a></li>
+    <li><strong>Vercel AI Gateway</strong> — <a href="https://vercel.com/ai-gateway" target="_blank" rel="noopener">vercel.com/ai-gateway</a>, <a href="https://vercel.com/docs/ai-gateway" target="_blank" rel="noopener">Vercel docs</a></li>
+  </ul>
+
+  <h4>Honest Gap Note (as of March 2026)</h4>
+  <p>No mainstream gateway yet offers a genuinely unified control plane for both LLM and MCP tool traffic that doesn't sacrifice routing intelligence in the process. The agentic era is producing agent-to-agent communication patterns that existing routers weren't designed to govern, and the tools that claim to handle both are usually weak at one. Evaluators shopping for an "agentic gateway" should expect to assemble two layers, not buy one.</p>
+
+  <div class="footer-nav">
+    <a href="https://iggym.github.io/awesome-ai-architecture/">← Home</a>
+    <a href="#top">↑ Back to top</a>
+  </div>
+</footer>
+
+<a href="#top" class="back-to-top" aria-label="Back to top">↑</a>
+
+<div class="toast" id="toast">Copied to clipboard</div>
+
+<script>
+(function() {
+  const searchInput = document.getElementById('search');
+  const cards = Array.from(document.querySelectorAll('.card'));
+  const chips = Array.from(document.querySelectorAll('.chip'));
+  const headings = Array.from(document.querySelectorAll('.section-heading'));
+  const noResults = document.createElement('div');
+  noResults.className = 'no-results';
+  noResults.textContent = 'No tools match your search.';
+  noResults.style.display = 'none';
+  document.querySelector('main').appendChild(noResults);
+
+  let activeFilter = 'all';
+  let searchTerm = '';
+
+  function applyFilters() {
+    let visible = 0;
+    const visibleSections = new Set();
+
+    cards.forEach(card => {
+      const name = card.querySelector('.tool-name').textContent.toLowerCase();
+      const desc = card.querySelector('.tool-desc').textContent.toLowerCase();
+      const cardFilter = card.getAttribute('data-filter');
+
+      const matchesFilter = activeFilter === 'all' || cardFilter === activeFilter;
+      const matchesSearch = !searchTerm || name.includes(searchTerm) || desc.includes(searchTerm);
+
+      if (matchesFilter && matchesSearch) {
+        card.classList.remove('hidden');
+        visible++;
+        visibleSections.add(cardFilter);
+      } else {
+        card.classList.add('hidden');
+      }
+    });
+
+    headings.forEach(h => {
+      const sectionCards = h.nextElementSibling ? Array.from(h.nextElementSibling.querySelectorAll('.card')) : [];
+      const sectionHasVisible = sectionCards.some(c => !c.classList.contains('hidden'));
+      h.style.display = sectionHasVisible ? '' : 'none';
+      if (h.nextElementSibling) {
+        h.nextElementSibling.style.display = sectionHasVisible ? '' : 'none';
+      }
+    });
+
+    noResults.style.display = visible === 0 ? '' : 'none';
+  }
+
+  chips.forEach(chip => {
+    chip.addEventListener('click', () => {
+      chips.forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      activeFilter = chip.getAttribute('data-filter');
+      applyFilters();
+    });
+  });
+
+  searchInput.addEventListener('input', (e) => {
+    searchTerm = e.target.value.toLowerCase().trim();
+    applyFilters();
+  });
+
+  // Share block
+  const shareText = document.getElementById('share-text').textContent.trim();
+  const shareUrl = window.location.href;
+  const copyBtn = document.getElementById('copy-btn');
+  const shareX = document.getElementById('share-x');
+  const shareLi = document.getElementById('share-li');
+  const toast = document.getElementById('toast');
+
+  function showToast(msg) {
+    toast.textContent = msg;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 1800);
+  }
+
+  copyBtn.addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(shareText + '\n\n' + shareUrl);
+      showToast('Copied to clipboard');
+    } catch (err) {
+      const ta = document.createElement('textarea');
+      ta.value = shareText + '\n\n' + shareUrl;
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand('copy'); showToast('Copied to clipboard'); }
+      catch(e) { showToast('Copy failed — select manually'); }
+      document.body.removeChild(ta);
+    }
+  });
+
+  const encodedText = encodeURIComponent(shareText);
+  const encodedUrl = encodeURIComponent(shareUrl);
+  shareX.href = `https://x.com/intent/post?text=${encodedText}&url=${encodedUrl}`;
+  shareLi.href = `https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}`;
+})();
+</script>
+
+</body>
+</html>
