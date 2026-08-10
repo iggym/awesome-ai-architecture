@@ -57,6 +57,19 @@
   "reading_time_minutes": 4,
   "pinned": false,
   "research_window": "2024-02-13 to 2024-03-12"
+}, {
+  "id": "0001",
+  "slug": "multi-model-routing-ai-gateway-tools-mapped-by-failure-mode",
+  "title": "Multi-Model Routing & AI Gateway Tools, Mapped by Failure Mode",
+  "hook": "AI gateways have split into two camps: zero-ops marketplaces for teams wanting unified model access, and self-hosted control planes for teams treating routing as infrastructure. The middle is empty.",
+  "path": "articles/multi-model-routing-ai-gateway-tools-mapped-by-failure-mode.html",
+  "date": "2026-03-12",
+  "status": "published",
+  "format": "reference",
+  "tags": ["multi-model-routing", "ai-gateway", "llm-proxy", "vendor-lock-in", "cost-governance"],
+  "reading_time_minutes": 7,
+  "pinned": false,
+  "research_window": "2026-02-05 to 2026-03-12"
 }
   ]
 }
