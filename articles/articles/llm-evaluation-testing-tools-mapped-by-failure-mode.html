@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>LLM Evaluation &amp; Testing Tools, Mapped by Failure Mode</title>
+<meta name="description" content="A curated reference of LLM evaluation and testing tools organized by the failure mode each tool addresses — not by marketing category.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#fafaf9;--surface:#fff;--text:#1c1917;--muted:#57534e;
+    --border:#e7e5e4;--accent:#0f766e;--accent-light:#ccfbf1;
+    --warn:#c2410c;--warn-light:#fff7ed;--radius:10px;--maxw:1080px;
+    --dark:#1c1917;--dark-2:#292524;--dark-text:#d6d3d1;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{font-family:'Inter',-apple-system,system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.6;font-size:16px}
+  code{font-family:'JetBrains Mono',monospace;font-size:.88em;background:#f5f5f4;padding:1px 5px;border-radius:4px}
+
+  /* ── Topbar ── */
+  #topbar{position:sticky;top:0;z-index:100;background:var(--dark);border-bottom:1px solid var(--dark-2)}
+  .topbar-inner{max-width:var(--maxw);margin:0 auto;display:flex;align-items:center;gap:16px;padding:0 20px;height:56px}
+  .home-link{color:#fafaf9;text-decoration:none;font-size:13px;font-weight:500;white-space:nowrap;font-family:'JetBrains Mono',monospace;opacity:.82;transition:opacity .15s}
+  .home-link:hover{opacity:1}
+  .search-wrap{flex:1;display:flex;justify-content:flex-end}
+  #search{width:100%;max-width:340px;padding:8px 14px;border:1px solid #44403c;background:var(--dark-2);color:#fafaf9;border-radius:8px;font-size:14px;font-family:'Inter',sans-serif;outline:none;transition:border-color .15s}
+  #search::placeholder{color:#a8a29e}
+  #search:focus{border-color:var(--accent)}
+  .hamburger{display:none;background:none;border:none;color:#fafaf9;font-size:22px;cursor:pointer;padding:4px 8px;line-height:1}
+  .mobile-nav{display:none;flex-direction:column;background:var(--dark);padding:8px 20px 16px;gap:2px}
+  .mobile-nav a{color:var(--dark-text);text-decoration:none;font-size:14px;padding:10px 0;border-bottom:1px solid var(--dark-2)}
+  .mobile-nav.open{display:flex}
+  @media(max-width:640px){
+    .hamburger{display:block}
+    #search{max-width:180px;font-size:13px}
+    .home-link{font-size:11px}
+  }
+
+  /* ── Main ── */
+  main{max-width:var(--maxw);margin:0 auto;padding:48px 20px 64px}
+  .article-meta{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-bottom:14px;letter-spacing:.03em}
+  h1{font-size:clamp(24px,4vw,36px);font-weight:800;line-height:1.15;letter-spacing:-.02em;margin-bottom:12px}
+  .article-sub{font-size:15px;color:var(--muted);max-width:680px;margin-bottom:40px}
+
+  /* ── Preamble Callout ── */
+  .preamble-callout{background:var(--warn-light);border-left:4px solid var(--warn);border-radius:0 var(--radius) var(--radius) 0;padding:24px 28px;margin-bottom:44px}
+  .preamble-callout .label{font-family:'JetBrains Mono',monospace;font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--warn);margin-bottom:10px;font-weight:600}
+  .preamble-callout p{font-size:15px;line-height:1.65;color:#44403c}
+
+  /* ── Filter Bar ── */
+  .filter-bar{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:36px}
+  .chip{padding:7px 14px;border:1px solid var(--border);background:var(--surface);border-radius:20px;font-size:13px;font-weight:500;color:var(--muted);cursor:pointer;transition:all .15s;white-space:nowrap;font-family:'Inter',sans-serif}
+  .chip:hover{border-color:var(--accent);color:var(--accent)}
+  .chip.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+
+  /* ── Section Blocks ── */
+  .section-block{margin-bottom:8px}
+  .failure-mode-heading{font-size:19px;font-weight:700;margin:40px 0 6px;letter-spacing:-.01em;scroll-margin-top:70px}
+  .failure-mode-framing{font-size:15px;color:#44403c;margin-bottom:16px;max-width:720px;line-height:1.6}
+
+  /* ── Tool Grid ── */
+  .tool-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;margin-bottom:8px}
+  .tool-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;display:flex;flex-direction:column;gap:7px;transition:transform .2s ease,box-shadow .2s ease,opacity .25s ease;animation:cardAppear .3s ease}
+  @keyframes cardAppear{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+  .tool-card:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(0,0,0,.07);border-color:#d6d3d1}
+  .tool-card.filtered-out{display:none}
+  .card-tag{display:inline-block;font-size:11px;font-weight:600;padding:3px 9px;border-radius:12px;width:fit-content}
+  .card-tag[data-cat="regression"]{background:#fef3c7;color:#92400e}
+  .card-tag[data-cat="rag"]{background:#dbeafe;color:#1e40af}
+  .card-tag[data-cat="judge"]{background:#fce7f3;color:#9d174d}
+  .card-tag[data-cat="agent"]{background:#d1fae5;color:#065f46}
+  .card-tag[data-cat="repro"]{background:#ede9fe;color:#5b21b6}
+  .card-name{font-size:17px;font-weight:700;letter-spacing:-.01em}
+  .card-fit{font-size:14px;color:var(--muted);line-height:1.55}
+
+  /* ── Share Block ── */
+  .share-block{margin-top:52px;padding:28px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius)}
+  .share-block .label{font-family:'JetBrains Mono',monospace;font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--accent);margin-bottom:12px;font-weight:600}
+  .reframe-text{font-size:17px;font-weight:600;line-height:1.5;color:var(--text);margin-bottom:20px;padding:16px 18px;background:var(--accent-light);border-radius:8px;border-left:3px solid var(--accent)}
+  .share-buttons{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+  .share-buttons button,.share-buttons a{padding:9px 18px;border-radius:8px;font-size:14px;font-weight:500;font-family:'Inter',sans-serif;text-decoration:none;cursor:pointer;border:1px solid var(--border);background:var(--surface);color:var(--text);transition:all .15s;display:inline-flex;align-items:center;gap:6px}
+  .share-buttons button:hover,.share-buttons a:hover{border-color:var(--accent);color:var(--accent)}
+  .share-buttons .primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .share-buttons .primary:hover{background:#0d9488;color:#fff}
+  .copy-feedback{font-size:13px;color:var(--accent);font-weight:500;opacity:0;transition:opacity .2s}
+  .copy-feedback.show{opacity:1}
+
+  /* ── Footer ── */
+  footer{border-top:1px solid var(--border);background:var(--dark);color:var(--dark-text);padding:48px 20px}
+  .footer-inner{max-width:var(--maxw);margin:0 auto}
+  .footer-section{margin-bottom:36px}
+  .footer-section h3{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:#a8a29e;margin-bottom:16px;font-family:'JetBrains Mono',monospace}
+  .evidence-log{list-style:none;display:flex;flex-direction:column;gap:10px}
+  .evidence-log li{font-size:13px;line-height:1.5;color:var(--dark-text);padding-left:20px;position:relative}
+  .evidence-log li::before{content:"→";position:absolute;left:0;color:#5eead4;font-family:'JetBrains Mono',monospace}
+  .evidence-log .tool-name{font-weight:600;color:#fafaf9}
+  .evidence-log a{color:#5eead4;text-decoration:none}
+  .evidence-log a:hover{text-decoration:underline}
+  .gap-note{font-size:14px;line-height:1.65;color:var(--dark-text);max-width:720px}
+  .footer-bottom{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;padding-top:24px;border-top:1px solid var(--dark-2)}
+  .footer-bottom a{color:var(--dark-text);text-decoration:none;font-size:14px}
+  .footer-bottom a:hover{color:#fafaf9}
+  .scroll-top{background:none;border:1px solid #44403c;color:var(--dark-text);padding:8px 16px;border-radius:8px;cursor:pointer;font-size:14px;font-family:'Inter',sans-serif;transition:all .15s}
+  .scroll-top:hover{border-color:#fafaf9;color:#fafaf9}
+
+  /* ── Reduced Motion ── */
+  @media(prefers-reduced-motion:reduce){
+    *{transition:none!important;animation:none!important}
+    html{scroll-behavior:auto}
+    .tool-card:hover{transform:none}
+    .tool-card{animation:none}
+  }
+
+  /* ── Mobile ── */
+  @media(max-width:640px){
+    main{padding:32px 16px 56px}
+    .tool-grid{grid-template-columns:1fr}
+    .preamble-callout{padding:20px}
+    .share-block{padding:20px}
+    .failure-mode-heading{margin-top:32px}
+  }
+</style>
+</head>
+<body>
+
+<header id="topbar">
+  <div class="topbar-inner">
+    <a href="https://iggym.github.io/awesome-ai-architecture/" class="home-link">← awesome-ai-architecture</a>
+    <div class="search-wrap">
+      <input type="text" id="search" placeholder="Filter tools by name or fit…" aria-label="Search tools">
+    </div>
+    <button class="hamburger" id="hamburger" aria-label="Toggle navigation" aria-expanded="false">☰</button>
+  </div>
+  <nav class="mobile-nav" id="mobileNav">
+    <a href="#preamble">Exclusion Criteria</a>
+    <a href="#cat-regression">Prompt Regressions</a>
+    <a href="#cat-rag">RAG Failures</a>
+    <a href="#cat-judge">Judge Reliability</a>
+    <a href="#cat-agent">Agent Trajectories</a>
+    <a href="#cat-repro">Reproducibility</a>
+    <a href="#share">Share</a>
+    <a href="#evidence">Evidence Log</a>
+  </nav>
+</header>
+
+<main>
+  <div class="article-meta">REFERENCE · 2024-11-08 · WINDOW: 2024-10-04 → 2024-11-08</div>
+  <h1>LLM Evaluation &amp; Testing Tools, Mapped by Failure Mode</h1>
+  <p class="article-sub">A curated reference for engineers comparing evaluation and testing tooling — organized by the failure mode each tool actually addresses, not by marketing category.</p>
+
+  <!-- ── Preamble Callout ── -->
+  <div class="preamble-callout" id="preamble">
+    <div class="label">Exclusion Criteria — Read First</div>
+    <p>This list deliberately excludes three categories of tools that frequently appear in "LLM testing" roundups. First, pure observability platforms without an evaluation primitive — if you can only view traces but cannot score them against a dataset, you have a dashboard, not a test. Second, thin wrappers around <code>openai.ChatCompletion</code> that add a "run this prompt five times" button; that is invocation with extra steps, not testing. Third, academic benchmark mirrors with a pricing page — a Hugging Face leaderboard repackaged as a product does not catch regressions in your specific retrieval pipeline. We also exclude eval features bolted onto general-purpose MLOps platforms where the LLM-specific surface area was still in beta as of November 2024; a roadmap slide is not a test runner. The bar for inclusion is the one we'd apply to a unit-testing framework: define a test, run it against your own data, fail loudly on regression. If it cannot do all three, it is not on this list.</p>
+  </div>
+
+  <!-- ── Filter Bar ── -->
+  <div class="filter-bar" id="filterBar">
+    <button class="chip active" data-filter="all">All Tools</button>
+    <button class="chip" data-filter="regression">Silent Prompt Regressions</button>
+    <button class="chip" data-filter="rag">RAG Retrieval Failures</button>
+    <button class="chip" data-filter="judge">LLM-as-Judge Reliability</button>
+    <button class="chip" data-filter="agent">Agent Trajectory Black Boxes</button>
+    <button class="chip" data-filter="repro">Eval Reproducibility</button>
+  </div>
+
+  <!-- ── Section: Silent Prompt Regressions ── -->
+  <div class="section-block" data-cat="regression">
+    <h2 class="failure-mode-heading" id="cat-regression">Silent Prompt Regressions on the Long Tail</h2>
+    <p class="failure-mode-framing">The first failure mode is the regression you didn't ship on purpose: a one-line edit to a system prompt improves the median case and quietly breaks the 5th percentile. Evaluating this by hand-eyeballing the top three outputs is how regressions ship on Fridays.</p>
+    <div class="tool-grid">
+      <article class="tool-card" data-cat="regression" data-search="promptfoo runs yaml-defined eval matrices locally ci fits teams failing test block merge slack notification after the fact">
+        <span class="card-tag" data-cat="regression">Silent Prompt Regressions</span>
+        <h3 class="card-name">Promptfoo</h3>
+        <p class="card-fit">Runs YAML-defined eval matrices locally or in CI; fits teams that want a failing test to block a merge rather than arrive as a Slack notification after the fact.</p>
+      </article>
+      <article class="tool-card" data-cat="regression" data-search="gentrace diffs llm pipeline outputs pinned golden set before deploy fits teams traditional ci gate eval results same gate">
+        <span class="card-tag" data-cat="regression">Silent Prompt Regressions</span>
+        <h3 class="card-name">Gentrace</h3>
+        <p class="card-fit">Diffs LLM pipeline outputs against a pinned golden set before deploy; fits teams whose deploy is already gated by traditional CI and want eval results in the same gate, not a separate dashboard.</p>
+      </article>
+    </div>
+  </div>
+
+  <!-- ── Section: RAG Retrieval Failures ── -->
+  <div class="section-block" data-cat="rag">
+    <h2 class="failure-mode-heading" id="cat-rag">RAG Retrieval Failures Hidden by Confident Prose</h2>
+    <p class="failure-mode-framing">RAG evaluation is its own failure mode because a wrong answer can look right and a right answer can be ungrounded. A retrieval step that surfaces the wrong chunk still produces fluent text — the gap between "sounds correct" and "is correct" is where production RAG silently rots.</p>
+    <div class="tool-grid">
+      <article class="tool-card" data-cat="rag" data-search="ragas faithfulness context relevance answer relevance metrics without reference answers fits teams cannot afford golden outputs every query">
+        <span class="card-tag" data-cat="rag">RAG Retrieval Failures</span>
+        <h3 class="card-name">RAGAS</h3>
+        <p class="card-fit">Faithfulness, context relevance, and answer relevance metrics computed without reference answers; fits teams that cannot afford to label golden outputs for every query.</p>
+      </article>
+      <article class="tool-card" data-cat="rag" data-search="trulens rag triad context relevance groundedness answer relevance instrumented app traces fits teams diagnosis attached trace">
+        <span class="card-tag" data-cat="rag">RAG Retrieval Failures</span>
+        <h3 class="card-name">TruLens</h3>
+        <p class="card-fit">The RAG triad of context relevance, groundedness, and answer relevance instrumented directly into app traces; fits teams that want the diagnosis attached to the trace, not filed in a separate report.</p>
+      </article>
+    </div>
+  </div>
+
+  <!-- ── Section: LLM-as-Judge Reliability ── -->
+  <div class="section-block" data-cat="judge">
+    <h2 class="failure-mode-heading" id="cat-judge">LLM-as-Judge Reliability Doubts</h2>
+    <p class="failure-mode-framing">Once you delegate grading to another LLM, the new question is whether the judge is itself calibrated. A judge that always returns "yes, this is good" is not a test — it is a rubber stamp with API costs.</p>
+    <div class="tool-grid">
+      <article class="tool-card" data-cat="judge" data-search="deepeval 14 metrics documented human-correlation scores pytest assertions fits teams argue which metric reliable">
+        <span class="card-tag" data-cat="judge">LLM-as-Judge Reliability</span>
+        <h3 class="card-name">DeepEval</h3>
+        <p class="card-fit">14+ metrics with documented human-correlation scores and pytest-style assertions; fits teams that want to argue about which metric to use, not whether metrics are reliable.</p>
+      </article>
+      <article class="tool-card" data-cat="judge" data-search="patronus ai production evaluators benchmarked regulatory datasets financebench fits regulated-industry teams defend eval auditor">
+        <span class="card-tag" data-cat="judge">LLM-as-Judge Reliability</span>
+        <h3 class="card-name">Patronus AI</h3>
+        <p class="card-fit">Production evaluators benchmarked against regulatory datasets like FinanceBench; fits regulated-industry teams that need to defend the eval in front of an auditor, not just a teammate.</p>
+      </article>
+    </div>
+  </div>
+
+  <!-- ── Section: Agent Trajectory Black Boxes ── -->
+  <div class="section-block" data-cat="agent">
+    <h2 class="failure-mode-heading" id="cat-agent">Agent Trajectories as Black Boxes</h2>
+    <p class="failure-mode-framing">Agent failures are not point failures — they are paths. A single wrong tool call three steps in produces a final answer that looks defensible until you trace the route that got there, and most evaluation tooling stops at the final token.</p>
+    <div class="tool-grid">
+      <article class="tool-card" data-cat="agent" data-search="inspect ai solver scorer architecture full trace replay fits teams evaluating agentic models trajectory artifact under test">
+        <span class="card-tag" data-cat="agent">Agent Trajectory Black Boxes</span>
+        <h3 class="card-name">Inspect AI</h3>
+        <p class="card-fit">Solver-and-scorer architecture with full trace replay; fits teams evaluating agentic models where the trajectory, not just the answer, is the artifact under test.</p>
+      </article>
+      <article class="tool-card" data-cat="agent" data-search="phoenix arize opentelemetry-native llm traces span-level eval annotations fits teams otel existing instrumentation parallel pipeline">
+        <span class="card-tag" data-cat="agent">Agent Trajectory Black Boxes</span>
+        <h3 class="card-name">Phoenix (Arize)</h3>
+        <p class="card-fit">OpenTelemetry-native LLM traces with span-level eval annotations; fits teams already invested in OTel that want evaluation layered onto existing instrumentation rather than bolted on as a parallel pipeline.</p>
+      </article>
+    </div>
+  </div>
+
+  <!-- ── Section: Eval Reproducibility ── -->
+  <div class="section-block" data-cat="repro">
+    <h2 class="failure-mode-heading" id="cat-repro">Evals That Aren't Reproducible Across the Team</h2>
+    <p class="failure-mode-framing">An eval that only runs on one developer's laptop is an anecdote. The fifth failure mode is the dataset that drifts, the prompt that isn't pinned, the scoring run that no one can reproduce three weeks later — the social failure, not the technical one.</p>
+    <div class="tool-grid">
+      <article class="tool-card" data-cat="repro" data-search="langsmith datasets evaluators experiment runs versioned shareable langchain ecosystem fits teams committed langchain orchestration">
+        <span class="card-tag" data-cat="repro">Eval Reproducibility</span>
+        <h3 class="card-name">LangSmith</h3>
+        <p class="card-fit">Datasets, evaluators, and experiment runs versioned and shareable inside the LangChain ecosystem; fits teams already committed to LangChain who want eval to live where their orchestration does.</p>
+      </article>
+      <article class="tool-card" data-cat="repro" data-search="braintrust git-like dataset eval versioning cli drops into existing ci fits teams treat eval first-class artifact code diffs familiar">
+        <span class="card-tag" data-cat="repro">Eval Reproducibility</span>
+        <h3 class="card-name">Braintrust</h3>
+        <p class="card-fit">Git-like dataset and eval versioning with a CLI that drops into existing CI; fits teams that treat the eval as a first-class artifact alongside code and want the diffs to look familiar.</p>
+      </article>
+    </div>
+  </div>
+
+  <!-- ── Share Block ── -->
+  <div class="share-block" id="share">
+    <div class="label">Bold Reframe</div>
+    <p class="reframe-text" id="reframeText">Most "LLM evaluation" tools are observability dashboards wearing a testing costume — this list keeps only the ones that can fail a build.</p>
+    <div class="share-buttons">
+      <button class="primary" id="copyBtn">Copy Text &amp; Link</button>
+      <a href="#" id="twitterBtn" target="_blank" rel="noopener">Share on X</a>
+      <a href="#" id="linkedinBtn" target="_blank" rel="noopener">Share on LinkedIn</a>
+      <span class="copy-feedback" id="copyFeedback">Copied to clipboard</span>
+    </div>
+  </div>
+</main>
+
+<!-- ── Footer ── -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-section" id="evidence">
+      <h3>Evidence Log &amp; Citations</h3>
+      <ul class="evidence-log">
+        <li><span class="tool-name">Promptfoo</span> — <a href="https://github.com/promptfoo/promptfoo" target="_blank" rel="noopener">github.com/promptfoo/promptfoo</a> · query: <em>"promptfoo LLM evaluation CLI CI testing"</em> · 10k+ stars, active commits through Oct–Nov 2024</li>
+        <li><span class="tool-name">Gentrace</span> — <a href="https://gentrace.ai" target="_blank" rel="noopener">gentrace.ai</a> · query: <em>"gentrace AI pipeline testing CI golden set"</em> · active commercial product, SDK docs updated Oct 2024</li>
+        <li><span class="tool-name">RAGAS</span> — <a href="https://github.com/explodinggradients/ragas" target="_blank" rel="noopener">github.com/explodinggradients/ragas</a> · query: <em>"RAGAS RAG evaluation faithfulness context relevance"</em> · 6k+ stars, cited in academic RAG literature</li>
+        <li><span class="tool-name">TruLens</span> — <a href="https://www.trulens.org/" target="_blank" rel="noopener">trulens.org</a> · query: <em>"trulens RAG triad groundedness evaluation"</em> · active OSS, RAG triad documented</li>
+        <li><span class="tool-name">DeepEval</span> — <a href="https://github.com/confident-ai/deepeval" target="_blank" rel="noopener">github.com/confident-ai/deepeval</a> · query: <em>"deepeval LLM evaluation pytest metrics human correlation"</em> · 4k+ stars, Confident AI commercial backing</li>
+        <li><span class="tool-name">Patronus AI</span> — <a href="https://www.patronus.ai" target="_blank" rel="noopener">patronus.ai</a> · query: <em>"patronus AI LLM evaluation FinanceBench regulatory"</em> · active startup, FinanceBench benchmark published</li>
+        <li><span class="tool-name">Inspect AI</span> — <a href="https://inspect.ai-safety-institute.org.uk/" target="_blank" rel="noopener">inspect.ai-safety-institute.org.uk</a> · query: <em>"inspect AI safety institute evaluation framework solver scorer"</em> · UK AISI, used in frontier safety assessments</li>
+        <li><span class="tool-name">Phoenix (Arize)</span> — <a href="https://phoenix.arize.com/" target="_blank" rel="noopener">phoenix.arize.com</a> · query: <em>"arize phoenix LLM tracing OpenTelemetry evaluation"</em> · 7k+ stars, OTel-native tracing</li>
+        <li><span class="tool-name">LangSmith</span> — <a href="https://docs.smith.langchain.com/" target="_blank" rel="noopener">docs.smith.langchain.com</a> · query: <em>"langsmith langchain evaluation dataset versioning experiments"</em> · active commercial product</li>
+        <li><span class="tool-name">Braintrust</span> — <a href="https://www.braintrust.dev" target="_blank" rel="noopener">braintrust.dev</a> · query: <em>"braintrust data LLM evaluation versioning CLI"</em> · active commercial product, growing adoption</li>
+      </ul>
+    </div>
+    <div class="footer-section">
+      <h3>What's Still Missing (as of Nov 2024)</h3>
+      <p class="gap-note">A shared, language-agnostic spec for eval datasets — every tool above ships its own JSONL dialect, and portability between them is hand-rolled. The category also lacks a credible answer for evaluating long-horizon agents beyond a handful of turns; most judge-based metrics were validated on single-shot Q&amp;A and quietly degrade on multi-step trajectories. Until those gaps close, "LLM testing" is still more improvisation than engineering.</p>
+    </div>
+    <div class="footer-bottom">
+      <a href="https://iggym.github.io/awesome-ai-architecture/">← Back to awesome-ai-architecture</a>
+      <button class="scroll-top" id="scrollTop">↑ Scroll to top</button>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  'use strict';
+
+  /* ── Hamburger ── */
+  var hamburger = document.getElementById('hamburger');
+  var mobileNav = document.getElementById('mobileNav');
+  hamburger.addEventListener('click', function(){
+    var open = mobileNav.classList.toggle('open');
+    hamburger.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+  mobileNav.querySelectorAll('a').forEach(function(a){
+    a.addEventListener('click', function(){
+      mobileNav.classList.remove('open');
+      hamburger.setAttribute('aria-expanded','false');
+    });
+  });
+
+  /* ── Filter State ── */
+  var activeCategory = 'all';
+  var activeSearch = '';
+
+  function applyFilters(){
+    var sections = document.querySelectorAll('.section-block');
+    sections.forEach(function(section){
+      var catMatch = activeCategory === 'all' || section.getAttribute('data-cat') === activeCategory;
+      if(!catMatch){
+        section.style.display = 'none';
+        return;
+      }
+      var visibleCount = 0;
+      section.querySelectorAll('.tool-card').forEach(function(card){
+        var searchMatch = !activeSearch || card.getAttribute('data-search').indexOf(activeSearch) !== -1;
+        if(searchMatch){
+          card.classList.remove('filtered-out');
+          visibleCount++;
+        } else {
+          card.classList.add('filtered-out');
+        }
+      });
+      section.style.display = visibleCount > 0 ? '' : 'none';
+    });
+  }
+
+  /* ── Chip Filters ── */
+  var chips = document.querySelectorAll('.chip');
+  chips.forEach(function(chip){
+    chip.addEventListener('click', function(){
+      chips.forEach(function(c){ c.classList.remove('active'); });
+      chip.classList.add('active');
+      activeCategory = chip.getAttribute('data-filter');
+      applyFilters();
+    });
+  });
+
+  /* ── Search ── */
+  var searchInput = document.getElementById('search');
+  var searchTimer;
+  searchInput.addEventListener('input', function(){
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(function(){
+      activeSearch = searchInput.value.toLowerCase().trim();
+      applyFilters();
+    }, 120);
+  });
+
+  /* ── Social Share ── */
+  var reframeText = document.getElementById('reframeText').textContent.trim();
+
+  function buildShareURLs(){
+    var url = window.location.href;
+    var encodedText = encodeURIComponent(reframeText);
+    var encodedUrl = encodeURIComponent(url);
+    document.getElementById('twitterBtn').href =
+      'https://x.com/intent/post?text=' + encodedText + '&url=' + encodedUrl;
+    document.getElementById('linkedinBtn').href =
+      'https://www.linkedin.com/sharing/share-offsite/?url=' + encodedUrl;
+  }
+  buildShareURLs();
+
+  var copyBtn = document.getElementById('copyBtn');
+  var copyFeedback = document.getElementById('copyFeedback');
+  copyBtn.addEventListener('click', function(){
+    var url = window.location.href;
+    var fullText = reframeText + '\n\n' + url;
+    function showFeedback(){
+      copyFeedback.classList.add('show');
+      setTimeout(function(){ copyFeedback.classList.remove('show'); }, 2000);
+    }
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(fullText).then(showFeedback).catch(function(){
+        fallbackCopy(fullText);
+        showFeedback();
+      });
+    } else {
+      fallbackCopy(fullText);
+      showFeedback();
+    }
+  });
+
+  function fallbackCopy(text){
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand('copy'); } catch(e){}
+    document.body.removeChild(ta);
+  }
+
+  /* ── Scroll to Top ── */
+  document.getElementById('scrollTop').addEventListener('click', function(){
+    var prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    window.scrollTo({ top: 0, behavior: prefersReduced ? 'auto' : 'smooth' });
+  });
+
+  /* ── Init ── */
+  applyFilters();
+})();
+</script>
+
+</body>
+</html>
