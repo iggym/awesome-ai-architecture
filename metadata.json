@@ -9,67 +9,104 @@
   },
   "articles": [
     {
-  "title": "Watchtower and Moat",
-  "hook": "Agent security isn't a tool choice — it's a layering problem. LLM-layer guards and runtime sandboxes solve different failure modes. Pick one, you get a speed bump. Stack both, you get an architecture.",
-  "date": "2025-04-14",
-  "status": "published",
-  "pinned": false,
-  "reading_time_minutes": 7,
-  "tags": ["agent-security", "sandboxing", "llm-guardrails", "runtime-boundary", "architecture-evaluation"],
-  "path": "articles/watchtower-and-moat.html"
-},{
-  "title": "Smoke Signals in Production",
-  "hook": "Multi-agent frameworks aren't ranked by what they build—they're ranked by what you can see when they break.",
-  "date": "2025-02-28",
-  "status": "published",
-  "pinned": false,
-  "reading_time_minutes": 6,
-  "tags": ["multi-agent-orchestration", "observability", "debuggability", "agent-frameworks"],
-  "path": "articles/smoke-signals-in-production.html"
-},{
-  "title": "Where the Sandbox Ends",
-  "hook": "Every sandbox you deployed is theater if your LLM guardrails can't stop the prompt that makes the agent ask the sandbox to do the wrong thing.",
-  "date": "2025-04-14",
-  "status": "published",
-  "pinned": false,
-  "reading_time_minutes": 8,
-  "tags": ["agent-security", "sandboxing", "llm-guardrails", "runtime-isolation"],
-  "path": "articles/where-the-sandbox-ends.html"
-}, {
-  "title": "Where Agents Break Free",
-  "hook": "Prompt guardrails don't stop rm -rf / — most agent stacks secure the LLM layer and leave the runtime wide open.",
-  "date": "2025-04-14",
-  "status": "published",
-  "pinned": false,
-  "reading_time_minutes": 5,
-  "tags": ["agent-security", "sandboxing", "runtime-isolation", "llm-guardrails"],
-  "path": "articles/where-agents-break-free.html"
-}, {
-  "id": "0001",
-  "slug": "multi-model-routing-ai-gateway-tools-mapped-by-failure-mode",
-  "title": "Multi-Model Routing & AI Gateway Tools, Mapped by Failure Mode",
-  "hook": "Multi-model gateways aren't about accessing more models; they're about surviving the inevitable failures, schema drift, and cost spikes of the ones you already use.",
-  "path": "articles/multi-model-routing-ai-gateway-tools-mapped-by-failure-mode.html",
-  "date": "2024-03-12",
-  "status": "published",
-  "format": "reference",
-  "tags": ["multi-model routing", "ai gateway", "vendor evaluation", "failure modes"],
-  "reading_time_minutes": 4,
-  "pinned": false,
-  "research_window": "2024-02-13 to 2024-03-12"
-}, {
-  "id": "00012",
-  "slug": "multi-model-routing-ai-gateway-tools-mapped-by-failure-mode",
-  "title": "Multi-Model Routing & AI Gateway Tools, Mapped by Failure Mode",
-  "hook": "AI gateways have split into two camps: zero-ops marketplaces for teams wanting unified model access, and self-hosted control planes for teams treating routing as infrastructure. The middle is empty.",
-  "path": "articles/00012-multi-model-routing-ai-gateway-tools-mapped-by-failure-mode.html",
-  "date": "2026-03-12",
-  "status": "published",
-  "format": "reference",
-  "tags": ["multi-model-routing", "ai-gateway", "llm-proxy", "vendor-lock-in", "cost-governance"],
-  "reading_time_minutes": 7,
-  "pinned": false,
-  "research_window": "2026-02-05 to 2026-03-12"
-}
+      "title": "Watchtower and Moat",
+      "hook": "Agent security isn't a tool choice — it's a layering problem. LLM-layer guards and runtime sandboxes solve different failure modes. Pick one, you get a speed bump. Stack both, you get an architecture.",
+      "date": "2025-04-14",
+      "status": "published",
+      "pinned": false,
+      "reading_time_minutes": 7,
+      "tags": [
+        "agent-security",
+        "sandboxing",
+        "llm-guardrails",
+        "runtime-boundary",
+        "architecture-evaluation"
+      ],
+      "path": "articles/watchtower-and-moat.html"
+    },
+    {
+      "title": "Smoke Signals in Production",
+      "hook": "Multi-agent frameworks aren't ranked by what they build—they're ranked by what you can see when they break.",
+      "date": "2025-02-28",
+      "status": "published",
+      "pinned": false,
+      "reading_time_minutes": 6,
+      "tags": [
+        "multi-agent-orchestration",
+        "observability",
+        "debuggability",
+        "agent-frameworks"
+      ],
+      "path": "articles/smoke-signals-in-production.html"
+    },
+    {
+      "title": "Where the Sandbox Ends",
+      "hook": "Every sandbox you deployed is theater if your LLM guardrails can't stop the prompt that makes the agent ask the sandbox to do the wrong thing.",
+      "date": "2025-04-14",
+      "status": "published",
+      "pinned": false,
+      "reading_time_minutes": 8,
+      "tags": [
+        "agent-security",
+        "sandboxing",
+        "llm-guardrails",
+        "runtime-isolation"
+      ],
+      "path": "articles/where-the-sandbox-ends.html"
+    },
+    {
+      "title": "Where Agents Break Free",
+      "hook": "Prompt guardrails don't stop rm -rf / — most agent stacks secure the LLM layer and leave the runtime wide open.",
+      "date": "2025-04-14",
+      "status": "published",
+      "pinned": false,
+      "reading_time_minutes": 5,
+      "tags": [
+        "agent-security",
+        "sandboxing",
+        "runtime-isolation",
+        "llm-guardrails"
+      ],
+      "path": "articles/where-agents-break-free.html"
+    },
+    {
+      "id": "0001",
+      "slug": "multi-model-routing-ai-gateway-tools-mapped-by-failure-mode",
+      "title": "Multi-Model Routing & AI Gateway Tools, Mapped by Failure Mode",
+      "hook": "Multi-model gateways aren't about accessing more models; they're about surviving the inevitable failures, schema drift, and cost spikes of the ones you already use.",
+      "path": "articles/multi-model-routing-ai-gateway-tools-mapped-by-failure-mode.html",
+      "date": "2024-03-12",
+      "status": "published",
+      "format": "reference",
+      "tags": [
+        "multi-model routing",
+        "ai gateway",
+        "vendor evaluation",
+        "failure modes"
+      ],
+      "reading_time_minutes": 4,
+      "pinned": false,
+      "research_window": "2024-02-13 to 2024-03-12"
+    },
+    {
+      "id": "0002",
+      "slug": "multi-model-routing-ai-gateway-tools-mapped-by-failure-mode",
+      "title": "Multi-Model Routing & AI Gateway Tools, Mapped by Failure Mode",
+      "hook": "AI gateways have split into two camps: zero-ops marketplaces for teams wanting unified model access, and self-hosted control planes for teams treating routing as infrastructure. The middle is empty.",
+      "path": "articles/multi-model-routing-ai-gateway-tools-mapped-by-failure-mode.html",
+      "date": "2026-03-12",
+      "status": "published",
+      "format": "reference",
+      "tags": [
+        "multi-model-routing",
+        "ai-gateway",
+        "llm-proxy",
+        "vendor-lock-in",
+        "cost-governance"
+      ],
+      "reading_time_minutes": 7,
+      "pinned": false,
+      "research_window": "2026-02-05 to 2026-03-12"
+    }
   ]
 }
