@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cost-Governance Tooling for AI Systems, Mapped by Failure Mode</title>
+  <meta name="description" content="A curated reference mapping AI cost-governance tools to the specific failure modes they address — not an exhaustive list.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0e0e0c;
+      --bg-raised: #151513;
+      --card: #1a1a17;
+      --card-hover: #222220;
+      --accent: #e8943a;
+      --accent-dim: #c47a28;
+      --text: #e5e1d8;
+      --text-secondary: #b5b0a6;
+      --muted: #7d7870;
+      --border: #2c2c26;
+      --border-light: #3a3a33;
+      --tag-amber: #e8943a;
+      --tag-teal: #38b2ac;
+      --tag-rose: #e85d75;
+      --tag-sage: #5da074;
+      --tag-slate: #7c8fba;
+      --radius: 8px;
+      --radius-lg: 12px;
+      --shadow: 0 2px 8px rgba(0,0,0,0.3);
+      --font-display: 'Libre Baskerville', Georgia, serif;
+      --font-ui: 'DM Sans', sans-serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--font-ui);
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.65;
+      font-size: 16px;
+      min-height: 100vh;
+    }
+
+    /* Reduced motion */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+      }
+      html { scroll-behavior: auto; }
+    }
+
+    /* ── Topbar ── */
+    #topbar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      padding: 0 1.5rem;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    #topbar .home-link {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: var(--accent);
+      text-decoration: none;
+      white-space: nowrap;
+      letter-spacing: 0.02em;
+    }
+    #topbar .home-link:hover { color: var(--text); }
+    #topbar .topbar-sep {
+      width: 1px;
+      height: 24px;
+      background: var(--border-light);
+      flex-shrink: 0;
+    }
+    #search-input {
+      flex: 1;
+      max-width: 340px;
+      background: var(--bg-raised);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 0.4rem 0.75rem;
+      color: var(--text);
+      font-family: var(--font-ui);
+      font-size: 0.875rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    #search-input::placeholder { color: var(--muted); }
+    #search-input:focus { border-color: var(--accent); }
+
+    #hamburger {
+      display: none;
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text-secondary);
+      width: 36px;
+      height: 36px;
+      cursor: pointer;
+      font-size: 1.2rem;
+      line-height: 1;
+      flex-shrink: 0;
+    }
+    #mobile-nav {
+      display: none;
+      position: absolute;
+      top: 56px;
+      right: 1rem;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 0.75rem 1rem;
+      z-index: 99;
+      box-shadow: var(--shadow);
+    }
+    #mobile-nav a {
+      display: block;
+      color: var(--text-secondary);
+      text-decoration: none;
+      padding: 0.35rem 0;
+      font-size: 0.875rem;
+    }
+    #mobile-nav a:hover { color: var(--accent); }
+
+    @media (max-width: 640px) {
+      #hamburger { display: flex; align-items: center; justify-content: center; }
+      #search-input { max-width: 160px; }
+    }
+
+    /* ── Main container ── */
+    main {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem 4rem;
+    }
+
+    /* ── Title ── */
+    .article-title {
+      font-family: var(--font-display);
+      font-size: clamp(1.6rem, 4vw, 2.2rem);
+      font-weight: 700;
+      line-height: 1.25;
+      color: var(--text);
+      margin-bottom: 1.5rem;
+    }
+
+    /* ── Preamble callout ── */
+    .preamble {
+      background: var(--bg-raised);
+      border-left: 3px solid var(--accent);
+      border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 2rem;
+      font-size: 0.9375rem;
+      line-height: 1.7;
+      color: var(--text-secondary);
+    }
+    .preamble strong {
+      color: var(--text);
+      font-weight: 700;
+    }
+
+    /* ── Filter chips ── */
+    .filter-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+    }
+    .filter-chip {
+      background: var(--bg-raised);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 0.3rem 0.85rem;
+      font-family: var(--font-ui);
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s, color 0.15s;
+      white-space: nowrap;
+    }
+    .filter-chip:hover {
+      border-color: var(--border-light);
+      color: var(--text);
+    }
+    .filter-chip.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #0e0e0c;
+    }
+
+    /* ── Section headings ── */
+    .section-heading {
+      font-family: var(--font-display);
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--text);
+      margin: 2.5rem 0 0.5rem;
+      padding-bottom: 0.4rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .section-framing {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      margin-bottom: 1rem;
+      line-height: 1.6;
+    }
+
+    /* ── Card grid ── */
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1.15rem 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+      cursor: default;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .card { transition: none; }
+    }
+    .card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.35);
+      border-color: var(--border-light);
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .card:hover { transform: none; }
+    }
+    .card-tag {
+      display: inline-block;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      padding: 0.2rem 0.55rem;
+      border-radius: 4px;
+      width: fit-content;
+      line-height: 1.4;
+    }
+    .tag-amber  { background: rgba(232,148,58,0.15); color: var(--tag-amber); }
+    .tag-teal   { background: rgba(56,178,172,0.15); color: var(--tag-teal); }
+    .tag-rose   { background: rgba(232,93,117,0.15); color: var(--tag-rose); }
+    .tag-sage   { background: rgba(93,160,116,0.15); color: var(--tag-sage); }
+    .tag-slate  { background: rgba(124,143,186,0.15); color: var(--tag-slate); }
+
+    .card-name {
+      font-family: var(--font-ui);
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.3;
+    }
+    .card-fit {
+      font-size: 0.8375rem;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+
+    .card.hidden {
+      display: none;
+    }
+
+    /* ── Closing note ── */
+    .closing-note {
+      margin-top: 2.5rem;
+      padding: 1.25rem 1.5rem;
+      background: var(--bg-raised);
+      border-radius: var(--radius-lg);
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      line-height: 1.65;
+      border: 1px solid var(--border);
+    }
+    .closing-note strong { color: var(--text); }
+
+    /* ── Bold reframe ── */
+    .bold-reframe {
+      margin-top: 2rem;
+      padding: 1rem 1.5rem;
+      border-left: 3px solid var(--accent);
+      font-family: var(--font-display);
+      font-size: 1.05rem;
+      font-style: italic;
+      color: var(--text);
+      line-height: 1.5;
+    }
+
+    /* ── Social share block ── */
+    .share-block {
+      margin-top: 2rem;
+      padding: 1.25rem 1.5rem;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+    }
+    .share-block-label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 0.6rem;
+    }
+    .share-text {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      margin-bottom: 1rem;
+      line-height: 1.55;
+    }
+    .share-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+    .share-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-family: var(--font-ui);
+      font-size: 0.8rem;
+      font-weight: 500;
+      padding: 0.4rem 0.85rem;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      background: var(--bg-raised);
+      color: var(--text-secondary);
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.15s, color 0.15s, border-color 0.15s;
+    }
+    .share-btn:hover {
+      background: var(--accent);
+      color: #0e0e0c;
+      border-color: var(--accent);
+    }
+    .share-btn svg { width: 14px; height: 14px; fill: currentColor; }
+
+    .copy-toast {
+      display: none;
+      font-size: 0.8rem;
+      color: var(--tag-sage);
+      margin-left: 0.5rem;
+      font-weight: 500;
+    }
+    .copy-toast.show { display: inline; }
+
+    /* ── Footer ── */
+    footer {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem 3rem;
+      border-top: 1px solid var(--border);
+    }
+    .footer-heading {
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 0.75rem;
+    }
+    .evidence-log {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      line-height: 1.7;
+      margin-bottom: 1.5rem;
+    }
+    .evidence-log li { margin-bottom: 0.25rem; }
+    .evidence-log code {
+      background: var(--bg-raised);
+      padding: 0.1rem 0.35rem;
+      border-radius: 3px;
+      font-size: 0.75rem;
+      color: var(--accent);
+    }
+    .footer-links {
+      display: flex;
+      gap: 1.5rem;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .footer-links a {
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 0.85rem;
+    }
+    .footer-links a:hover { color: var(--accent); }
+    .back-to-top {
+      font-size: 0.85rem;
+      color: var(--muted);
+      text-decoration: none;
+      cursor: pointer;
+    }
+    .back-to-top:hover { color: var(--accent); }
+
+    /* ── No results message ── */
+    .no-results {
+      text-align: center;
+      color: var(--muted);
+      padding: 3rem 1rem;
+      font-size: 0.95rem;
+      display: none;
+    }
+    .no-results.show { display: block; }
+  </style>
+</head>
+<body>
+
+  <!-- ── Topbar ── -->
+  <header id="topbar">
+    <a href="https://iggym.github.io/awesome-ai-architecture/" class="home-link">awesome-ai-architecture</a>
+    <div class="topbar-sep"></div>
+    <input type="text" id="search-input" placeholder="Filter tools by name or description..." aria-label="Search tools">
+    <button id="hamburger" aria-label="Menu" aria-expanded="false">&#9776;</button>
+  </header>
+  <nav id="mobile-nav" aria-hidden="true">
+    <a href="https://iggym.github.io/awesome-ai-architecture/">Home</a>
+    <a href="#" onclick="document.getElementById('search-input').focus(); return false;">Search</a>
+  </nav>
+
+  <main>
+    <!-- Title -->
+    <h1 class="article-title">Cost-Governance Tooling for AI Systems, Mapped by Failure Mode</h1>
+
+    <!-- Preamble callout -->
+    <div class="preamble">
+      <strong>What this list leaves out — and why.</strong> This list deliberately excludes three categories that dominate generic "AI cost management" search results. First, native cloud cost dashboards (AWS Cost Explorer, Azure Cost Management, GCP Billing) — they surface what you spent after you spent it, and their LLM-specific granularity stops at service-level aggregates, not request or token-level attribution. Second, generic FinOps platforms (Apptio, Cloudability, Spot.io) retrofitted with "AI" labels — they were built for VMs and S3 buckets, and their unit-of-measure model doesn't natively handle tokens, so every integration is a custom shim that breaks the next time a provider changes their pricing schema. Third, any wrapper that just calls a provider's billing API and renders a chart — if it doesn't enforce a budget ceiling or attribute cost to a specific trace, user, or experiment, it's a dashboard, not governance. What's left are tools that either enforce limits before spend accumulates or attribute it finely enough to act on.
+    </div>
+
+    <!-- Filter chips -->
+    <div class="filter-bar" role="group" aria-label="Filter by failure mode">
+      <button class="filter-chip active" data-filter="all">All</button>
+      <button class="filter-chip" data-filter="multi-provider-sprawl">Multi-provider cost sprawl</button>
+      <button class="filter-chip" data-filter="per-request-invisibility">Per-request cost invisibility</button>
+      <button class="filter-chip" data-filter="prompt-iteration-drift">Ungoverned prompt iteration spend</button>
+      <button class="filter-chip" data-filter="billing-misalignment">Token billing misalignment</button>
+      <button class="filter-chip" data-filter="gpu-cost-waste">GPU infrastructure cost waste</button>
+    </div>
+
+    <!-- Section: Multi-provider cost sprawl -->
+    <section data-section="multi-provider-sprawl">
+      <h2 class="section-heading">Multi-provider cost sprawl</h2>
+      <p class="section-framing">Your spend is scattered across providers and nobody can see the total until the invoices land on different desks, by which point the money is already gone.</p>
+      <div class="card-grid">
+        <article class="card" data-failure-mode="multi-provider-sprawl">
+          <span class="card-tag tag-amber">Multi-provider cost sprawl</span>
+          <h3 class="card-name">LiteLLM</h3>
+          <p class="card-fit">Addresses fragmented, unaggregated LLM spend by acting as a unified open-source proxy that tracks cost per request and enforces per-team and per-user budget ceilings across 100+ providers, with virtual-key routing to prevent callers from bypassing the proxy. Fits engineering teams routing to multiple LLM providers who need a single pane for spend visibility and hard budget limits rather than after-the-fact reconciliation.</p>
+        </article>
+      </div>
+    </section>
+
+    <!-- Section: Per-request cost invisibility -->
+    <section data-section="per-request-invisibility">
+      <h2 class="section-heading">Per-request cost invisibility</h2>
+      <p class="section-framing">You know what you spent this month, but you can't point to the specific trace, user, or endpoint that burned half of it. The dashboard says $12,000 and offers no next action.</p>
+      <div class="card-grid">
+        <article class="card" data-failure-mode="per-request-invisibility">
+          <span class="card-tag tag-teal">Per-request cost invisibility</span>
+          <h3 class="card-name">Langfuse</h3>
+          <p class="card-fit">Addresses cost that can't be traced to its source by attaching token cost to individual traces, sessions, and evaluation runs with model-level breakdowns and per-session aggregation, self-hostable or cloud. Fits teams running LLM evaluation pipelines who need cost as an attributable, per-experiment metric instead of a daily aggregate that tells you nothing about which experiment was the expensive one.</p>
+        </article>
+        <article class="card" data-failure-mode="per-request-invisibility">
+          <span class="card-tag tag-teal">Per-request cost invisibility</span>
+          <h3 class="card-name">Helicone</h3>
+          <p class="card-fit">Addresses spend visible in aggregate but invisible at the request level by logging per-request cost with user and custom-property attribution through a lightweight proxy that requires no SDK changes and surfaces caching opportunities to cut repeat-call cost. Fits teams wanting drop-in cost observability without custom logging, who need to answer "which customers or endpoints are driving spend?" without building that attribution layer themselves.</p>
+        </article>
+      </div>
+    </section>
+
+    <!-- Section: Ungoverned prompt iteration spend -->
+    <section data-section="prompt-iteration-drift">
+      <h2 class="section-heading">Ungoverned prompt iteration spend</h2>
+      <p class="section-framing">Every prompt version you ship changes the token budget, but nothing ties the version history to its cost profile — cost drifts silently with each revision like a slow leak in a pressurized system.</p>
+      <div class="card-grid">
+        <article class="card" data-failure-mode="prompt-iteration-drift">
+          <span class="card-tag tag-rose">Ungoverned prompt iteration spend</span>
+          <h3 class="card-name">PromptLayer</h3>
+          <p class="card-fit">Addresses prompt iteration cost drift by linking cost data to specific prompt versions and their execution history in a prompt registry, so you can see whether the latest revision doubled per-call cost before it ships to production. Fits teams actively iterating on prompt templates who need cost tied to the prompt lifecycle, not just the billing cycle — and who want that linkage in the same tool they use to version and deploy prompts.</p>
+        </article>
+      </div>
+    </section>
+
+    <!-- Section: Token billing misalignment -->
+    <section data-section="billing-misalignment">
+      <h2 class="section-heading">Token billing misalignment</h2>
+      <p class="section-framing">Your internal chargeback model charges per API call, but the actual cost driver is per-token — the gap between the two is where budget owners find money they can't account for.</p>
+      <div class="card-grid">
+        <article class="card" data-failure-mode="billing-misalignment">
+          <span class="card-tag tag-sage">Token billing misalignment</span>
+          <h3 class="card-name">OpenMeter</h3>
+          <p class="card-fit">Addresses metering that doesn't match the real unit of consumption by providing real-time, event-based metering that natively handles token-level granularity for chargeback and pricing calculations, with sub-second aggregation. Fits platform teams building internal chargeback or usage-based pricing for LLM consumption who need metering that maps to actual tokens consumed, not API calls made — so the invoice matches the reality.</p>
+        </article>
+        <article class="card" data-failure-mode="billing-misalignment">
+          <span class="card-tag tag-sage">Token billing misalignment</span>
+          <h3 class="card-name">Lago</h3>
+          <p class="card-fit">Addresses ungoverned internal consumption by enforcing usage-based billing with hard limits and automated throttling on token-based pricing plans, with dunning workflows and webhooks for overage events. Fits SaaS teams passing LLM costs through to end customers who need metered billing, subscription enforcement, and the ability to cut off a user who hits their token ceiling — not just report that they exceeded it after the fact.</p>
+        </article>
+      </div>
+    </section>
+
+    <!-- Section: GPU infrastructure cost waste -->
+    <section data-section="gpu-cost-waste">
+      <h2 class="section-heading">GPU infrastructure cost waste</h2>
+      <p class="section-framing">You're paying for provisioned GPU capacity whether or not inference requests are using it, and the utilization gap is where the money leaks out silently through idle cores.</p>
+      <div class="card-grid">
+        <article class="card" data-failure-mode="gpu-cost-waste">
+          <span class="card-tag tag-slate">GPU infrastructure cost waste</span>
+          <h3 class="card-name">SkyPilot</h3>
+          <p class="card-fit">Addresses overprovisioned, statically allocated GPU infrastructure by optimizing multi-cloud GPU placement, auto-bidding on spot instances across clouds, and failing over transparently when spot capacity is preempted, with a managed job queue for batch inference. Fits teams running their own inference workloads who need to minimize GPU idle time and cost without manually managing cloud-specific spot-instance APIs for each provider.</p>
+        </article>
+      </div>
+    </section>
+
+    <!-- No results message -->
+    <div class="no-results" id="no-results">No tools match the current filter and search.</div>
+
+    <!-- Closing note -->
+    <div class="closing-note">
+      <strong>What's still missing.</strong> Two gaps persist as of March 2025. First, nearly every tool here treats cost as a retrospective metric — few support predictive cost estimation before a request is sent, which is what would actually prevent overspend at the point of call rather than report it after. Second, token-level attribution across multi-step agent chains (where one user request triggers multiple model calls across sub-agents) remains largely unsolved; most tools can tag the outer request but lose the cost thread inside the chain.
+    </div>
+
+    <!-- Bold reframe -->
+    <div class="bold-reframe">
+      Most AI cost tooling monitors spend after it's gone — the tools that matter let you set a ceiling before the bill arrives.
+    </div>
+
+    <!-- Social share block -->
+    <div class="share-block">
+      <div class="share-block-label">Share this reference</div>
+      <p class="share-text" id="share-text">Most AI cost tooling monitors spend after it's gone — the tools that matter let you set a ceiling before the bill arrives.</p>
+      <div class="share-buttons">
+        <button class="share-btn" id="copy-btn" type="button">
+          <svg viewBox="0 0 16 16"><path d="M0 4.5A2.5 2.5 0 012.5 2h6A2.5 2.5 0 0111 4.5v6A2.5 2.5 0 018.5 13h-6A2.5 2.5 0 010 10.5v-6zm2.5-1A1.5 1.5 0 001 4.5v6A1.5 1.5 0 002.5 12h6A1.5 1.5 0 0010 10.5v-6A1.5 1.5 0 008.5 3h-6z"/><path d="M5 1.5A2.5 2.5 0 017.5 4h6A2.5 2.5 0 0116 6.5v6A2.5 2.5 0 0113.5 15h-6A2.5 2.5 0 015 12.5v-6z"/></svg>
+          Copy Text &amp; Link
+        </button>
+        <span class="copy-toast" id="copy-toast">Copied!</span>
+        <a class="share-btn" id="x-btn" href="#" target="_blank" rel="noopener noreferrer">
+          <svg viewBox="0 0 16 16"><path d="M12.6 1h2.4l-5.3 6.1L16 15h-4.9l-3.4-4.4L3.3 15H.9l5.7-6.5L.6 1h5l3.1 4.1L12.6 1zm-1.1 12.6h1.3L4.3 2.3H2.9l8.6 11.3z"/></svg>
+          Post on X
+        </a>
+        <a class="share-btn" id="li-btn" href="#" target="_blank" rel="noopener noreferrer">
+          <svg viewBox="0 0 16 16"><path d="M0 1.1C0 .5.5 0 1.1 0h13.8C15.5 0 16 .5 16 1.1v13.8c0 .6-.5 1.1-1.1 1.1H1.1C.5 16 0 15.5 0 14.9V1.1zM4.9 13.3V6.3H2.5v7h2.4zM3.7 5.3c.8 0 1.3-.5 1.3-1.2 0-.7-.5-1.2-1.3-1.2S2.4 3.4 2.4 4.1c0 .7.5 1.2 1.3 1.2zm4.8 8h2.4V9.3c0-1.1-.2-2.2-1.6-2.2-1.1 0-1.5.8-1.6 1.3v4.9H7.3V6.3H9.6v1.1c.3-.6 1.1-1.2 2.3-1.2 2.4 0 2.8 1.6 2.8 3.6v3.5h-2.4V9.7c0-1.1 0-2.5-1.5-2.5-1.5 0-1.7 1.2-1.7 2.5v3.6z"/></svg>
+          Share on LinkedIn
+        </a>
+      </div>
+    </div>
+  </main>
+
+  <!-- ── Footer ── -->
+  <footer>
+    <div class="footer-heading">Verification evidence log</div>
+    <ol class="evidence-log">
+      <li><strong>LiteLLM</strong> — <code>"litellm cost tracking budget limits proxy github"</code> — github.com/BerriAI/litellm, 12k+ stars, releases Feb–Mar 2025</li>
+      <li><strong>Langfuse</strong> — <code>"langfuse llm cost tracking per trace open source"</code> — langfuse.com/docs, GitHub, v2 cost features Feb 2025</li>
+      <li><strong>Helicone</strong> — <code>"helicone llm observability cost dashboard proxy"</code> — helicone.ai, GitHub, active commits Mar 2025</li>
+      <li><strong>PromptLayer</strong> — <code>"promptlayer cost tracking prompt version registry"</code> — promptlayer.com, docs with cost-per-version</li>
+      <li><strong>OpenMeter</strong> — <code>"openmeter usage metering token billing real-time"</code> — github.com/openmeterio/openmeter, docs.openmeter.io</li>
+      <li><strong>Lago</strong> — <code>"lago billing metering llm token pricing open source"</code> — getlago.com, Y Combinator W23, GitHub active Feb 2025</li>
+      <li><strong>SkyPilot</strong> — <code>"skypilot multi-cloud gpu cost optimization spot instances"</code> — github.com/skypilot-org/skypilot, 6k+ stars, releases Feb 2025</li>
+    </ol>
+
+    <div class="footer-heading">Honest gaps</div>
+    <p class="evidence-log" style="list-style:none;">Predictive cost estimation before request dispatch and token-level attribution across multi-step agent chains remain unsolved by the tools listed here as of March 2025.</p>
+
+    <div class="footer-links">
+      <a href="https://iggym.github.io/awesome-ai-architecture/">Home</a>
+      <a href="#" class="back-to-top" id="back-to-top">Back to top</a>
+    </div>
+  </footer>
+
+  <script>
+    /* ── Hamburger toggle ── */
+    const hamburger = document.getElementById('hamburger');
+    const mobileNav = document.getElementById('mobile-nav');
+    hamburger.addEventListener('click', () => {
+      const expanded = hamburger.getAttribute('aria-expanded') === 'true';
+      hamburger.setAttribute('aria-expanded', !expanded);
+      mobileNav.style.display = expanded ? 'none' : 'block';
+      mobileNav.setAttribute('aria-hidden', expanded);
+    });
+
+    /* ── Filter chips ── */
+    const chips = document.querySelectorAll('.filter-chip');
+    const cards = document.querySelectorAll('.card');
+    const sections = document.querySelectorAll('section[data-section]');
+    const noResults = document.getElementById('no-results');
+    let activeFilter = 'all';
+
+    chips.forEach(chip => {
+      chip.addEventListener('click', () => {
+        chips.forEach(c => c.classList.remove('active'));
+        chip.classList.add('active');
+        activeFilter = chip.dataset.filter;
+        applyFilters();
+      });
+    });
+
+    /* ── Search input ── */
+    const searchInput = document.getElementById('search-input');
+    let searchTerm = '';
+
+    searchInput.addEventListener('input', () => {
+      searchTerm = searchInput.value.toLowerCase().trim();
+      applyFilters();
+    });
+
+    /* ── Combined filter logic ── */
+    function applyFilters() {
+      let visibleCount = 0;
+
+      cards.forEach(card => {
+        const fmMatch = activeFilter === 'all' || card.dataset.failureMode === activeFilter;
+        const name = card.querySelector('.card-name').textContent.toLowerCase();
+        const fit = card.querySelector('.card-fit').textContent.toLowerCase();
+        const textMatch = !searchTerm || name.includes(searchTerm) || fit.includes(searchTerm);
+        const show = fmMatch && textMatch;
+
+        card.classList.toggle('hidden', !show);
+        if (show) visibleCount++;
+      });
+
+      /* Show/hide sections based on visible cards */
+      sections.forEach(section => {
+        const fm = section.dataset.section;
+        const fmMatch = activeFilter === 'all' || fm === activeFilter;
+        const visibleCards = section.querySelectorAll('.card:not(.hidden)');
+        section.style.display = (fmMatch && visibleCards.length > 0) ? '' : 'none';
+      });
+
+      noResults.classList.toggle('show', visibleCount === 0);
+    }
+
+    /* ── Social share ── */
+    const shareText = document.getElementById('share-text').textContent.trim();
+
+    function getShareUrl() {
+      return window.location.href;
+    }
+
+    /* Copy button */
+    const copyBtn = document.getElementById('copy-btn');
+    const copyToast = document.getElementById('copy-toast');
+    copyBtn.addEventListener('click', () => {
+      const combined = shareText + ' ' + getShareUrl();
+      navigator.clipboard.writeText(combined).then(() => {
+        copyToast.classList.add('show');
+        setTimeout(() => copyToast.classList.remove('show'), 2000);
+      });
+    });
+
+    /* X / Twitter button */
+    const xBtn = document.getElementById('x-btn');
+    function updateXLink() {
+      const encoded = encodeURIComponent(shareText);
+      const url = encodeURIComponent(getShareUrl());
+      xBtn.href = 'https://x.com/intent/post?text=' + encoded + '&url=' + url;
+    }
+
+    /* LinkedIn button */
+    const liBtn = document.getElementById('li-btn');
+    function updateLiLink() {
+      const url = encodeURIComponent(getShareUrl());
+      liBtn.href = 'https://www.linkedin.com/sharing/share-offsite/?url=' + url;
+    }
+
+    /* Update share links on load (uses dynamic URL) */
+    updateXLink();
+    updateLiLink();
+
+    /* ── Back to top ── */
+    document.getElementById('back-to-top').addEventListener('click', (e) => {
+      e.preventDefault();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
+    /* Close mobile nav on outside click */
+    document.addEventListener('click', (e) => {
+      if (!hamburger.contains(e.target) && !mobileNav.contains(e.target)) {
+        hamburger.setAttribute('aria-expanded', 'false');
+        mobileNav.style.display = 'none';
+        mobileNav.setAttribute('aria-hidden', 'true');
+      }
+    });
+  </script>
+</body>
+</html>
