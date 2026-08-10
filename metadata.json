@@ -44,6 +44,19 @@
   "reading_time_minutes": 5,
   "tags": ["agent-security", "sandboxing", "runtime-isolation", "llm-guardrails"],
   "path": "articles/where-agents-break-free.html"
+}, {
+  "id": "0001",
+  "slug": "multi-model-routing-ai-gateway-tools-mapped-by-failure-mode",
+  "title": "Multi-Model Routing & AI Gateway Tools, Mapped by Failure Mode",
+  "hook": "Multi-model gateways aren't about accessing more models; they're about surviving the inevitable failures, schema drift, and cost spikes of the ones you already use.",
+  "path": "articles/multi-model-routing-ai-gateway-tools-mapped-by-failure-mode.html",
+  "date": "2024-03-12",
+  "status": "published",
+  "format": "reference",
+  "tags": ["multi-model routing", "ai gateway", "vendor evaluation", "failure modes"],
+  "reading_time_minutes": 4,
+  "pinned": false,
+  "research_window": "2024-02-13 to 2024-03-12"
 }
   ]
 }
