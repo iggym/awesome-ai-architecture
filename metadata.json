@@ -5,84 +5,25 @@
     "tagline": "Curated by failure mode, not vendor category.",
     "base_url": "https://iggym.github.io/awesome-ai-architecture/",
     "audience": "Top-of-funnel, SEO, vendor evaluators",
-    "description": "A curated, opinionated map of AI infrastructure tooling, organized by the specific failure mode each tool addresses — with an explicit exclusion criteria, not an exhaustive link dump."
+    "description": "A curated, opinionated map of AI infrastructure tooling, organized by the specific failure mode each tool addresses — with an explicit exclusion criteria, not an exhaustive link dump.",
+    "updated": "2026-10-06"
   },
   "articles": [
     {
-      "title": "Watchtower and Moat",
-      "hook": "Agent security isn't a tool choice — it's a layering problem. LLM-layer guards and runtime sandboxes solve different failure modes. Pick one, you get a speed bump. Stack both, you get an architecture.",
-      "date": "2025-04-14",
-      "status": "published",
-      "pinned": false,
-      "reading_time_minutes": 7,
-      "tags": [
-        "agent-security",
-        "sandboxing",
-        "llm-guardrails",
-        "runtime-boundary",
-        "architecture-evaluation"
-      ],
-      "path": "articles/watchtower-and-moat.html"
-    },
-    {
-      "title": "Smoke Signals in Production",
-      "hook": "Multi-agent frameworks aren't ranked by what they build—they're ranked by what you can see when they break.",
-      "date": "2025-02-28",
-      "status": "published",
-      "pinned": false,
-      "reading_time_minutes": 6,
-      "tags": [
-        "multi-agent-orchestration",
-        "observability",
-        "debuggability",
-        "agent-frameworks"
-      ],
-      "path": "articles/smoke-signals-in-production.html"
-    },
-    {
-      "title": "Where the Sandbox Ends",
-      "hook": "Every sandbox you deployed is theater if your LLM guardrails can't stop the prompt that makes the agent ask the sandbox to do the wrong thing.",
-      "date": "2025-04-14",
-      "status": "published",
-      "pinned": false,
-      "reading_time_minutes": 8,
-      "tags": [
-        "agent-security",
-        "sandboxing",
-        "llm-guardrails",
-        "runtime-isolation"
-      ],
-      "path": "articles/where-the-sandbox-ends.html"
-    },
-    {
-      "title": "Where Agents Break Free",
-      "hook": "Prompt guardrails don't stop rm -rf / — most agent stacks secure the LLM layer and leave the runtime wide open.",
-      "date": "2025-04-14",
-      "status": "published",
-      "pinned": false,
-      "reading_time_minutes": 5,
-      "tags": [
-        "agent-security",
-        "sandboxing",
-        "runtime-isolation",
-        "llm-guardrails"
-      ],
-      "path": "articles/where-agents-break-free.html"
-    },
-    {
       "id": "0001",
       "slug": "multi-model-routing-ai-gateway-tools-mapped-by-failure-mode",
-      "title": "Multi-Model Routing & AI Gateway Tools, Mapped by Failure Mode",
+      "title": "Multi-Model Routing & AI Gateway Tools, Mapped by Failure Mode (2024 Edition)",
       "hook": "Multi-model gateways aren't about accessing more models; they're about surviving the inevitable failures, schema drift, and cost spikes of the ones you already use.",
       "path": "articles/multi-model-routing-ai-gateway-tools-mapped-by-failure-mode.html",
       "date": "2024-03-12",
+      "date_modified": "2024-03-12",
       "status": "published",
       "format": "reference",
       "tags": [
-        "multi-model routing",
-        "ai gateway",
-        "vendor evaluation",
-        "failure modes"
+        "multi-model-routing",
+        "ai-gateway",
+        "vendor-evaluation",
+        "failure-mode-mapping"
       ],
       "reading_time_minutes": 4,
       "pinned": false,
@@ -90,11 +31,12 @@
     },
     {
       "id": "0002",
-      "slug": "multi-model-routing-ai-gateway-tools-mapped-by-failure-mode",
-      "title": "Multi-Model Routing & AI Gateway Tools, Mapped by Failure Mode",
+      "slug": "multi-model-routing-ai-gateway-tools-mapped-by-failure-mode-2026",
+      "title": "Multi-Model Routing & AI Gateway Tools, Mapped by Failure Mode (2026 Edition)",
       "hook": "AI gateways have split into two camps: zero-ops marketplaces for teams wanting unified model access, and self-hosted control planes for teams treating routing as infrastructure. The middle is empty.",
-      "path": "articles/multi-model-routing-ai-gateway-tools-mapped-by-failure-mode.html",
+      "path": "articles/multi-model-routing-ai-gateway-tools-mapped-by-failure-mode-2026.html",
       "date": "2026-03-12",
+      "date_modified": "2026-03-12",
       "status": "published",
       "format": "reference",
       "tags": [
@@ -115,6 +57,7 @@
       "hook": "Most \"LLM evaluation\" tools are observability dashboards wearing a testing costume — this list keeps only the ones that can fail a build.",
       "path": "articles/llm-evaluation-testing-tools-mapped-by-failure-mode.html",
       "date": "2024-11-08",
+      "date_modified": "2024-11-08",
       "status": "published",
       "format": "reference",
       "tags": [
@@ -129,12 +72,13 @@
       "research_window": "2024-10-04 to 2024-11-08"
     },
     {
-      "id": "0025",
+      "id": "0004",
       "slug": "cost-governance-tooling-ai-mapped-by-failure-mode",
       "title": "Cost-Governance Tooling for AI Systems, Mapped by Failure Mode",
       "hook": "Most AI cost tooling monitors spend after it's gone — the tools that matter let you set a ceiling before the bill arrives.",
       "path": "articles/cost-governance-tooling-ai-mapped-by-failure-mode.html",
       "date": "2025-03-18",
+      "date_modified": "2025-03-18",
       "status": "published",
       "format": "reference",
       "tags": [
@@ -145,6 +89,213 @@
       "reading_time_minutes": 5,
       "pinned": false,
       "research_window": "2025-02-11 to 2025-03-18"
+    },
+    {
+      "id": "0005",
+      "slug": "smoke-signals-in-production",
+      "title": "Smoke Signals in Production",
+      "hook": "Multi-agent frameworks aren't ranked by what they build—they're ranked by what you can see when they break.",
+      "path": "articles/smoke-signals-in-production.html",
+      "date": "2025-02-28",
+      "date_modified": "2026-10-06",
+      "status": "published",
+      "format": "essay",
+      "tags": [
+        "multi-agent-orchestration",
+        "observability",
+        "debuggability",
+        "agent-frameworks"
+      ],
+      "reading_time_minutes": 6,
+      "pinned": false,
+      "research_window": null
+    },
+    {
+      "id": "0006",
+      "slug": "watchtower-and-moat",
+      "title": "Watchtower and Moat",
+      "hook": "Agent security isn't a tool choice — it's a layering problem. LLM-layer guards and runtime sandboxes solve different failure modes. Pick one, you get a speed bump. Stack both, you get an architecture.",
+      "path": "articles/watchtower-and-moat.html",
+      "date": "2025-04-14",
+      "date_modified": "2026-10-06",
+      "status": "published",
+      "format": "essay",
+      "tags": [
+        "agent-security",
+        "sandboxing",
+        "llm-guardrails",
+        "runtime-boundary",
+        "architecture-evaluation"
+      ],
+      "reading_time_minutes": 7,
+      "pinned": false,
+      "research_window": null
+    },
+    {
+      "id": "0007",
+      "slug": "where-the-sandbox-ends",
+      "title": "Where the Sandbox Ends",
+      "hook": "Every sandbox you deployed is theater if your LLM guardrails can't stop the prompt that makes the agent ask the sandbox to do the wrong thing.",
+      "path": "articles/where-the-sandbox-ends.html",
+      "date": "2025-04-14",
+      "date_modified": "2026-10-06",
+      "status": "published",
+      "format": "essay",
+      "tags": [
+        "agent-security",
+        "sandboxing",
+        "llm-guardrails",
+        "runtime-isolation"
+      ],
+      "reading_time_minutes": 8,
+      "pinned": false,
+      "research_window": null
+    },
+    {
+      "id": "0008",
+      "slug": "where-agents-break-free",
+      "title": "Where Agents Break Free",
+      "hook": "Prompt guardrails don't stop rm -rf / — most agent stacks secure the LLM layer and leave the runtime wide open.",
+      "path": "articles/where-agents-break-free.html",
+      "date": "2025-04-14",
+      "date_modified": "2026-10-06",
+      "status": "published",
+      "format": "essay",
+      "tags": [
+        "agent-security",
+        "sandboxing",
+        "runtime-isolation",
+        "llm-guardrails"
+      ],
+      "reading_time_minutes": 5,
+      "pinned": false,
+      "research_window": null
+    },
+    {
+      "id": "0009",
+      "slug": "vector-hybrid-retrieval-stores-mapped-by-failure-mode",
+      "title": "Vector & Hybrid Retrieval Stores, Mapped by Failure Mode",
+      "hook": "Vector databases don't fail on recall benchmarks — they fail on the filter, the SKU and the re-embed. Choose the store by the failure you can't afford.",
+      "path": "articles/vector-hybrid-retrieval-stores-mapped-by-failure-mode.html",
+      "date": "2026-10-07",
+      "date_modified": "2026-10-07",
+      "status": "published",
+      "format": "reference",
+      "tags": [
+        "retrieval",
+        "vector-database",
+        "hybrid-search",
+        "rag",
+        "failure-mode-mapping"
+      ],
+      "reading_time_minutes": 6,
+      "pinned": false,
+      "research_window": "2026-09-01 to 2026-10-07"
+    },
+    {
+      "id": "0010",
+      "slug": "llm-inference-serving-engines-mapped-by-failure-mode",
+      "title": "LLM Inference & Serving Engines, Mapped by Failure Mode",
+      "hook": "Inference engines aren't ranked by peak tokens per second — they're ranked by what happens at p99 when the 500th concurrent agent sends the same 8k-token prefix.",
+      "path": "articles/llm-inference-serving-engines-mapped-by-failure-mode.html",
+      "date": "2026-10-07",
+      "date_modified": "2026-10-07",
+      "status": "published",
+      "format": "reference",
+      "tags": [
+        "inference",
+        "model-serving",
+        "gpu-efficiency",
+        "open-weights",
+        "failure-mode-mapping"
+      ],
+      "reading_time_minutes": 5,
+      "pinned": false,
+      "research_window": "2026-09-01 to 2026-10-07"
+    },
+    {
+      "id": "0011",
+      "slug": "structured-output-schema-enforcement-mapped-by-failure-mode",
+      "title": "Structured Output & Schema Enforcement Tools, Mapped by Failure Mode",
+      "hook": "Valid JSON is the easy part. The failures that page you are the schema-valid object with the wrong value and the extraction nobody can trace back to its source.",
+      "path": "articles/structured-output-schema-enforcement-mapped-by-failure-mode.html",
+      "date": "2026-10-07",
+      "date_modified": "2026-10-07",
+      "status": "published",
+      "format": "reference",
+      "tags": [
+        "structured-output",
+        "constrained-decoding",
+        "schema-validation",
+        "data-extraction",
+        "failure-mode-mapping"
+      ],
+      "reading_time_minutes": 5,
+      "pinned": false,
+      "research_window": "2026-09-01 to 2026-10-07"
+    },
+    {
+      "id": "0012",
+      "slug": "document-ingestion-parsing-rag-mapped-by-failure-mode",
+      "title": "Document Ingestion & Parsing for RAG, Mapped by Failure Mode",
+      "hook": "Most RAG failures are parsing failures wearing a retrieval costume. If the table was flattened on the way in, no embedding model will find the number.",
+      "path": "articles/document-ingestion-parsing-rag-mapped-by-failure-mode.html",
+      "date": "2026-10-07",
+      "date_modified": "2026-10-07",
+      "status": "published",
+      "format": "reference",
+      "tags": [
+        "rag",
+        "document-parsing",
+        "data-ingestion",
+        "ocr",
+        "failure-mode-mapping"
+      ],
+      "reading_time_minutes": 5,
+      "pinned": false,
+      "research_window": "2026-09-01 to 2026-10-07"
+    },
+    {
+      "id": "0013",
+      "slug": "memory-is-a-write-path",
+      "title": "Memory Is a Write Path",
+      "hook": "Agent memory doesn't fail on recall — it fails on the write. If your memory layer can't decide which of two facts is current, you've built a contradiction cache.",
+      "path": "articles/memory-is-a-write-path.html",
+      "date": "2026-10-07",
+      "date_modified": "2026-10-07",
+      "status": "published",
+      "format": "essay",
+      "tags": [
+        "agent-memory",
+        "agent-frameworks",
+        "knowledge-graphs",
+        "state-management",
+        "architecture-evaluation"
+      ],
+      "reading_time_minutes": 6,
+      "pinned": false,
+      "research_window": "2026-09-01 to 2026-10-07"
+    },
+    {
+      "id": "0014",
+      "slug": "the-plug-is-not-the-policy",
+      "title": "The Plug Is Not the Policy",
+      "hook": "MCP standardized the plug, not the policy. Every tool server you add is a dependency with your agent's permissions — govern it like a supply chain, not a config file.",
+      "path": "articles/the-plug-is-not-the-policy.html",
+      "date": "2026-10-07",
+      "date_modified": "2026-10-07",
+      "status": "published",
+      "format": "essay",
+      "tags": [
+        "mcp",
+        "tool-calling",
+        "agent-security",
+        "supply-chain",
+        "architecture-evaluation"
+      ],
+      "reading_time_minutes": 6,
+      "pinned": false,
+      "research_window": "2026-09-01 to 2026-10-07"
     }
   ]
 }

@@ -254,7 +254,7 @@
       <p><strong>LLM-Layer Security</strong> operates at the boundary between the model and the world. It inspects what goes in and what comes out. Three tools occupy this layer, each with a distinct granularity trade-off.</p>
 
       <h3>Prompt Guard</h3>
-      <p><strong>Prompt Guard</strong> (Meta) is the fastest, narrowest tool. A ~300M parameter encoder that runs on CPU in under 10ms. It answers exactly one question: "Is this input an injection attempt?" Binary classification, no nuance, no correction. Use it as a first-line filter before anything else reaches your model. Its limitation is its specificity — it won't catch a model producing harmful content from a benign prompt, because it doesn't look at outputs.</p>
+      <p><strong>Prompt Guard</strong> (Meta) is the fastest, narrowest tool. An 86M-parameter encoder that runs on CPU in under 10ms. It answers exactly one question: "Is this input an injection attempt?" Binary classification, no nuance, no correction. Use it as a first-line filter before anything else reaches your model. Its limitation is its specificity — it won't catch a model producing harmful content from a benign prompt, because it doesn't look at outputs.</p>
 
       <h3>Llama Guard 2</h3>
       <p><strong>Llama Guard 2</strong> (Meta) is the broadest LLM-layer tool. An 8B parameter model that classifies both inputs and outputs against a full safety taxonomy. It catches what Prompt Guard can't — harmful content the model generates from legitimate prompts. The trade-off is infrastructure: you need a dedicated GPU, 100-300ms of latency per classification, and the taxonomy is fixed unless you re-prompt the guard model itself. This is your watchtower — high vantage point, wide view, expensive to operate.</p>
@@ -267,12 +267,12 @@
       <h3>E2B</h3>
       <p><strong>E2B</strong> provides isolated microVM sandboxes via Firecracker. Each agent gets a dedicated kernel, isolated filesystem, and configurable network egress. The architecture is clean: your agent code runs inside the sandbox, and the sandbox policy is the security boundary. Cold start is ~500ms on managed infra. The limitation is granularity — E2B controls filesystem and network, but not individual function calls or in-process memory access. If an agent needs to call a specific API, you allow network egress to that domain, and the agent can do anything on that domain.</p>
 
-      <h3>Archon</h3>
-      <p><strong>Archon</strong> (OpenAI) takes a different approach: capability-based security. Agents declare what they want to do (read a file, make a network request, execute a shell command), and a supervisor process approves or denies each capability invocation based on declarative policy. This is finer-grained than E2B's network/filesystem boundaries — you can allow "read file X" but not "read file Y," or "call API endpoint A" but not "call API endpoint B." The trade-off is that the policy language is still young, the process isolation adds overhead, and it's currently Python-only. But architecturally, it's the most precise execution boundary available.</p>
+      <h3>Wasmtime</h3>
+      <p><strong>Wasmtime</strong> (Bytecode Alliance) takes a different approach: capability-based security. Tool code compiled to WebAssembly starts with zero ambient authority — no filesystem, no network, no environment — and the host grants each capability explicitly through WASI (pre-opened directories, specific sockets). This is finer-grained than E2B's network/filesystem boundaries — you can grant "read directory X" but not "read directory Y," and nothing the module was not handed exists from its point of view. The trade-off is reach: your tools must compile to Wasm, much of the Python ecosystem (native extensions, subprocesses) does not, and WASI networking is still maturing. But architecturally, it's the most precise execution boundary available.</p>
 
       <h2 id="recommendations">Where to Land</h2>
       <p>The decision matrix is simple once you separate the layers. If your agent only generates text — no tool use, no code execution, no side effects — LLM-layer security alone is sufficient. Pair Prompt Guard (fast, narrow) with Guardrails AI (corrective) and you have a solid I/O pipeline.</p>
-      <p>If your agent takes actions — writes files, calls APIs, executes code — you need a runtime boundary. Period. E2B for coarse-grained isolation (fastest to deploy), Archon for fine-grained capability control (most precise, higher operational cost). Stack either with LLM-layer guards above.</p>
+      <p>If your agent takes actions — writes files, calls APIs, executes code — you need a runtime boundary. Period. E2B for coarse-grained isolation (fastest to deploy), Wasmtime for fine-grained capability control (most precise, narrowest language support). Stack either with LLM-layer guards above.</p>
       <p>The failure mode of choosing only one layer is asymmetric and dangerous. LLM-layer guards alone cannot stop an agent that's been instructed to exfiltrate data through allowed channels — the guard sees a legitimate API call, the model output is clean, but the agent ships your secrets to an external endpoint. Runtime sandboxes alone cannot stop an agent from producing harmful content that reaches the user before execution is halted — the sandbox contains the <em>action</em>, not the <em>utterance</em>.</p>
       <p>Watchtower and moat. Neither replaces the other. The architecture that stacks both is the one that survives the first real adversarial test.</p>
 
@@ -334,7 +334,7 @@
               <div class="arch-tool-type">Runtime — MicroVM Sandbox</div>
             </div>
             <div class="arch-tool-card runtime" data-type="runtime" data-layer="execution">
-              <div class="arch-tool-name">Archon</div>
+              <div class="arch-tool-name">Wasmtime</div>
               <div class="arch-tool-type">Runtime — Capability-Based</div>
             </div>
           </div>
@@ -405,9 +405,9 @@
             <td>Yes</td>
           </tr>
           <tr>
-            <td>Archon</td>
+            <td>Wasmtime</td>
             <td><span class="tag tag-runtime">Runtime</span></td>
-            <td>Process overhead</td>
+            <td>Sub-ms instantiation</td>
             <td>Self-hosted only</td>
             <td>Per-capability policy</td>
             <td>N/A</td>
@@ -451,7 +451,7 @@
     <strong style="color:var(--fg-dim)">Citations & Sources:</strong><br>
     E2B — <a href="https://github.com/e2b-dev/e2b" target="_blank" rel="noopener">github.com/e2b-dev/e2b</a> (Firecracker microVM sandboxes, SDK v1.0)<br>
     Guardrails AI — <a href="https://github.com/guardrails-ai/guardrails" target="_blank" rel="noopener">github.com/guardrails-ai/guardrails</a> (v0.5+, Guardrails Hub, 50+ validators)<br>
-    Archon — <a href="https://github.com/openai/archon" target="_blank" rel="noopener">github.com/openai/archon</a> (capability-based security, open-sourced Feb 2025)<br>
+    Wasmtime — <a href="https://github.com/bytecodealliance/wasmtime" target="_blank" rel="noopener">github.com/bytecodealliance/wasmtime</a> (WASI capability-based Wasm runtime, Bytecode Alliance)<br>
     Llama Guard 2 — <a href="https://huggingface.co/meta-llama/Llama-Guard-2-8B" target="_blank" rel="noopener">huggingface.co/meta-llama/Llama-Guard-2-8B</a> (8B safety classifier)<br>
     Prompt Guard — <a href="https://huggingface.co/meta-llama/Prompt-Guard-86M" target="_blank" rel="noopener">huggingface.co/meta-llama/Prompt-Guard-86M</a> (injection detection encoder)
   </div>
@@ -524,14 +524,14 @@
   /* ── Share buttons ── */
   const reframeText = "Agent security isn't a tool choice — it's a layering problem. LLM-layer guards and runtime sandboxes solve different failure modes. Pick one, you get a speed bump. Stack both, you get an architecture.";
   document.getElementById('copyShareBtn').addEventListener('click', function() {
-    navigator.clipboard.writeText(reframeText).then(function() {
+    navigator.clipboard.writeText(reframeText + ' — ' + 'https://iggym.github.io/awesome-ai-architecture/articles/watchtower-and-moat.html').then(function() {
       var btn = document.getElementById('copyShareBtn');
       btn.innerHTML = '<i class="fa-solid fa-check"></i> Copied';
       setTimeout(function() { btn.innerHTML = '<i class="fa-regular fa-copy"></i> Copy Reframe'; }, 2000);
     });
   });
   document.getElementById('twitterShareBtn').addEventListener('click', function() {
-    window.open('https://twitter.com/intent/tweet?text=' + encodeURIComponent(reframeText), '_blank', 'noopener');
+    window.open('https://twitter.com/intent/tweet?text=' + encodeURIComponent(reframeText) + '&url=' + encodeURIComponent('https://iggym.github.io/awesome-ai-architecture/articles/watchtower-and-moat.html'), '_blank', 'noopener');
   });
 
   /* ── Architecture map filters ── */

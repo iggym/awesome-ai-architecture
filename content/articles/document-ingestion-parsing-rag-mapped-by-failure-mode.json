@@ -1,0 +1,170 @@
+{
+  "id": "0012",
+  "slug": "document-ingestion-parsing-rag-mapped-by-failure-mode",
+  "title": "Document Ingestion & Parsing for RAG, Mapped by Failure Mode",
+  "format": "reference",
+  "date": "2026-10-07",
+  "research_window": [
+    "2026-09-01",
+    "2026-10-07"
+  ],
+  "description": "A curated reference of document parsing and ingestion tools for RAG pipelines, organized by the failure each one prevents: flattened tables, scrambled reading order, unreadable scans, structure-blind chunks and data that cannot leave the network.",
+  "standfirst": "For engineers whose RAG answers are wrong before retrieval even starts — organized by the way documents get mangled on the way in, because no retriever can recover what the parser destroyed.",
+  "tags": [
+    "rag",
+    "document-parsing",
+    "data-ingestion",
+    "ocr",
+    "failure-mode-mapping"
+  ],
+  "hook": "Most RAG failures are parsing failures wearing a retrieval costume. If the table was flattened on the way in, no embedding model will find the number.",
+  "exclusions": {
+    "intro": "Ingestion is the least glamorous layer of RAG and the one that decides its ceiling. This list is strict about what counts as a parser.",
+    "items": [
+      {
+        "name": "Plain text extractors",
+        "reason": "pulling a text layer out of a PDF (pdftotext-style) loses tables, reading order and every scanned page. Fine for a baseline, not a pipeline."
+      },
+      {
+        "name": "Generic multimodal LLM prompts as a parser",
+        "reason": "\"send the page image to a vision model and ask for Markdown\" works in a demo and fails on cost, determinism and hallucinated cells at volume. Tools that use models <em>inside</em> a structured pipeline are included; a bare prompt is not."
+      },
+      {
+        "name": "Framework loaders that wrap another parser",
+        "reason": "a document-loader class that calls a library listed here adds an import, not a capability."
+      },
+      {
+        "name": "Projects without recent releases",
+        "reason": "document formats and layout models move quickly; a parser with no release in the window is excluded regardless of reputation."
+      }
+    ],
+    "bar": "the tool must output structure (headings, tables, reading order, element types), not just text — and do it reproducibly on your documents."
+  },
+  "failure_modes": [
+    {
+      "key": "tables",
+      "short": "Flattened Tables",
+      "title": "Tables Flattened into Meaningless Text",
+      "body": "A pricing table becomes a run of numbers with no column headers. The chunk is retrieved, the model reads \"12 24 36 Basic Pro\" and invents the mapping. Table structure is the single most common place where enterprise RAG quietly loses facts.",
+      "tools": [
+        {
+          "name": "Docling",
+          "url": "https://github.com/docling-project/docling",
+          "fit": "Open-source parser (originally from IBM Research, now an LF AI & Data project) with layout analysis and table-structure recognition that exports a typed document model to Markdown, HTML or JSON; fits teams that want table-faithful parsing they can run and inspect locally, not a black-box API.",
+          "limit": "accuracy on dense or borderless tables still needs spot-checking on your own corpus."
+        }
+      ]
+    },
+    {
+      "key": "order",
+      "short": "Reading Order",
+      "title": "Multi-Column Layouts Scrambled Out of Reading Order",
+      "body": "Two-column papers, sidebars, footnotes and headers interleave into sentences that never existed. Embeddings happily encode the nonsense; the answer cites a paragraph that is half one column and half the other.",
+      "tools": [
+        {
+          "name": "Marker",
+          "url": "https://github.com/datalab-to/marker",
+          "fit": "Converts PDFs and other formats to Markdown/JSON with layout detection and reading-order reconstruction, optionally assisted by an LLM for hard pages; fits research, publishing and technical-manual corpora where layout is complex, not simple single-column forms.",
+          "limit": "GPU strongly recommended for throughput; check the model-weights licence terms for commercial use."
+        },
+        {
+          "name": "MinerU",
+          "url": "https://github.com/opendatalab/MinerU",
+          "fit": "PDF-to-Markdown/JSON pipeline from OpenDataLab with layout, formula and table recognition and strong multilingual (notably Chinese) coverage; fits scientific and multilingual corpora with formulas and mixed layouts, not lightweight CPU-only deployments.",
+          "limit": "heavyweight model stack; plan GPU capacity and pin versions."
+        }
+      ]
+    },
+    {
+      "key": "scans",
+      "short": "Scans & Handwriting",
+      "title": "Scanned and Handwritten Pages Come Out Empty",
+      "body": "Half of a real document archive has no text layer: faxes, signed contracts, photographed receipts. A parser that silently returns an empty string for those pages makes them invisible to retrieval — and nobody notices until a user asks about one.",
+      "tools": [
+        {
+          "name": "LlamaParse",
+          "url": "https://developers.llamaindex.ai/llamaparse/",
+          "fit": "LlamaIndex's hosted \"agentic OCR\" parsing service covering scans, skewed pages, charts and 100+ file formats, with tiered parsing modes; fits teams that want strong OCR and layout handling without operating GPU models, not data that must stay on-premises.",
+          "limit": "hosted and metered — cost scales with pages, and documents leave your network."
+        }
+      ]
+    },
+    {
+      "key": "chunking",
+      "short": "Structure-Blind Chunks",
+      "title": "Chunks Cut Through Sections and Lose Their Context",
+      "body": "Fixed-size chunking splits a clause from its heading and a step from its procedure. Retrieval returns \"the limit is 30 days\" with no idea which policy it belongs to. Chunking should follow document elements, and each chunk should carry its heading path.",
+      "tools": [
+        {
+          "name": "Unstructured",
+          "url": "https://github.com/Unstructured-IO/unstructured",
+          "fit": "Partitions dozens of file types into typed elements (Title, NarrativeText, Table, ListItem) with element-aware chunking strategies such as by-title; fits heterogeneous corpora (email, Office, HTML, PDF) where one partitioning interface beats per-format parsers, not single-format pipelines that need best-in-class PDF accuracy.",
+          "limit": "the open-source library and the hosted platform differ in models and quality — benchmark the one you will actually run."
+        }
+      ]
+    },
+    {
+      "key": "residency",
+      "short": "Data Can't Leave",
+      "title": "Sensitive Documents Can't Leave the Network",
+      "body": "Legal, medical and HR documents often cannot be sent to a third-party API at all. The failure here is not accuracy — it is that the best parser is unavailable, so teams fall back to plain text extraction and inherit every failure mode above. Docling, above, also runs fully offline with pre-downloaded models; the option below is for organisations that want a supported commercial OCR stack on their own hardware.",
+      "tools": [
+        {
+          "name": "Azure AI Document Intelligence (disconnected containers)",
+          "url": "https://learn.microsoft.com/azure/ai-services/document-intelligence/containers/disconnected",
+          "fit": "Microsoft's Read and Layout OCR models packaged as containers that run without cloud connectivity under a commitment-tier licence; fits regulated enterprises that need vendor-supported OCR on-premises and already buy from Microsoft, not small teams or open-source-only stacks.",
+          "limit": "access requires an application, a commitment plan and a licence file; container model versions lag the cloud service."
+        }
+      ]
+    }
+  ],
+  "evidence": [
+    {
+      "name": "Docling",
+      "url": "https://github.com/docling-project/docling",
+      "query": "docling table structure layout analysis LF AI",
+      "signal": "docling 2.134.0 released 2026-10-06"
+    },
+    {
+      "name": "Marker",
+      "url": "https://github.com/datalab-to/marker",
+      "query": "marker pdf to markdown reading order llm mode",
+      "signal": "marker-pdf 2.0.0 released 2026-07-20"
+    },
+    {
+      "name": "MinerU",
+      "url": "https://github.com/opendatalab/MinerU",
+      "query": "mineru pdf parsing formula table multilingual",
+      "signal": "mineru 4.0.10 released 2026-09-29"
+    },
+    {
+      "name": "LlamaParse",
+      "url": "https://developers.llamaindex.ai/llamaparse/",
+      "query": "llamaparse agentic OCR LlamaCloud 2026",
+      "signal": "hosted service; LlamaIndex reported 300k+ LlamaParse users as of Aug 2026"
+    },
+    {
+      "name": "Unstructured",
+      "url": "https://github.com/Unstructured-IO/unstructured",
+      "query": "unstructured partition chunk by_title elements",
+      "signal": "unstructured 0.27.16 released 2026-10-05"
+    },
+    {
+      "name": "Azure AI Document Intelligence containers",
+      "url": "https://learn.microsoft.com/azure/ai-services/document-intelligence/containers/disconnected",
+      "query": "azure document intelligence disconnected containers layout",
+      "signal": "Layout model container support documented for API 2024-11-30 (GA)"
+    }
+  ],
+  "missing": "There is no shared benchmark built from <em>enterprise</em> documents — most parser comparisons use academic PDFs, which reward exactly the layouts that matter least in a contract archive. Nobody scores parsing by its downstream effect on retrieval, and change detection is primitive: re-ingesting a 400-page manual because one table changed is still the norm. Until those exist, keep a golden set of your own ugliest documents and re-run it on every parser upgrade.",
+  "related": [
+    "vector-hybrid-retrieval-stores-mapped-by-failure-mode",
+    "structured-output-schema-enforcement-mapped-by-failure-mode",
+    "llm-evaluation-testing-tools-mapped-by-failure-mode"
+  ],
+  "choose": [
+    "Build a golden set before choosing a parser: thirty to fifty of your ugliest real documents — the scanned contract, the two-column spec sheet, the spreadsheet exported to PDF, the slide deck with charts. Run each candidate parser on them and have a person score tables, reading order and missing text. An afternoon of this beats any public leaderboard, because public test sets are not your documents.",
+    "Route by document type rather than forcing one parser to do everything. A common production shape is a fast open-source parser (Docling or Unstructured) for born-digital files, a layout-heavy model (Marker or MinerU) for complex PDFs, and an OCR service for scans — with a classifier step deciding which path each file takes. The routing logic is simple; the savings in cost and accuracy are not.",
+    "Store the parser's structured output, not just the chunks. When you change chunking strategy or embedding model, you should be able to re-chunk from structured elements without re-parsing every file, which is usually the slowest and most expensive step in the pipeline."
+  ]
+}

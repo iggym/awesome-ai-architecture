@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Document Ingestion &amp; Parsing for RAG, Mapped by Failure Mode — Awesome AI Architecture</title>
+<meta name="description" content="A curated reference of document parsing and ingestion tools for RAG pipelines, organized by the failure each one prevents: flattened tables, scrambled reading order, unreadable scans, structure-blind chunks and data that cannot leave the network.">
+<meta name="author" content="iggym">
+<link rel="canonical" href="https://iggym.github.io/awesome-ai-architecture/articles/document-ingestion-parsing-rag-mapped-by-failure-mode.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Awesome AI Architecture">
+<meta property="og:title" content="Document Ingestion &amp; Parsing for RAG, Mapped by Failure Mode">
+<meta property="og:description" content="A curated reference of document parsing and ingestion tools for RAG pipelines, organized by the failure each one prevents: flattened tables, scrambled reading order, unreadable scans, structure-blind chunks and data that cannot leave the network.">
+<meta property="og:url" content="https://iggym.github.io/awesome-ai-architecture/articles/document-ingestion-parsing-rag-mapped-by-failure-mode.html">
+<meta property="article:published_time" content="2026-10-07">
+<meta property="article:tag" content="rag">
+<meta property="article:tag" content="document-parsing">
+<meta property="article:tag" content="data-ingestion">
+<meta property="article:tag" content="ocr">
+<meta property="article:tag" content="failure-mode-mapping">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Document Ingestion &amp; Parsing for RAG, Mapped by Failure Mode">
+<meta name="twitter:description" content="A curated reference of document parsing and ingestion tools for RAG pipelines, organized by the failure each one prevents: flattened tables, scrambled reading order, unreadable scans, structure-blind chunks and data that cannot leave the network.">
+<meta name="color-scheme" content="light dark">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "TechArticle", "headline": "Document Ingestion & Parsing for RAG, Mapped by Failure Mode", "description": "A curated reference of document parsing and ingestion tools for RAG pipelines, organized by the failure each one prevents: flattened tables, scrambled reading order, unreadable scans, structure-blind chunks and data that cannot leave the network.", "datePublished": "2026-10-07", "dateModified": "2026-10-07", "author": {"@type": "Person", "name": "iggym", "url": "https://github.com/iggym"}, "publisher": {"@type": "Organization", "name": "Awesome AI Architecture", "url": "https://iggym.github.io/awesome-ai-architecture/"}, "url": "https://iggym.github.io/awesome-ai-architecture/articles/document-ingestion-parsing-rag-mapped-by-failure-mode.html", "mainEntityOfPage": "https://iggym.github.io/awesome-ai-architecture/articles/document-ingestion-parsing-rag-mapped-by-failure-mode.html", "keywords": "rag, document-parsing, data-ingestion, ocr, failure-mode-mapping", "isPartOf": {"@type": "WebSite", "name": "Awesome AI Architecture", "url": "https://iggym.github.io/awesome-ai-architecture/"}}</script>
+<style>
+:root{
+  --cream:#FAF6EE; --ink:#1F2421; --teal:#1F7A6C; --coral:#C4502B; --muted:#6F6A5E;
+  --surface:#FFFFFF; --border:rgba(31,36,33,0.14); --soft:#4B4738; --teal-soft:rgba(31,122,108,0.10);
+  --display:'Space Grotesk',sans-serif; --body:'Inter',sans-serif; --mono:'IBM Plex Mono',monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root{ --cream:#121412; --ink:#E9E6DF; --teal:#4FB8A6; --coral:#F08A63; --muted:#A39F94;
+    --surface:#1A1D1B; --border:rgba(233,230,223,0.14); --soft:#CFCAC0; --teal-soft:rgba(79,184,166,0.14); }
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion: reduce){ html{scroll-behavior:auto} *{animation-duration:.001ms!important;transition-duration:.001ms!important} }
+body{margin:0;background:var(--cream);color:var(--ink);font-family:var(--body);line-height:1.65;font-size:16px}
+a{color:var(--teal)}
+a:focus-visible,button:focus-visible{outline:2px solid var(--coral);outline-offset:2px}
+code{font-family:var(--mono);font-size:.88em;background:var(--teal-soft);padding:1px 5px;border-radius:4px}
+.topbar{position:sticky;top:0;z-index:20;background:var(--cream);border-bottom:1px solid var(--border);padding:12px 16px;display:flex;gap:16px;align-items:center;justify-content:space-between}
+.topbar a.home{font-family:var(--display);font-weight:700;font-size:14px;text-decoration:none;color:var(--ink);white-space:nowrap}
+.toc{display:flex;gap:14px;overflow-x:auto;font-family:var(--mono);font-size:12px;scrollbar-width:none}
+.toc a{color:var(--muted);text-decoration:none;white-space:nowrap}
+.toc a:hover{color:var(--teal)}
+header.hero,.wrap{max-width:760px;margin:0 auto;padding:0 16px}
+header.hero{padding-top:56px}
+.meta-line{font-family:var(--mono);font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--teal);margin-bottom:14px}
+h1{font-family:var(--display);font-weight:700;font-size:clamp(2rem,5vw,3rem);line-height:1.12;margin:0 0 16px;letter-spacing:-.01em}
+.standfirst{font-size:1.12rem;color:var(--soft);margin:0 0 8px}
+.tags{display:flex;gap:6px;flex-wrap:wrap;margin:18px 0 0;padding:0;list-style:none}
+.tags li{font-family:var(--mono);font-size:10.5px;color:var(--teal);border:1px solid var(--border);padding:3px 9px;border-radius:20px}
+section{margin:52px 0}
+h2{font-family:var(--display);font-weight:700;font-size:1.5rem;line-height:1.25;margin:0 0 14px}
+h3{font-family:var(--display);font-weight:700;font-size:1.1rem;margin:0 0 6px}
+p{margin:0 0 14px}
+.callout{background:var(--surface);border:1px solid var(--border);border-left:4px solid var(--coral);border-radius:8px;padding:20px 22px}
+.callout h2{font-size:1.2rem}
+.callout ul{margin:0 0 14px;padding-left:20px}
+.callout li{margin-bottom:8px}
+.bar{font-weight:500}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 8px}
+.chip{font-family:var(--mono);font-size:11.5px;padding:6px 14px;border-radius:20px;border:1px solid var(--border);background:var(--surface);color:var(--ink);cursor:pointer}
+.chip:hover{border-color:var(--teal)}
+.chip[aria-pressed="true"]{background:var(--teal);border-color:var(--teal);color:var(--cream)}
+.search{font-family:var(--mono);font-size:12.5px;border:1px solid var(--border);background:var(--surface);color:var(--ink);padding:7px 12px;border-radius:20px;width:100%;max-width:300px;margin-top:8px}
+.cards{display:grid;gap:14px;margin-top:18px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:18px 20px;transition:border-color .2s ease}
+.card:hover{border-color:var(--teal)}
+.card[hidden]{display:none}
+.card .label{font-family:var(--mono);font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
+.card h3 a{color:var(--ink);text-decoration:none;border-bottom:1px solid var(--teal)}
+.card p{font-size:14.5px;color:var(--soft);margin:6px 0 0}
+.card .limit{font-size:13.5px;color:var(--muted)}
+.card .limit strong{color:var(--coral);font-weight:500}
+.strip{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:28px 0 0}
+.strip div{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px 16px;font-size:14px}
+.strip .k{font-family:var(--mono);font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:4px}
+.strip .legacy .k{color:var(--muted)} .strip .modern{border-color:var(--teal)} .strip .modern .k{color:var(--teal)}
+.matrix{list-style:none;padding:0;margin:0}
+.matrix li{border-top:1px solid var(--border);padding:12px 0}
+.matrix li strong{font-family:var(--display)}
+.move{background:var(--teal);color:var(--cream);border-radius:8px;padding:20px 22px}
+.move h2{color:var(--cream)}
+.stack{display:grid;gap:10px;margin-top:16px}
+.layer{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px 14px}
+.layer[hidden]{display:none}
+.layer .lname{font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--teal);margin-bottom:8px}
+.layer .ltools{display:flex;gap:8px;flex-wrap:wrap}
+.layer .ltools span{font-family:var(--display);font-size:13.5px;border:1px solid var(--border);border-radius:6px;padding:4px 10px}
+.table-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:8px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:13.5px;min-width:620px}
+th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:top}
+th{font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+tr:last-child td{border-bottom:0}
+.reframe{font-family:var(--display);font-weight:700;font-size:1.35rem;line-height:1.35;border-left:4px solid var(--teal);padding-left:18px;margin:0 0 18px}
+.share-actions{display:flex;gap:8px;flex-wrap:wrap}
+.btn{font-family:var(--mono);font-size:12px;padding:8px 14px;border-radius:20px;border:1px solid var(--teal);background:var(--surface);color:var(--teal);cursor:pointer;text-decoration:none}
+.btn.primary{background:var(--teal);color:var(--cream)}
+.toast{font-family:var(--mono);font-size:12px;color:var(--teal);margin-left:6px;opacity:0;transition:opacity .2s ease}
+.toast.show{opacity:1}
+.evidence{list-style:none;padding:0;margin:0;font-family:var(--mono);font-size:12px;color:var(--soft)}
+.evidence li{border-top:1px solid var(--border);padding:10px 0;overflow-wrap:anywhere}
+.evidence strong{font-family:var(--display);font-size:14px;color:var(--ink)}
+.related{list-style:none;padding:0;margin:0;display:grid;gap:8px}
+.related a{font-family:var(--display);text-decoration:none}
+footer{border-top:1px solid var(--border);margin-top:64px;padding:28px 16px;text-align:center;font-family:var(--mono);font-size:12px}
+footer a{margin:0 10px;text-decoration:none}
+@media (max-width:560px){ .strip{grid-template-columns:1fr} .toc{display:none} }
+</style>
+</head>
+<body>
+<nav class="topbar" aria-label="Article sections"><a class="home" href="../">← Awesome AI Architecture</a><div class="toc"><a href="#preamble">Exclusions</a><a href="#cat-tables">Flattened Tables</a><a href="#cat-order">Reading Order</a><a href="#cat-scans">Scans &amp; Handwriting</a><a href="#cat-chunking">Structure-Blind Chunks</a><a href="#cat-residency">Data Can&#x27;t Leave</a><a href="#choose">How to Choose</a><a href="#share">Share</a><a href="#evidence">Evidence</a></div></nav>
+<main id="top"><header class="hero"><div class="meta-line">Reference · 2026-10-07 · Window: 2026-09-01 → 2026-10-07 · 5 min</div><h1>Document Ingestion &amp; Parsing for RAG, Mapped by Failure Mode</h1><p class="standfirst">For engineers whose RAG answers are wrong before retrieval even starts — organized by the way documents get mangled on the way in, because no retriever can recover what the parser destroyed.</p><ul class="tags"><li>rag</li><li>document-parsing</li><li>data-ingestion</li><li>ocr</li><li>failure-mode-mapping</li></ul></header><div class="wrap"><section id="preamble" class="callout"><h2>Exclusion Criteria — Read First</h2><p>Ingestion is the least glamorous layer of RAG and the one that decides its ceiling. This list is strict about what counts as a parser.</p><ul><li><strong>Plain text extractors.</strong> pulling a text layer out of a PDF (pdftotext-style) loses tables, reading order and every scanned page. Fine for a baseline, not a pipeline.</li><li><strong>Generic multimodal LLM prompts as a parser.</strong> "send the page image to a vision model and ask for Markdown" works in a demo and fails on cost, determinism and hallucinated cells at volume. Tools that use models <em>inside</em> a structured pipeline are included; a bare prompt is not.</li><li><strong>Framework loaders that wrap another parser.</strong> a document-loader class that calls a library listed here adds an import, not a capability.</li><li><strong>Projects without recent releases.</strong> document formats and layout models move quickly; a parser with no release in the window is excluded regardless of reputation.</li></ul><p class="bar"><strong>Inclusion bar:</strong> the tool must output structure (headings, tables, reading order, element types), not just text — and do it reproducibly on your documents.</p></section><section aria-label="Filter tools" style="margin-bottom:0"><div class="chips"><button type="button" class="chip" data-filter="" aria-pressed="true">All Tools</button><button type="button" class="chip" data-filter="tables" aria-pressed="false">Flattened Tables</button><button type="button" class="chip" data-filter="order" aria-pressed="false">Reading Order</button><button type="button" class="chip" data-filter="scans" aria-pressed="false">Scans &amp; Handwriting</button><button type="button" class="chip" data-filter="chunking" aria-pressed="false">Structure-Blind Chunks</button><button type="button" class="chip" data-filter="residency" aria-pressed="false">Data Can&#x27;t Leave</button></div><label class="sr" for="tool-search" style="position:absolute;left:-9999px">Filter tools</label><input class="search" id="tool-search" type="search" placeholder="filter tools by keyword…"></section><section id="cat-tables" data-mode-section="tables"><h2>Tables Flattened into Meaningless Text</h2><p>A pricing table becomes a run of numbers with no column headers. The chunk is retrieved, the model reads "12 24 36 Basic Pro" and invents the mapping. Table structure is the single most common place where enterprise RAG quietly loses facts.</p><div class="cards"><article class="card" data-mode="tables"><div class="label">Flattened Tables</div><h3><a href="https://github.com/docling-project/docling" target="_blank" rel="noopener noreferrer">Docling</a></h3><p>Open-source parser (originally from IBM Research, now an LF AI & Data project) with layout analysis and table-structure recognition that exports a typed document model to Markdown, HTML or JSON; fits teams that want table-faithful parsing they can run and inspect locally, not a black-box API.</p><p class="limit"><strong>Limit:</strong> accuracy on dense or borderless tables still needs spot-checking on your own corpus.</p></article></div></section><section id="cat-order" data-mode-section="order"><h2>Multi-Column Layouts Scrambled Out of Reading Order</h2><p>Two-column papers, sidebars, footnotes and headers interleave into sentences that never existed. Embeddings happily encode the nonsense; the answer cites a paragraph that is half one column and half the other.</p><div class="cards"><article class="card" data-mode="order"><div class="label">Reading Order</div><h3><a href="https://github.com/datalab-to/marker" target="_blank" rel="noopener noreferrer">Marker</a></h3><p>Converts PDFs and other formats to Markdown/JSON with layout detection and reading-order reconstruction, optionally assisted by an LLM for hard pages; fits research, publishing and technical-manual corpora where layout is complex, not simple single-column forms.</p><p class="limit"><strong>Limit:</strong> GPU strongly recommended for throughput; check the model-weights licence terms for commercial use.</p></article><article class="card" data-mode="order"><div class="label">Reading Order</div><h3><a href="https://github.com/opendatalab/MinerU" target="_blank" rel="noopener noreferrer">MinerU</a></h3><p>PDF-to-Markdown/JSON pipeline from OpenDataLab with layout, formula and table recognition and strong multilingual (notably Chinese) coverage; fits scientific and multilingual corpora with formulas and mixed layouts, not lightweight CPU-only deployments.</p><p class="limit"><strong>Limit:</strong> heavyweight model stack; plan GPU capacity and pin versions.</p></article></div></section><section id="cat-scans" data-mode-section="scans"><h2>Scanned and Handwritten Pages Come Out Empty</h2><p>Half of a real document archive has no text layer: faxes, signed contracts, photographed receipts. A parser that silently returns an empty string for those pages makes them invisible to retrieval — and nobody notices until a user asks about one.</p><div class="cards"><article class="card" data-mode="scans"><div class="label">Scans &amp; Handwriting</div><h3><a href="https://developers.llamaindex.ai/llamaparse/" target="_blank" rel="noopener noreferrer">LlamaParse</a></h3><p>LlamaIndex's hosted "agentic OCR" parsing service covering scans, skewed pages, charts and 100+ file formats, with tiered parsing modes; fits teams that want strong OCR and layout handling without operating GPU models, not data that must stay on-premises.</p><p class="limit"><strong>Limit:</strong> hosted and metered — cost scales with pages, and documents leave your network.</p></article></div></section><section id="cat-chunking" data-mode-section="chunking"><h2>Chunks Cut Through Sections and Lose Their Context</h2><p>Fixed-size chunking splits a clause from its heading and a step from its procedure. Retrieval returns "the limit is 30 days" with no idea which policy it belongs to. Chunking should follow document elements, and each chunk should carry its heading path.</p><div class="cards"><article class="card" data-mode="chunking"><div class="label">Structure-Blind Chunks</div><h3><a href="https://github.com/Unstructured-IO/unstructured" target="_blank" rel="noopener noreferrer">Unstructured</a></h3><p>Partitions dozens of file types into typed elements (Title, NarrativeText, Table, ListItem) with element-aware chunking strategies such as by-title; fits heterogeneous corpora (email, Office, HTML, PDF) where one partitioning interface beats per-format parsers, not single-format pipelines that need best-in-class PDF accuracy.</p><p class="limit"><strong>Limit:</strong> the open-source library and the hosted platform differ in models and quality — benchmark the one you will actually run.</p></article></div></section><section id="cat-residency" data-mode-section="residency"><h2>Sensitive Documents Can&#x27;t Leave the Network</h2><p>Legal, medical and HR documents often cannot be sent to a third-party API at all. The failure here is not accuracy — it is that the best parser is unavailable, so teams fall back to plain text extraction and inherit every failure mode above. Docling, above, also runs fully offline with pre-downloaded models; the option below is for organisations that want a supported commercial OCR stack on their own hardware.</p><div class="cards"><article class="card" data-mode="residency"><div class="label">Data Can&#x27;t Leave</div><h3><a href="https://learn.microsoft.com/azure/ai-services/document-intelligence/containers/disconnected" target="_blank" rel="noopener noreferrer">Azure AI Document Intelligence (disconnected containers)</a></h3><p>Microsoft's Read and Layout OCR models packaged as containers that run without cloud connectivity under a commitment-tier licence; fits regulated enterprises that need vendor-supported OCR on-premises and already buy from Microsoft, not small teams or open-source-only stacks.</p><p class="limit"><strong>Limit:</strong> access requires an application, a commitment plan and a licence file; container model versions lag the cloud service.</p></article></div></section><section id="choose"><h2>How to Choose</h2><p>Build a golden set before choosing a parser: thirty to fifty of your ugliest real documents — the scanned contract, the two-column spec sheet, the spreadsheet exported to PDF, the slide deck with charts. Run each candidate parser on them and have a person score tables, reading order and missing text. An afternoon of this beats any public leaderboard, because public test sets are not your documents.</p><p>Route by document type rather than forcing one parser to do everything. A common production shape is a fast open-source parser (Docling or Unstructured) for born-digital files, a layout-heavy model (Marker or MinerU) for complex PDFs, and an OCR service for scans — with a classifier step deciding which path each file takes. The routing logic is simple; the savings in cost and accuracy are not.</p><p>Store the parser's structured output, not just the chunks. When you change chunking strategy or embedding model, you should be able to re-chunk from structured elements without re-parsing every file, which is usually the slowest and most expensive step in the pipeline.</p></section><section id="share"><h2>Bold Reframe</h2><p class="reframe">Most RAG failures are parsing failures wearing a retrieval costume. If the table was flattened on the way in, no embedding model will find the number.</p><div class="share-actions"><button type="button" class="btn primary" id="copy-share" data-text="Most RAG failures are parsing failures wearing a retrieval costume. If the table was flattened on the way in, no embedding model will find the number. — https://iggym.github.io/awesome-ai-architecture/articles/document-ingestion-parsing-rag-mapped-by-failure-mode.html">Copy Text &amp; Link</button><a class="btn" href="https://twitter.com/intent/tweet?text=Most%20RAG%20failures%20are%20parsing%20failures%20wearing%20a%20retrieval%20costume.%20If%20the%20table%20was%20flattened%20on%20the%20way%20in%2C%20no%20embedding%20model%20will%20find%20the%20number.&amp;url=https%3A%2F%2Figgym.github.io%2Fawesome-ai-architecture%2Farticles%2Fdocument-ingestion-parsing-rag-mapped-by-failure-mode.html" target="_blank" rel="noopener noreferrer">Share on X</a><a class="btn" href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Figgym.github.io%2Fawesome-ai-architecture%2Farticles%2Fdocument-ingestion-parsing-rag-mapped-by-failure-mode.html" target="_blank" rel="noopener noreferrer">Share on LinkedIn</a><span class="toast" id="copy-toast" role="status" aria-live="polite">Copied to clipboard</span></div></section><section id="evidence"><h2>Evidence Log &amp; Citations</h2><p>Verified 2026-09-01 → 2026-10-07. Release dates are from each project's package registry (PyPI) unless noted.</p><ul class="evidence"><li><strong>Docling</strong> — <a href="https://github.com/docling-project/docling" target="_blank" rel="noopener noreferrer">github.com/docling-project/docling</a> · query: "docling table structure layout analysis LF AI" · docling 2.134.0 released 2026-10-06</li><li><strong>Marker</strong> — <a href="https://github.com/datalab-to/marker" target="_blank" rel="noopener noreferrer">github.com/datalab-to/marker</a> · query: "marker pdf to markdown reading order llm mode" · marker-pdf 2.0.0 released 2026-07-20</li><li><strong>MinerU</strong> — <a href="https://github.com/opendatalab/MinerU" target="_blank" rel="noopener noreferrer">github.com/opendatalab/MinerU</a> · query: "mineru pdf parsing formula table multilingual" · mineru 4.0.10 released 2026-09-29</li><li><strong>LlamaParse</strong> — <a href="https://developers.llamaindex.ai/llamaparse/" target="_blank" rel="noopener noreferrer">developers.llamaindex.ai/llamaparse</a> · query: "llamaparse agentic OCR LlamaCloud 2026" · hosted service; LlamaIndex reported 300k+ LlamaParse users as of Aug 2026</li><li><strong>Unstructured</strong> — <a href="https://github.com/Unstructured-IO/unstructured" target="_blank" rel="noopener noreferrer">github.com/Unstructured-IO/unstructured</a> · query: "unstructured partition chunk by_title elements" · unstructured 0.27.16 released 2026-10-05</li><li><strong>Azure AI Document Intelligence containers</strong> — <a href="https://learn.microsoft.com/azure/ai-services/document-intelligence/containers/disconnected" target="_blank" rel="noopener noreferrer">learn.microsoft.com/azure/ai-services/document-intelligence/containers/disconnected</a> · query: "azure document intelligence disconnected containers layout" · Layout model container support documented for API 2024-11-30 (GA)</li></ul></section><section id="missing"><h2>What's Still Missing (as of Oct 2026)</h2><p>There is no shared benchmark built from <em>enterprise</em> documents — most parser comparisons use academic PDFs, which reward exactly the layouts that matter least in a contract archive. Nobody scores parsing by its downstream effect on retrieval, and change detection is primitive: re-ingesting a 400-page manual because one table changed is still the norm. Until those exist, keep a golden set of your own ugliest documents and re-run it on every parser upgrade.</p></section><section id="related"><h2>Related on Awesome AI Architecture</h2><ul class="related"><li><a href="./vector-hybrid-retrieval-stores-mapped-by-failure-mode.html">Vector &amp; Hybrid Retrieval Stores, Mapped by Failure Mode</a></li><li><a href="./structured-output-schema-enforcement-mapped-by-failure-mode.html">Structured Output &amp; Schema Enforcement Tools, Mapped by Failure Mode</a></li><li><a href="./llm-evaluation-testing-tools-mapped-by-failure-mode.html">LLM Evaluation &amp; Testing Tools, Mapped by Failure Mode</a></li></ul></section></div></main><footer><a href="../">← Back to awesome-ai-architecture</a><a href="#top">↑ Scroll to top</a></footer>
+<script>
+(function(){
+  var chips = document.querySelectorAll('[data-filter]');
+  var cards = document.querySelectorAll('[data-mode]');
+  var search = document.getElementById('tool-search');
+  var active = '';
+  function apply(){
+    var q = search ? search.value.trim().toLowerCase() : '';
+    cards.forEach(function(c){
+      var okMode = !active || c.getAttribute('data-mode') === active;
+      var okQ = !q || c.textContent.toLowerCase().indexOf(q) !== -1;
+      c.hidden = !(okMode && okQ);
+    });
+    document.querySelectorAll('[data-mode-section]').forEach(function(s){
+      s.hidden = !!active && s.getAttribute('data-mode-section') !== active;
+    });
+  }
+  chips.forEach(function(chip){
+    chip.addEventListener('click', function(){
+      active = chip.getAttribute('data-filter');
+      chips.forEach(function(c){ c.setAttribute('aria-pressed', String(c === chip)); });
+      apply();
+    });
+  });
+  if (search) search.addEventListener('input', apply);
+
+  var copyBtn = document.getElementById('copy-share');
+  var toast = document.getElementById('copy-toast');
+  if (copyBtn) copyBtn.addEventListener('click', function(){
+    var text = copyBtn.getAttribute('data-text');
+    function done(){ toast.classList.add('show'); setTimeout(function(){ toast.classList.remove('show'); }, 1800); }
+    if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(text).then(done, function(){}); }
+    else { var t = document.createElement('textarea'); t.value = text; document.body.appendChild(t); t.select();
+      try { document.execCommand('copy'); done(); } catch (err) {} document.body.removeChild(t); }
+  });
+})();
+</script>
+</body>
+</html>

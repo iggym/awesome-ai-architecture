@@ -242,3 +242,9 @@ EDITOR CHECKLIST
   defenses, semantic caching, fine-tuning vs. RAG decision guides.
 - **Versioning:** if you change this prompt materially, save it as `master-prompt-v2.md`
   and keep v1 for reproducibility of older articles.
+- **Rendering shortcut:** instead of asking the model for raw HTML, you can ask it for the
+  article content as JSON matching `content/articles/*.json` (see any existing file for the
+  shape), save it there, and run
+  `python3 scripts/render_article.py --all --update-metadata`. The script produces the HTML
+  to this prompt's technical rules, computes `reading_time_minutes` and writes the
+  `metadata.json` entry.

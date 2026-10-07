@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Memory Is a Write Path — Awesome AI Architecture</title>
+<meta name="description" content="Why agent memory fails on writes, not reads — and how checkpointers, extracted-fact stores, temporal knowledge graphs and self-editing agents each handle conflict, staleness and forgetting.">
+<meta name="author" content="iggym">
+<link rel="canonical" href="https://iggym.github.io/awesome-ai-architecture/articles/memory-is-a-write-path.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Awesome AI Architecture">
+<meta property="og:title" content="Memory Is a Write Path">
+<meta property="og:description" content="Why agent memory fails on writes, not reads — and how checkpointers, extracted-fact stores, temporal knowledge graphs and self-editing agents each handle conflict, staleness and forgetting.">
+<meta property="og:url" content="https://iggym.github.io/awesome-ai-architecture/articles/memory-is-a-write-path.html">
+<meta property="article:published_time" content="2026-10-07">
+<meta property="article:tag" content="agent-memory">
+<meta property="article:tag" content="agent-frameworks">
+<meta property="article:tag" content="knowledge-graphs">
+<meta property="article:tag" content="state-management">
+<meta property="article:tag" content="architecture-evaluation">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Memory Is a Write Path">
+<meta name="twitter:description" content="Why agent memory fails on writes, not reads — and how checkpointers, extracted-fact stores, temporal knowledge graphs and self-editing agents each handle conflict, staleness and forgetting.">
+<meta name="color-scheme" content="light dark">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "TechArticle", "headline": "Memory Is a Write Path", "description": "Why agent memory fails on writes, not reads — and how checkpointers, extracted-fact stores, temporal knowledge graphs and self-editing agents each handle conflict, staleness and forgetting.", "datePublished": "2026-10-07", "dateModified": "2026-10-07", "author": {"@type": "Person", "name": "iggym", "url": "https://github.com/iggym"}, "publisher": {"@type": "Organization", "name": "Awesome AI Architecture", "url": "https://iggym.github.io/awesome-ai-architecture/"}, "url": "https://iggym.github.io/awesome-ai-architecture/articles/memory-is-a-write-path.html", "mainEntityOfPage": "https://iggym.github.io/awesome-ai-architecture/articles/memory-is-a-write-path.html", "keywords": "agent-memory, agent-frameworks, knowledge-graphs, state-management, architecture-evaluation", "isPartOf": {"@type": "WebSite", "name": "Awesome AI Architecture", "url": "https://iggym.github.io/awesome-ai-architecture/"}}</script>
+<style>
+:root{
+  --cream:#FAF6EE; --ink:#1F2421; --teal:#1F7A6C; --coral:#C4502B; --muted:#6F6A5E;
+  --surface:#FFFFFF; --border:rgba(31,36,33,0.14); --soft:#4B4738; --teal-soft:rgba(31,122,108,0.10);
+  --display:'Space Grotesk',sans-serif; --body:'Inter',sans-serif; --mono:'IBM Plex Mono',monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root{ --cream:#121412; --ink:#E9E6DF; --teal:#4FB8A6; --coral:#F08A63; --muted:#A39F94;
+    --surface:#1A1D1B; --border:rgba(233,230,223,0.14); --soft:#CFCAC0; --teal-soft:rgba(79,184,166,0.14); }
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion: reduce){ html{scroll-behavior:auto} *{animation-duration:.001ms!important;transition-duration:.001ms!important} }
+body{margin:0;background:var(--cream);color:var(--ink);font-family:var(--body);line-height:1.65;font-size:16px}
+a{color:var(--teal)}
+a:focus-visible,button:focus-visible{outline:2px solid var(--coral);outline-offset:2px}
+code{font-family:var(--mono);font-size:.88em;background:var(--teal-soft);padding:1px 5px;border-radius:4px}
+.topbar{position:sticky;top:0;z-index:20;background:var(--cream);border-bottom:1px solid var(--border);padding:12px 16px;display:flex;gap:16px;align-items:center;justify-content:space-between}
+.topbar a.home{font-family:var(--display);font-weight:700;font-size:14px;text-decoration:none;color:var(--ink);white-space:nowrap}
+.toc{display:flex;gap:14px;overflow-x:auto;font-family:var(--mono);font-size:12px;scrollbar-width:none}
+.toc a{color:var(--muted);text-decoration:none;white-space:nowrap}
+.toc a:hover{color:var(--teal)}
+header.hero,.wrap{max-width:760px;margin:0 auto;padding:0 16px}
+header.hero{padding-top:56px}
+.meta-line{font-family:var(--mono);font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--teal);margin-bottom:14px}
+h1{font-family:var(--display);font-weight:700;font-size:clamp(2rem,5vw,3rem);line-height:1.12;margin:0 0 16px;letter-spacing:-.01em}
+.standfirst{font-size:1.12rem;color:var(--soft);margin:0 0 8px}
+.tags{display:flex;gap:6px;flex-wrap:wrap;margin:18px 0 0;padding:0;list-style:none}
+.tags li{font-family:var(--mono);font-size:10.5px;color:var(--teal);border:1px solid var(--border);padding:3px 9px;border-radius:20px}
+section{margin:52px 0}
+h2{font-family:var(--display);font-weight:700;font-size:1.5rem;line-height:1.25;margin:0 0 14px}
+h3{font-family:var(--display);font-weight:700;font-size:1.1rem;margin:0 0 6px}
+p{margin:0 0 14px}
+.callout{background:var(--surface);border:1px solid var(--border);border-left:4px solid var(--coral);border-radius:8px;padding:20px 22px}
+.callout h2{font-size:1.2rem}
+.callout ul{margin:0 0 14px;padding-left:20px}
+.callout li{margin-bottom:8px}
+.bar{font-weight:500}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 8px}
+.chip{font-family:var(--mono);font-size:11.5px;padding:6px 14px;border-radius:20px;border:1px solid var(--border);background:var(--surface);color:var(--ink);cursor:pointer}
+.chip:hover{border-color:var(--teal)}
+.chip[aria-pressed="true"]{background:var(--teal);border-color:var(--teal);color:var(--cream)}
+.search{font-family:var(--mono);font-size:12.5px;border:1px solid var(--border);background:var(--surface);color:var(--ink);padding:7px 12px;border-radius:20px;width:100%;max-width:300px;margin-top:8px}
+.cards{display:grid;gap:14px;margin-top:18px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:18px 20px;transition:border-color .2s ease}
+.card:hover{border-color:var(--teal)}
+.card[hidden]{display:none}
+.card .label{font-family:var(--mono);font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
+.card h3 a{color:var(--ink);text-decoration:none;border-bottom:1px solid var(--teal)}
+.card p{font-size:14.5px;color:var(--soft);margin:6px 0 0}
+.card .limit{font-size:13.5px;color:var(--muted)}
+.card .limit strong{color:var(--coral);font-weight:500}
+.strip{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:28px 0 0}
+.strip div{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px 16px;font-size:14px}
+.strip .k{font-family:var(--mono);font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:4px}
+.strip .legacy .k{color:var(--muted)} .strip .modern{border-color:var(--teal)} .strip .modern .k{color:var(--teal)}
+.matrix{list-style:none;padding:0;margin:0}
+.matrix li{border-top:1px solid var(--border);padding:12px 0}
+.matrix li strong{font-family:var(--display)}
+.move{background:var(--teal);color:var(--cream);border-radius:8px;padding:20px 22px}
+.move h2{color:var(--cream)}
+.stack{display:grid;gap:10px;margin-top:16px}
+.layer{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px 14px}
+.layer[hidden]{display:none}
+.layer .lname{font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--teal);margin-bottom:8px}
+.layer .ltools{display:flex;gap:8px;flex-wrap:wrap}
+.layer .ltools span{font-family:var(--display);font-size:13.5px;border:1px solid var(--border);border-radius:6px;padding:4px 10px}
+.table-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:8px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:13.5px;min-width:620px}
+th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:top}
+th{font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+tr:last-child td{border-bottom:0}
+.reframe{font-family:var(--display);font-weight:700;font-size:1.35rem;line-height:1.35;border-left:4px solid var(--teal);padding-left:18px;margin:0 0 18px}
+.share-actions{display:flex;gap:8px;flex-wrap:wrap}
+.btn{font-family:var(--mono);font-size:12px;padding:8px 14px;border-radius:20px;border:1px solid var(--teal);background:var(--surface);color:var(--teal);cursor:pointer;text-decoration:none}
+.btn.primary{background:var(--teal);color:var(--cream)}
+.toast{font-family:var(--mono);font-size:12px;color:var(--teal);margin-left:6px;opacity:0;transition:opacity .2s ease}
+.toast.show{opacity:1}
+.evidence{list-style:none;padding:0;margin:0;font-family:var(--mono);font-size:12px;color:var(--soft)}
+.evidence li{border-top:1px solid var(--border);padding:10px 0;overflow-wrap:anywhere}
+.evidence strong{font-family:var(--display);font-size:14px;color:var(--ink)}
+.related{list-style:none;padding:0;margin:0;display:grid;gap:8px}
+.related a{font-family:var(--display);text-decoration:none}
+footer{border-top:1px solid var(--border);margin-top:64px;padding:28px 16px;text-align:center;font-family:var(--mono);font-size:12px}
+footer a{margin:0 10px;text-decoration:none}
+@media (max-width:560px){ .strip{grid-template-columns:1fr} .toc{display:none} }
+</style>
+</head>
+<body>
+<nav class="topbar" aria-label="Article sections"><a class="home" href="../">← Awesome AI Architecture</a><div class="toc"><a href="#problem">The Problem</a><a href="#preamble">What Got Cut</a><a href="#taxonomy">Taxonomy</a><a href="#land">Where to Land</a><a href="#move">One Move</a><a href="#stack">Stack</a><a href="#compare">Compare</a><a href="#evidence">Evidence</a></div></nav>
+<main id="top"><header class="hero"><div class="meta-line">Essay · Agent Memory · 2026-10-07 · 6 min</div><h1>Memory Is a Write Path</h1><p class="standfirst">Teams build agent memory as retrieval and then wonder why their assistant believes two contradictory things about the same user. Memory is a write path with conflict resolution — design it like one.</p><div class="strip"><div class="legacy"><span class="k">Legacy</span>Memory as RAG: embed every message, retrieve the top-k, hope the right version of a fact wins.</div><div class="modern"><span class="k">Modern</span>Memory as a write path: scoped state, explicit update and invalidation rules, and a time model for facts.</div></div><ul class="tags"><li>agent-memory</li><li>agent-frameworks</li><li>knowledge-graphs</li><li>state-management</li><li>architecture-evaluation</li></ul></header><div class="wrap"><section id="problem"><h2>The Real Problem</h2><p>Most "agent memory" starts the same way: dump the conversation into a vector store and retrieve similar snippets on the next turn. It demos well. Then the user moves cities, changes teams or corrects a preference, and the store now holds both versions. Retrieval returns whichever is semantically closer to the question — which is to say, at random.</p><p>The industry frames this as a recall problem and reaches for better embeddings or re-rankers. It is not. Recall is the easy half. The hard half is the <em>write</em>: deciding what is worth storing, whether a new fact updates, contradicts or coexists with an old one, when something stops being true, and who is allowed to change it. Databases solved these questions decades ago with transactions, constraints and temporal tables. Agent memory is relearning them one production incident at a time.</p><p>It also matters who is allowed to write. A support agent that stores "customer prefers email" is harmless; a planning agent that writes "the user approved the refund" into shared memory, where a payments agent later reads it, has created an authorization channel nobody designed. Memory written by one agent and trusted by another is an interface, and it deserves the same scrutiny as an API.</p><p>This essay maps four real approaches by how they handle the write path, because that is where they actually differ.</p></section><section id="preamble" class="callout"><h2>What Got Cut</h2><ul><li><strong>Raw context-window stuffing.</strong> very long context windows are not memory. Re-sending everything is a cost and latency strategy with no notion of truth, scope or forgetting.</li><li><strong>Plain vector stores marketed as memory.</strong> a store without update semantics cannot resolve a contradiction; it is covered in this site's retrieval reference.</li><li><strong>Chat-history persistence.</strong> saving the transcript is logging. It is necessary, but it is not a model of what the agent knows.</li><li><strong>Provider-hosted memory features.</strong> consumer-assistant memory inside a single chat product is not something you can architect around, test or move.</li></ul><p class="bar"><strong>Inclusion bar:</strong> the tool must expose explicit write semantics — update, supersede, scope or delete — that an engineer can reason about and test.</p></section><section id="taxonomy"><h2>Four Ways to Write a Memory</h2><p>The approaches below are not competitors on a leaderboard. They sit at different points on one axis: <strong>who decides what gets written, and how conflicts are resolved</strong>. Most production agents need more than one.</p><h3 style="font-size:1.25rem;margin-top:30px">Scoped State &amp; Checkpoints</h3><p>The first kind of memory is not about facts at all — it is the agent's working state: where it is in a task, what it has already tried, what a human approved. Losing it means redoing work or repeating an action with side effects.</p><div class="cards"><article class="card" data-mode="state"><div class="label">Scoped State &amp; Checkpoints</div><h3><a href="https://docs.langchain.com/oss/python/langgraph/persistence" target="_blank" rel="noopener noreferrer">LangGraph persistence</a> <span class="label" style="display:inline">· LangChain</span></h3><p>Checkpointers save graph state at every step, scoped to a thread, with Postgres and other backends; a separate long-term store holds namespaced cross-thread memories. Writes are deterministic — your code decides exactly what state is saved — so resume, replay and human-in-the-loop interrupts are reliable.</p><p class="limit"><strong>Limit:</strong> it gives you correct storage, not judgement. Deciding which facts deserve long-term memory, and resolving conflicts between them, is still your code.</p></article></div><h3 style="font-size:1.25rem;margin-top:30px">Extracted Fact Memory</h3><p>The second approach lets a model read each interaction and extract discrete facts — preferences, entities, decisions — then reconcile them against what is already stored.</p><div class="cards"><article class="card" data-mode="facts"><div class="label">Extracted Fact Memory</div><h3><a href="https://docs.mem0.ai/" target="_blank" rel="noopener noreferrer">Mem0</a> <span class="label" style="display:inline">· Mem0</span></h3><p>An LLM extraction step proposes candidate memories, and a reconciliation step compares them with similar existing memories and chooses to add, update, delete or ignore. Memories are scoped by user, agent or session. This is the most direct answer to the contradiction problem: the write path explicitly asks "does this change something I already know?"</p><p class="limit"><strong>Limit:</strong> reconciliation is itself an LLM decision — it can be wrong, and it costs a model call per write. Log every update and delete so a bad merge can be audited and reversed.</p></article></div><h3 style="font-size:1.25rem;margin-top:30px">Temporal Knowledge Graphs</h3><p>The third approach refuses to overwrite at all. Facts become edges in a graph with validity intervals; a contradiction does not delete the old fact, it ends it.</p><div class="cards"><article class="card" data-mode="temporal"><div class="label">Temporal Knowledge Graphs</div><h3><a href="https://github.com/getzep/graphiti" target="_blank" rel="noopener noreferrer">Graphiti</a> <span class="label" style="display:inline">· Zep</span></h3><p>Builds a knowledge graph from episodes with a bi-temporal model — when a fact was true in the world and when the system learned it. New contradicting facts set an invalid_at timestamp on the old edge instead of deleting it, so the agent can answer both "where does she work?" and "where did she work in March?". It is the open-source engine behind Zep's memory service.</p><p class="limit"><strong>Limit:</strong> you operate a graph database and an extraction pipeline; ingestion is slower and more expensive than appending vectors, and graph quality depends on entity resolution.</p></article></div><h3 style="font-size:1.25rem;margin-top:30px">Agent-Managed Memory</h3><p>The fourth approach hands the write path to the agent itself, treating memory like an operating system treats RAM and disk: a small in-context working set and a larger archive, with the agent deciding what to page in and out.</p><div class="cards"><article class="card" data-mode="self"><div class="label">Agent-Managed Memory</div><h3><a href="https://docs.letta.com/" target="_blank" rel="noopener noreferrer">Letta</a> <span class="label" style="display:inline">· Letta (formerly MemGPT)</span></h3><p>Stateful agents with editable in-context memory blocks and archival memory; the agent calls tools to rewrite its own blocks and search its archive, and all state persists server-side. Fits long-lived assistants whose persona and user model must evolve over months rather than reset every session.</p><p class="limit"><strong>Limit:</strong> the model decides what to remember, so memory quality tracks model quality and prompt design; you need evals on memory edits, not just on answers.</p></article></div></section><section id="land"><h2>Where to Land</h2><p>Start from the write question, not the retrieval question. Ask: when two memories disagree, who decides, and is the old one deleted, overwritten or ended?</p><p>Almost every production agent needs the first layer — scoped, deterministic state for the task in flight — regardless of what else it uses. The other three are choices about long-term knowledge.</p><p>Whatever you choose, keep an append-only log of every memory write, update and delete, with the model, prompt and source message that caused it. When a user asks why the assistant believes something — or a regulator asks you to forget it — that log is the only honest answer. It is also the dataset you will need to evaluate whether your write path is improving.</p><p>Expect to combine layers. A typical production agent pairs checkpointed task state with one long-term store, and only adds a temporal graph when questions about history become frequent enough to justify running one.</p><p>Memory is the one layer of an agent that gets more valuable and more dangerous with every day it runs, so design its write path before it holds anything you cannot afford to lose or leak.</p><ul class="matrix"><li><strong>Your agent runs multi-step tasks with side effects or human approvals</strong> → use checkpointed state (LangGraph persistence or equivalent) first — resumability is a correctness requirement, not a feature.</li><li><strong>You need per-user preferences and facts that stay current</strong> → use extracted fact memory (Mem0) with update and delete logging, scoped by user.</li><li><strong>Questions involve time — &quot;what did we agree last quarter?&quot;, audits, CRM-like histories</strong> → use a temporal graph (Graphiti/Zep) so facts are ended, not overwritten.</li><li><strong>You are building a long-lived assistant whose behaviour should evolve</strong> → consider agent-managed memory (Letta), and budget for evals on the memory edits themselves.</li><li><strong>You only need the last few turns</strong> → you do not need a memory layer. Keep the transcript window and move on.</li></ul></section><section id="move" class="move"><h2>One Move</h2><p style="margin:0">Pick ten real users or sessions and write down three facts about each that changed over time. Replay those sessions through your memory layer and ask the agent the current value of each fact. If it gets the old value, or both, your problem is the write path — fix it before you touch embeddings.</p></section><section id="stack"><h2>State of the Stack</h2><p>Where each tool sits. Filter by layer.</p><div class="chips"><button type="button" class="chip" data-filter="" aria-pressed="true">All Layers</button><button type="button" class="chip" data-filter="state" aria-pressed="false">Scoped State &amp; Checkpoints</button><button type="button" class="chip" data-filter="facts" aria-pressed="false">Extracted Fact Memory</button><button type="button" class="chip" data-filter="temporal" aria-pressed="false">Temporal Knowledge Graphs</button><button type="button" class="chip" data-filter="self" aria-pressed="false">Agent-Managed Memory</button></div><div class="stack"><div class="layer" data-mode="state"><div class="lname">Scoped State &amp; Checkpoints</div><div class="ltools"><span>LangGraph persistence</span></div></div><div class="layer" data-mode="facts"><div class="lname">Extracted Fact Memory</div><div class="ltools"><span>Mem0</span></div></div><div class="layer" data-mode="temporal"><div class="lname">Temporal Knowledge Graphs</div><div class="ltools"><span>Graphiti</span></div></div><div class="layer" data-mode="self"><div class="lname">Agent-Managed Memory</div><div class="ltools"><span>Letta</span></div></div></div></section><section id="compare"><h2>Tool Comparison</h2><div class="table-wrap"><table><thead><tr><th scope="col">Tool</th><th scope="col">Layer</th><th scope="col">Who decides the write</th><th scope="col">On contradiction</th><th scope="col">Time model</th><th scope="col">Licence / hosting</th></tr></thead><tbody><tr><td>LangGraph persistence</td><td>Scoped state</td><td>Your code</td><td>Your code overwrites state</td><td>Checkpoint history per thread</td><td>MIT library; self-host or managed platform</td></tr><tr><td>Mem0</td><td>Extracted facts</td><td>LLM extraction + reconciliation</td><td>Update or delete the existing memory</td><td>Timestamps; no validity intervals</td><td>Apache-2.0 library; managed platform available</td></tr><tr><td>Graphiti (Zep)</td><td>Temporal graph</td><td>LLM extraction into a graph</td><td>Invalidate the old edge (keep history)</td><td>Bi-temporal: valid time + ingestion time</td><td>Apache-2.0 library; Zep managed service</td></tr><tr><td>Letta</td><td>Agent-managed</td><td>The agent, via memory tools</td><td>Agent rewrites its memory block</td><td>Persisted state; archival search</td><td>Apache-2.0 server; managed cloud available</td></tr></tbody></table></div></section><section id="share"><h2>Bold Reframe</h2><p class="reframe">Agent memory doesn&#x27;t fail on recall — it fails on the write. If your memory layer can&#x27;t decide which of two facts is current, you&#x27;ve built a contradiction cache.</p><div class="share-actions"><button type="button" class="btn primary" id="copy-share" data-text="Agent memory doesn&#x27;t fail on recall — it fails on the write. If your memory layer can&#x27;t decide which of two facts is current, you&#x27;ve built a contradiction cache. — https://iggym.github.io/awesome-ai-architecture/articles/memory-is-a-write-path.html">Copy Text &amp; Link</button><a class="btn" href="https://twitter.com/intent/tweet?text=Agent%20memory%20doesn%27t%20fail%20on%20recall%20%E2%80%94%20it%20fails%20on%20the%20write.%20If%20your%20memory%20layer%20can%27t%20decide%20which%20of%20two%20facts%20is%20current%2C%20you%27ve%20built%20a%20contradiction%20cache.&amp;url=https%3A%2F%2Figgym.github.io%2Fawesome-ai-architecture%2Farticles%2Fmemory-is-a-write-path.html" target="_blank" rel="noopener noreferrer">Share on X</a><a class="btn" href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Figgym.github.io%2Fawesome-ai-architecture%2Farticles%2Fmemory-is-a-write-path.html" target="_blank" rel="noopener noreferrer">Share on LinkedIn</a><span class="toast" id="copy-toast" role="status" aria-live="polite">Copied to clipboard</span></div></section><section id="evidence"><h2>Evidence Log &amp; Citations</h2><p>Verified 2026-09-01 → 2026-10-07. Release dates are from each project's package registry (PyPI) unless noted.</p><ul class="evidence"><li><strong>LangGraph</strong> — <a href="https://docs.langchain.com/oss/python/langgraph/persistence" target="_blank" rel="noopener noreferrer">docs.langchain.com/oss/python/langgraph/persistence</a> · query: "langgraph checkpointer persistence long-term store namespaces" · langgraph 1.2.14 released 2026-10-06; langgraph-checkpoint-postgres 3.1.2 released 2026-08-07</li><li><strong>Mem0</strong> — <a href="https://github.com/mem0ai/mem0" target="_blank" rel="noopener noreferrer">github.com/mem0ai/mem0</a> · query: "mem0 memory extraction update delete reconciliation" · mem0ai 2.2.1 released 2026-09-25</li><li><strong>Graphiti</strong> — <a href="https://github.com/getzep/graphiti" target="_blank" rel="noopener noreferrer">github.com/getzep/graphiti</a> · query: "graphiti bi-temporal edge invalidation invalid_at" · graphiti-core 0.30.2 released 2026-09-08; temporal invalidation documented by Zep</li><li><strong>Letta</strong> — <a href="https://github.com/letta-ai/letta" target="_blank" rel="noopener noreferrer">github.com/letta-ai/letta</a> · query: "letta memgpt memory blocks archival memory stateful agents" · letta 0.34.4 released 2026-10-04</li></ul></section><section id="missing"><h2>What's Still Missing (as of Oct 2026)</h2><p>There is no standard way to <em>evaluate</em> a memory write. Benchmarks test whether an agent can recall a fact, almost never whether it correctly retired an outdated one. Memory also has no portable format: moving a user's memories from one system to another, or honouring a deletion request across all of them, is custom work every time. And access control is thin — few tools let you say that a memory written by one agent may be read but not changed by another. Treat those as your responsibility until the tooling catches up.</p></section><section id="related"><h2>Related on Awesome AI Architecture</h2><ul class="related"><li><a href="./vector-hybrid-retrieval-stores-mapped-by-failure-mode.html">Vector &amp; Hybrid Retrieval Stores, Mapped by Failure Mode</a></li><li><a href="./smoke-signals-in-production.html">Smoke Signals in Production</a></li><li><a href="./the-plug-is-not-the-policy.html">The Plug Is Not the Policy</a></li></ul></section></div></main><footer><a href="../">← Back to awesome-ai-architecture</a><a href="#top">↑ Scroll to top</a></footer>
+<script>
+(function(){
+  var chips = document.querySelectorAll('[data-filter]');
+  var cards = document.querySelectorAll('[data-mode]');
+  var search = document.getElementById('tool-search');
+  var active = '';
+  function apply(){
+    var q = search ? search.value.trim().toLowerCase() : '';
+    cards.forEach(function(c){
+      var okMode = !active || c.getAttribute('data-mode') === active;
+      var okQ = !q || c.textContent.toLowerCase().indexOf(q) !== -1;
+      c.hidden = !(okMode && okQ);
+    });
+    document.querySelectorAll('[data-mode-section]').forEach(function(s){
+      s.hidden = !!active && s.getAttribute('data-mode-section') !== active;
+    });
+  }
+  chips.forEach(function(chip){
+    chip.addEventListener('click', function(){
+      active = chip.getAttribute('data-filter');
+      chips.forEach(function(c){ c.setAttribute('aria-pressed', String(c === chip)); });
+      apply();
+    });
+  });
+  if (search) search.addEventListener('input', apply);
+
+  var copyBtn = document.getElementById('copy-share');
+  var toast = document.getElementById('copy-toast');
+  if (copyBtn) copyBtn.addEventListener('click', function(){
+    var text = copyBtn.getAttribute('data-text');
+    function done(){ toast.classList.add('show'); setTimeout(function(){ toast.classList.remove('show'); }, 1800); }
+    if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(text).then(done, function(){}); }
+    else { var t = document.createElement('textarea'); t.value = text; document.body.appendChild(t); t.select();
+      try { document.execCommand('copy'); done(); } catch (err) {} document.body.removeChild(t); }
+  });
+})();
+</script>
+</body>
+</html>
