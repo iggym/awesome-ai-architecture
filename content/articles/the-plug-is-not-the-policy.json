@@ -1,0 +1,241 @@
+{
+  "id": "0014",
+  "slug": "the-plug-is-not-the-policy",
+  "title": "The Plug Is Not the Policy",
+  "format": "essay",
+  "eyebrow": "Tool Protocols & MCP",
+  "date": "2026-10-07",
+  "research_window": [
+    "2026-09-01",
+    "2026-10-07"
+  ],
+  "description": "Why the Model Context Protocol standardizes how agents connect to tools but not whether they should — and the authorization, supply-chain, runtime and agent-to-agent layers you need on top.",
+  "standfirst": "MCP solved the integration problem so well that teams forgot it was never meant to solve the trust problem. A standard plug makes it easier to connect anything — including the wrong thing.",
+  "tags": [
+    "mcp",
+    "tool-calling",
+    "agent-security",
+    "supply-chain",
+    "architecture-evaluation"
+  ],
+  "hook": "MCP standardized the plug, not the policy. Every tool server you add is a dependency with your agent's permissions — govern it like a supply chain, not a config file.",
+  "maturity": {
+    "legacy": "Bespoke tool integrations per agent; credentials pasted into config; trust implied by \"it's on the list\".",
+    "modern": "Standard protocol plus audience-bound auth, scanned and pinned servers, a gateway that enforces policy, and a separate contract for agent-to-agent work."
+  },
+  "problem": [
+    "Before the Model Context Protocol, connecting an agent to a tool meant custom glue for every pair. MCP replaced that with one client-server contract, and adoption followed: Anthropic donated the protocol to the Linux Foundation's new Agentic AI Foundation in December 2025, and most major AI clients now speak it. That success is the problem this essay is about.",
+    "A tool server is code that runs with your credentials and whose <em>descriptions</em> are read by your model as instructions. A poisoned tool description is a prompt injection with a persistent foothold. A server that silently changes its tool definitions after you approved it is a rug pull. A token that a server forwards upstream is a confused deputy. None of these is a flaw in the plug; they are the absence of a policy around it.",
+    "The scale makes it urgent. When a protocol is easy enough that any developer can connect a new server in a minute, the number of connected servers grows faster than any review process. The registry now lists thousands of public servers, and most organisations cannot say how many are running on their own developers' machines, which credentials those servers hold, or whether their tool descriptions changed since the day they were installed.",
+    "The protocol is the easy decision. The architecture is the four layers you put around it."
+  ],
+  "exclusions": {
+    "items": [
+      {
+        "name": "Directory sites that list servers",
+        "reason": "a catalogue of thousands of servers with no publisher verification is a discovery convenience, not a control."
+      },
+      {
+        "name": "Individual MCP servers",
+        "reason": "the GitHub, Slack or database server you install is the thing being governed, not part of the governance."
+      },
+      {
+        "name": "Agent frameworks' tool abstractions",
+        "reason": "framework-specific tool decorators matter, but they are covered by the agent-orchestration essays on this site."
+      },
+      {
+        "name": "Generic API gateways without MCP awareness",
+        "reason": "they can rate-limit HTTP, but they cannot see a tool call, a tool description or a session — so they cannot enforce a tool policy."
+      }
+    ],
+    "bar": "the tool must enforce or verify something about the tool boundary — identity, authorization, provenance, isolation or the contract itself — not just make connection easier."
+  },
+  "taxonomy_title": "Four Layers Around the Plug",
+  "taxonomy_intro": [
+    "Read the layers from the inside out: the contract itself, who is allowed to call what, where tool servers come from, and what happens when the counterpart is another agent rather than a tool."
+  ],
+  "layers": [
+    {
+      "key": "contract",
+      "name": "Contract & Authorization",
+      "intro": "The protocol is also where authorization starts. The current specification makes a protected MCP server an OAuth 2.1 resource server, and that design choice matters more than any feature list.",
+      "tools": [
+        {
+          "name": "MCP specification & SDKs",
+          "org": "Agentic AI Foundation / Linux Foundation",
+          "url": "https://modelcontextprotocol.io/specification/2025-11-25/basic/authorization",
+          "fit": "The 2025-11-25 authorization spec requires PKCE, RFC 8707 resource indicators naming the target server, and audience validation on the server side, with protected-resource metadata (RFC 9728) for discovery. The practical rule is in one line: servers must not pass a client's token through to upstream APIs. Official SDKs implement the flows so you do not hand-roll them.",
+          "limit": "the spec defines what a correct server does; it cannot make the servers you install correct. Audit for token passthrough explicitly."
+        }
+      ]
+    },
+    {
+      "key": "supply",
+      "name": "Supply Chain & Provenance",
+      "intro": "Tool servers are dependencies. They need the same three things as packages: a known publisher, a scan before install and a pin so they cannot change underneath you.",
+      "tools": [
+        {
+          "name": "MCP Registry",
+          "org": "MCP project",
+          "url": "https://registry.modelcontextprotocol.io/",
+          "fit": "The official, open metadata registry for publicly available servers, with namespace verification tied to the publisher's domain or GitHub identity, designed so organisations can run sub-registries that mirror and curate it. Fits teams that want a single source of truth for which servers exist and who published them.",
+          "limit": "still in preview (REST API frozen at v0.1 since October 2025) — it records provenance; it does not vouch for safety."
+        },
+        {
+          "name": "Snyk Agent Scan",
+          "org": "Snyk (formerly Invariant Labs' mcp-scan)",
+          "url": "https://github.com/snyk/agent-scan",
+          "fit": "Discovers MCP servers and agent skills configured across local AI clients and scans them for tool poisoning, prompt injection in tool descriptions and toxic flows, with tool pinning that hashes definitions to catch rug pulls. Fits security teams that need an inventory of what developers have actually connected, not what policy says they connected.",
+          "limit": "scanning is detection at a point in time; pair it with a gateway that enforces the result."
+        }
+      ]
+    },
+    {
+      "key": "runtime",
+      "name": "Runtime Enforcement",
+      "intro": "Once a server is approved, something has to sit between the agent and the server at runtime: isolating the process, holding the secrets and deciding which tool calls go through.",
+      "tools": [
+        {
+          "name": "Docker MCP Gateway",
+          "org": "Docker",
+          "url": "https://www.docker.com/blog/docker-mcp-gateway-secure-infrastructure-for-agentic-ai/",
+          "fit": "An open-source gateway that exposes many MCP servers to clients through a single endpoint, runs each server in its own container, injects credentials from a secrets store rather than environment variables, and applies interceptors and restrictions to calls. Fits teams standardising developer and agent access to tools on Docker or Kubernetes.",
+          "limit": "container isolation limits what a server can touch on the host; it does not stop a server from misusing the API scopes you granted it. Scope the tokens, too."
+        }
+      ]
+    },
+    {
+      "key": "a2a",
+      "name": "Agent-to-Agent Contracts",
+      "intro": "When the counterpart is another agent — with its own planning, long-running tasks and state — a tool contract is the wrong shape. Treating a remote agent as \"just another tool\" hides its failure modes.",
+      "tools": [
+        {
+          "name": "A2A Protocol",
+          "org": "Linux Foundation",
+          "url": "https://a2a-protocol.org/latest/specification/",
+          "fit": "An open protocol for agents to discover each other through agent cards, delegate work as tasks with an explicit state machine, and stream results over JSON-RPC, gRPC or REST. Version 1.0 (March 2026) added signed agent cards for identity, version negotiation and multi-tenancy. Fits cross-team or cross-vendor agent delegation where tasks outlive a single request.",
+          "limit": "most teams do not need it yet; if every \"agent\" you call is really a deterministic function, MCP is the simpler contract."
+        }
+      ]
+    }
+  ],
+  "land": [
+    "Adopt MCP as the contract — the ecosystem has decided. Then decide the policy deliberately, layer by layer, before the number of connected servers decides it for you.",
+    "The most common gap is not exotic: it is a developer laptop with a dozen servers nobody inventoried, holding long-lived personal tokens. Start there.",
+    "Treat tool servers the way mature teams treat open-source packages: an allow-list with owners, automated scanning, pinned versions and a rule that anything touching production data goes through the same gateway with logging. None of that is MCP-specific, which is exactly the point — the plug is new, but the policy is supply-chain hygiene you already know how to run.",
+    "Finally, keep the agent-to-agent question separate. When a remote counterpart plans, holds state and runs for minutes or hours, it needs a task contract and an identity of its own, not a tool schema."
+  ],
+  "matrix": [
+    {
+      "if": "You are building or exposing an MCP server",
+      "then": "implement the 2025-11-25 authorization flow with audience-bound tokens, and never forward client tokens upstream."
+    },
+    {
+      "if": "Developers install servers themselves",
+      "then": "inventory and scan them (Snyk Agent Scan), pin tool definitions, and publish an allow-list sourced from the MCP Registry or an internal sub-registry."
+    },
+    {
+      "if": "Agents call tools in shared or production environments",
+      "then": "route through a gateway (Docker MCP Gateway or equivalent) that isolates servers, holds secrets and logs every tool call."
+    },
+    {
+      "if": "You delegate long-running work to another team's or vendor's agent",
+      "then": "use A2A tasks with signed agent cards rather than wrapping the agent as a tool."
+    },
+    {
+      "if": "You have one agent and two internal tools",
+      "then": "keep it simple: official SDK, scoped tokens, no gateway yet — but write the allow-list down."
+    }
+  ],
+  "move": "Run an agent scanner on five developer machines this week and list every MCP server it finds, who published it and which credentials it holds. Anything without a known publisher or with a broader token than its job needs comes off the list. That inventory is your first policy.",
+  "comparison": {
+    "columns": [
+      "Tool",
+      "Layer",
+      "Enforces or verifies",
+      "Where it runs",
+      "Licence / status"
+    ],
+    "rows": [
+      [
+        "MCP spec & SDKs",
+        "Contract & authorization",
+        "OAuth 2.1 flows, audience-bound tokens",
+        "Inside every client and server",
+        "Open spec; MIT SDKs"
+      ],
+      [
+        "MCP Registry",
+        "Supply chain",
+        "Publisher namespace verification",
+        "Hosted registry; self-hostable sub-registries",
+        "Open source; preview"
+      ],
+      [
+        "Snyk Agent Scan",
+        "Supply chain",
+        "Tool poisoning, toxic flows, definition pinning",
+        "Developer machines and CI",
+        "Apache-2.0 CLI"
+      ],
+      [
+        "Docker MCP Gateway",
+        "Runtime enforcement",
+        "Container isolation, secrets, call interception",
+        "Between clients and servers",
+        "Open source"
+      ],
+      [
+        "A2A Protocol",
+        "Agent-to-agent",
+        "Task lifecycle, signed agent identity",
+        "Between agents",
+        "Open spec, v1.0; Linux Foundation"
+      ]
+    ]
+  },
+  "evidence": [
+    {
+      "name": "MCP authorization spec",
+      "url": "https://modelcontextprotocol.io/specification/2025-11-25/basic/authorization",
+      "query": "MCP authorization OAuth 2.1 resource indicators 2025-11-25",
+      "signal": "spec revision 2025-11-25; Python SDK mcp 2.3.0 released 2026-10-02; TypeScript SDK 1.32.1 released 2026-10-05 (npm)"
+    },
+    {
+      "name": "MCP donated to the Linux Foundation",
+      "url": "https://itbrief.news/story/linux-foundation-launches-agentic-ai-open-standards-hub",
+      "query": "Anthropic donates MCP Agentic AI Foundation Linux Foundation",
+      "signal": "announced 2025-12-09; foundation co-founded by Anthropic, Block and OpenAI"
+    },
+    {
+      "name": "MCP Registry",
+      "url": "https://blog.modelcontextprotocol.io/posts/2025-09-08-mcp-registry-preview/",
+      "query": "official MCP Registry preview API freeze",
+      "signal": "preview launched 2025-09-08; REST API frozen at v0.1 on 2025-10-24"
+    },
+    {
+      "name": "Snyk Agent Scan",
+      "url": "https://github.com/snyk/agent-scan",
+      "query": "mcp-scan snyk agent scan tool poisoning tool pinning",
+      "signal": "snyk-agent-scan 0.6.8 released 2026-09-29 (Apache-2.0); successor to Invariant Labs' mcp-scan (Invariant acquired by Snyk, June 2025)"
+    },
+    {
+      "name": "Docker MCP Gateway",
+      "url": "https://www.docker.com/blog/docker-mcp-gateway-secure-infrastructure-for-agentic-ai/",
+      "query": "docker mcp gateway open source containerized servers secrets",
+      "signal": "open-source gateway announced by Docker (docker mcp CLI plugin); source repository linked from the announcement"
+    },
+    {
+      "name": "A2A Protocol",
+      "url": "https://a2a-protocol.org/latest/specification/",
+      "query": "A2A protocol v1.0 signed agent cards Linux Foundation",
+      "signal": "v1.0 released March 2026; a2a-sdk 1.2.2 released 2026-10-05"
+    }
+  ],
+  "missing": "There is no standard for <em>tool-level</em> authorization: OAuth scopes describe APIs, not \"this agent may call create_issue but not delete_repo\", so every gateway invents its own policy language. Tool descriptions are still unsigned text read by the model, which keeps tool poisoning a detection problem rather than a verification one. And audit trails do not travel — a tool call that crosses a gateway, a server and an A2A hop leaves three logs in three formats. Expect the next year of this layer to be about policy and provenance, not more connectors.",
+  "related": [
+    "watchtower-and-moat",
+    "where-the-sandbox-ends",
+    "memory-is-a-write-path"
+  ]
+}

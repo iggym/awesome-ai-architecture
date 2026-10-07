@@ -1,0 +1,188 @@
+{
+  "id": "0010",
+  "slug": "llm-inference-serving-engines-mapped-by-failure-mode",
+  "title": "LLM Inference & Serving Engines, Mapped by Failure Mode",
+  "format": "reference",
+  "date": "2026-10-07",
+  "research_window": [
+    "2026-09-01",
+    "2026-10-07"
+  ],
+  "description": "A curated reference of self-hosted LLM inference and serving engines, organized by the production failure each one prevents — throughput collapse, prefix recompute, tail latency, hardware waste and edge deployment.",
+  "standfirst": "For platform and ML engineers running open-weight models on their own hardware — organized by how serving actually fails under real traffic, not by tokens-per-second on a single prompt.",
+  "tags": [
+    "inference",
+    "model-serving",
+    "gpu-efficiency",
+    "open-weights",
+    "failure-mode-mapping"
+  ],
+  "hook": "Inference engines aren't ranked by peak tokens per second — they're ranked by what happens at p99 when the 500th concurrent agent sends the same 8k-token prefix.",
+  "exclusions": {
+    "intro": "Serving is the layer where benchmarks lie most. A single-request throughput chart tells you nothing about batching, cache reuse or the tail.",
+    "items": [
+      {
+        "name": "Engines in maintenance mode",
+        "reason": "Hugging Face's Text Generation Inference entered maintenance mode in December 2025 and itself recommends vLLM or SGLang. An existing TGI deployment need not be ripped out, but it is not a default for new systems."
+      },
+      {
+        "name": "Hosted inference APIs",
+        "reason": "managed endpoints solve a procurement problem, not a serving-architecture one; they belong in the gateway and routing reference, not here."
+      },
+      {
+        "name": "Research prototypes without a server",
+        "reason": "a kernel or scheduling paper with a demo script is not something you can put behind a load balancer. If it matters, it usually lands inside vLLM or SGLang within a release or two."
+      },
+      {
+        "name": "Generic model servers with no LLM-specific scheduling",
+        "reason": "a server that runs one request per forward pass, with no continuous batching or KV-cache management, wastes most of the GPU on autoregressive workloads."
+      }
+    ],
+    "bar": "an OpenAI-compatible (or equivalent) server, continuous batching or an explicit reason it is unnecessary, and a release inside the research window."
+  },
+  "failure_modes": [
+    {
+      "key": "throughput",
+      "short": "Throughput Collapse",
+      "title": "Throughput Collapses Under Concurrency",
+      "body": "The demo serves one user beautifully. At fifty concurrent requests, naive serving pads batches to the longest sequence, fragments KV-cache memory and leaves the GPU idle between tokens. Cost per token climbs exactly when usage succeeds.",
+      "tools": [
+        {
+          "name": "vLLM",
+          "url": "https://docs.vllm.ai/",
+          "fit": "PagedAttention for KV-cache memory, continuous batching, automatic prefix caching and the broadest model and hardware coverage of any open engine; fits teams that want one default engine across many models and accelerators, not teams chasing the last few percent on a single fixed model.",
+          "limit": "fast-moving releases mean configuration flags and defaults change often — pin versions and re-benchmark on upgrade."
+        }
+      ]
+    },
+    {
+      "key": "prefix",
+      "short": "Prefix Recompute",
+      "title": "Agents Recompute the Same Prefix on Every Turn",
+      "body": "Agent and multi-turn workloads resend a long system prompt, tool schema and conversation history on every call. Without cache reuse across requests, the engine re-runs prefill on thousands of identical tokens per turn — the most expensive tokens are the ones it already saw.",
+      "tools": [
+        {
+          "name": "SGLang",
+          "url": "https://docs.sglang.ai/",
+          "fit": "RadixAttention keeps a radix tree of KV caches so shared prefixes are reused across requests automatically, with a frontend language for structured multi-call programs; fits agentic, multi-turn and tree-of-calls workloads with heavy prefix overlap, not one-shot batch jobs with unique prompts.",
+          "limit": "the biggest wins depend on prefix overlap in your real traffic — measure the cache hit rate before crediting the engine."
+        }
+      ]
+    },
+    {
+      "key": "tail",
+      "short": "Tail Latency",
+      "title": "Prefill Bursts Wreck Tail Latency at Scale",
+      "body": "One long-context prefill stalls every decode stream sharing that GPU. Round-robin load balancing then sends the next request to a replica that has none of its prefix cached. At cluster scale, p99 latency is a scheduling problem — routing, disaggregation and cache placement — not a kernel problem.",
+      "tools": [
+        {
+          "name": "NVIDIA Dynamo",
+          "url": "https://docs.nvidia.com/dynamo/",
+          "fit": "Datacenter-scale serving layer that disaggregates prefill and decode onto separate workers, moves KV cache between them with NIXL and routes requests by KV-cache overlap; fits multi-node GPU fleets serving large models where tail latency is the SLO, not a single-GPU deployment.",
+          "limit": "it orchestrates engines (vLLM, SGLang, TensorRT-LLM) rather than replacing them, so you operate both layers."
+        },
+        {
+          "name": "llm-d",
+          "url": "https://github.com/llm-d/llm-d",
+          "fit": "Kubernetes-native distributed inference with inference-aware routing, prefill/decode disaggregation and hierarchical KV offload, built on vLLM; a CNCF Sandbox project since March 2026. Fits platform teams who want inference scheduling to be Kubernetes primitives, not a separate control plane.",
+          "limit": "young project (v0.x) — expect APIs and Helm values to move."
+        }
+      ]
+    },
+    {
+      "key": "hardware",
+      "short": "Hardware Waste",
+      "title": "Leaving Performance on Expensive Hardware",
+      "body": "When the model is fixed and the fleet is large, every percent of throughput is real money. General-purpose engines trade peak performance for flexibility; at enough scale that trade inverts.",
+      "tools": [
+        {
+          "name": "TensorRT-LLM",
+          "url": "https://github.com/NVIDIA/TensorRT-LLM",
+          "fit": "NVIDIA's optimised runtime with fused kernels, FP8/FP4 quantisation paths and in-flight batching for NVIDIA GPUs; fits large, stable deployments of a few models on NVIDIA hardware where peak efficiency justifies extra build complexity, not heterogeneous fleets or fast model churn.",
+          "limit": "NVIDIA-only, and new model architectures can land later than in vLLM or SGLang."
+        }
+      ]
+    },
+    {
+      "key": "edge",
+      "short": "No Datacenter GPU",
+      "title": "There Is No Datacenter GPU Where the Model Has to Run",
+      "body": "Air-gapped sites, laptops, on-device assistants and cost-sensitive internal tools often have CPUs, Apple silicon or one consumer GPU. Datacenter engines assume CUDA and gigabytes of headroom; here the failure is that the model does not run at all.",
+      "tools": [
+        {
+          "name": "llama.cpp",
+          "url": "https://github.com/ggml-org/llama.cpp",
+          "fit": "C/C++ inference with GGUF quantisation across CPU, Metal, CUDA, Vulkan and more, plus a built-in OpenAI-compatible server; fits edge, offline and developer-machine deployments where portability beats throughput, not high-concurrency serving.",
+          "limit": "concurrency and batching are modest compared with datacenter engines."
+        },
+        {
+          "name": "Ollama",
+          "url": "https://github.com/ollama/ollama",
+          "fit": "Packages local models with one-command pulls, a model registry and a local API; fits developer workstations and small internal tools that need a model running in minutes, not production multi-tenant serving.",
+          "limit": "convenience defaults (context size, quantisation) hide choices you will eventually need to make explicitly."
+        }
+      ]
+    }
+  ],
+  "evidence": [
+    {
+      "name": "vLLM",
+      "url": "https://github.com/vllm-project/vllm",
+      "query": "vllm pagedattention continuous batching prefix caching",
+      "signal": "vllm 0.31.0 released 2026-10-05"
+    },
+    {
+      "name": "SGLang",
+      "url": "https://github.com/sgl-project/sglang",
+      "query": "sglang radixattention prefix reuse",
+      "signal": "sglang 0.5.21 released 2026-10-01 (Apache-2.0)"
+    },
+    {
+      "name": "NVIDIA Dynamo",
+      "url": "https://docs.nvidia.com/dynamo/",
+      "query": "nvidia dynamo disaggregated prefill decode KV-aware routing NIXL",
+      "signal": "ai-dynamo 1.5.0 released 2026-09-19 (Apache-2.0); disaggregated-serving design documented"
+    },
+    {
+      "name": "llm-d",
+      "url": "https://github.com/llm-d/llm-d",
+      "query": "llm-d kubernetes distributed inference CNCF",
+      "signal": "accepted as a CNCF Sandbox project, announced 2026-03-24 (cncf.io/blog)"
+    },
+    {
+      "name": "TensorRT-LLM",
+      "url": "https://github.com/NVIDIA/TensorRT-LLM",
+      "query": "tensorrt-llm fp8 in-flight batching",
+      "signal": "tensorrt-llm 1.2.1 released 2026-04-20 (Apache-2.0)"
+    },
+    {
+      "name": "llama.cpp",
+      "url": "https://github.com/ggml-org/llama.cpp",
+      "query": "llama.cpp gguf server openai compatible",
+      "signal": "llama-cpp-python bindings 0.3.36 released 2026-10-01 (MIT)"
+    },
+    {
+      "name": "Ollama",
+      "url": "https://github.com/ollama/ollama",
+      "query": "ollama local model api",
+      "signal": "ollama Python client 0.6.3 released 2026-09-29"
+    },
+    {
+      "name": "Text Generation Inference (excluded)",
+      "url": "https://huggingface.co/docs/text-generation-inference/index",
+      "query": "text-generation-inference maintenance mode",
+      "signal": "maintenance mode since 2025-12-11 per Hugging Face docs"
+    }
+  ],
+  "missing": "There is still no neutral, reproducible benchmark for <em>realistic</em> serving: mixed context lengths, prefix overlap, bursty arrivals and an SLO on p99 time-to-first-token. Every vendor publishes its own harness. KV-cache portability across engines is also unsolved — a cache built by one engine cannot be served by another, which keeps disaggregated and tiered caching locked to a single stack. Until those exist, run your own traffic replay before believing anyone's chart.",
+  "related": [
+    "cost-governance-tooling-ai-mapped-by-failure-mode",
+    "multi-model-routing-ai-gateway-tools-mapped-by-failure-mode-2026",
+    "structured-output-schema-enforcement-mapped-by-failure-mode"
+  ],
+  "choose": [
+    "Default to vLLM or SGLang for a new deployment and let measurements move you off it. Run both on a replay of your own traffic — real prompt lengths, real concurrency, real prefix overlap — and compare time-to-first-token and inter-token latency at p50 and p99, not peak throughput. The engine that wins on a single long prompt often loses on fifty short agent turns.",
+    "Add a cluster layer such as Dynamo or llm-d only when a single replica's tail latency, or cache misses caused by naive load balancing, is the measured bottleneck. Disaggregation is real engineering with real operational cost; it pays off on large models and large fleets, and rarely before. TensorRT-LLM earns its build complexity when the model is stable and the GPU bill is large enough that ten percent matters.",
+    "Keep the serving API OpenAI-compatible at the boundary, whichever engine is behind it. That one decision lets your gateway, evals and cost tooling stay unchanged when you switch engines — and in this layer you will switch engines, because the leader changes every few releases."
+  ]
+}

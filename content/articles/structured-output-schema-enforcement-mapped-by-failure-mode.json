@@ -1,0 +1,174 @@
+{
+  "id": "0011",
+  "slug": "structured-output-schema-enforcement-mapped-by-failure-mode",
+  "title": "Structured Output & Schema Enforcement Tools, Mapped by Failure Mode",
+  "format": "reference",
+  "date": "2026-10-07",
+  "research_window": [
+    "2026-09-01",
+    "2026-10-07"
+  ],
+  "description": "A curated reference of structured-output and schema-enforcement tools for LLM systems, organized by the failure each one prevents: malformed output, valid-but-wrong values, schema drift and untraceable extractions.",
+  "standfirst": "For engineers wiring LLM output into code that expects types — organized by the four different ways \"just return JSON\" breaks, because each one needs a different tool.",
+  "tags": [
+    "structured-output",
+    "constrained-decoding",
+    "schema-validation",
+    "data-extraction",
+    "failure-mode-mapping"
+  ],
+  "hook": "Valid JSON is the easy part. The failures that page you are the schema-valid object with the wrong value and the extraction nobody can trace back to its source.",
+  "exclusions": {
+    "items": [
+      {
+        "name": "Prompt-only \"respond in JSON\" templates",
+        "reason": "asking nicely is not enforcement. It works until the model adds a friendly preamble at 2am."
+      },
+      {
+        "name": "Regex post-processors that strip code fences",
+        "reason": "repairing the string after the fact hides the failure rate instead of measuring it."
+      },
+      {
+        "name": "Content-safety guardrail suites",
+        "reason": "they validate whether output is <em>allowed</em>, not whether it is <em>well-typed</em>; they are covered in this site's agent-security essays."
+      },
+      {
+        "name": "Single-provider features presented as a library",
+        "reason": "provider-native structured output is worth using, but it is a capability of an API, not a portable layer you can test and swap."
+      }
+    ],
+    "bar": "the tool must either make invalid output impossible to generate or detect it deterministically and give the caller a typed result or a typed error — never a best-effort string."
+  },
+  "failure_modes": [
+    {
+      "key": "malformed",
+      "short": "Malformed Output",
+      "title": "Output That Doesn't Parse",
+      "body": "A missing brace, a trailing comment, an enum value the model invented. At a few percent of requests this looks like noise in development and becomes a steady stream of 500s in production. The robust fix is to constrain decoding, so tokens that would break the grammar are never sampled.",
+      "tools": [
+        {
+          "name": "Outlines",
+          "url": "https://github.com/dottxt-ai/outlines",
+          "fit": "Constrains generation to a JSON Schema, Pydantic model, regex or grammar for local and served open models; fits teams running their own models who want invalid output to be impossible, not retried.",
+          "limit": "constraining decoding can shift output quality if the schema fights the model's natural phrasing — evaluate, don't assume."
+        },
+        {
+          "name": "XGrammar",
+          "url": "https://github.com/mlc-ai/xgrammar",
+          "fit": "A grammar-constrained decoding engine built for near-zero per-token overhead and integrated as a structured-output backend in serving engines such as vLLM and SGLang; fits platform teams who want schema enforcement at the serving layer for every caller, not per-application libraries.",
+          "limit": "you consume it through your serving engine; it is infrastructure, not an application API."
+        },
+        {
+          "name": "llguidance",
+          "url": "https://github.com/guidance-ai/llguidance",
+          "fit": "The Rust grammar engine behind Microsoft's Guidance, with fast Earley-based parsing of context-free grammars and JSON Schema; fits teams that need grammars richer than JSON (DSLs, code subsets), not plain object extraction.",
+          "limit": "writing and debugging grammars is its own skill."
+        }
+      ]
+    },
+    {
+      "key": "semantic",
+      "short": "Valid but Wrong",
+      "title": "Schema-Valid Objects With Wrong Values",
+      "body": "The object parses. The date is in the future, the total doesn't equal the sum of line items, the customer ID doesn't exist. Grammar constraints cannot catch this — it needs business-rule validation with the failure fed back to the model, and a hard stop when retries run out.",
+      "tools": [
+        {
+          "name": "Instructor",
+          "url": "https://github.com/567-labs/instructor",
+          "fit": "Wraps provider clients so responses are parsed into Pydantic models, with validator errors sent back to the model for bounded re-asks; fits application teams using hosted APIs who want business-rule validation in the same place as their types, not a new framework.",
+          "limit": "re-asks cost latency and tokens — cap retries and log every validation failure as a metric."
+        },
+        {
+          "name": "Pydantic AI",
+          "url": "https://ai.pydantic.dev/",
+          "fit": "Agent framework from the Pydantic team with typed outputs and output validators that can raise a retry, plus typed dependency injection; fits teams building agents in Python who want structured output to be the agent's contract, not a parsing step bolted on afterwards.",
+          "limit": "you adopt an agent framework, not just a validator."
+        }
+      ]
+    },
+    {
+      "key": "drift",
+      "short": "Schema Drift",
+      "title": "Prompts and Types Drift Apart Across the Codebase",
+      "body": "The schema lives in a Pydantic class, the instructions in a prompt string, the TypeScript consumer in a third file. Someone renames a field in one place. Nothing fails until a downstream service reads <code>undefined</code>. The failure is organisational: no single source of truth for what the LLM function returns.",
+      "tools": [
+        {
+          "name": "BAML",
+          "url": "https://docs.boundaryml.com/",
+          "fit": "A schema-first language where LLM functions, their types and prompts are declared together and compiled into typed clients for Python, TypeScript and other languages, with a tolerant parser for imperfect model output; fits polyglot teams where the same LLM function is called from several services, not a single script.",
+          "limit": "adds a DSL and a code-generation step to your build."
+        }
+      ]
+    },
+    {
+      "key": "provenance",
+      "short": "Untraceable Extractions",
+      "title": "Extractions Nobody Can Trace Back to the Source",
+      "body": "Extracting fields from a 60-page contract is easy to demo and hard to defend. When an auditor asks where the termination date came from, \"the model said so\" is not an answer. Long-document extraction needs every value grounded to a character span a human can check.",
+      "tools": [
+        {
+          "name": "LangExtract",
+          "url": "https://github.com/google/langextract",
+          "fit": "Google's open-source library for few-shot extraction from long documents that maps every extracted entity to its exact source span and renders an interactive review view; fits regulated and document-heavy workflows where reviewers must verify values, not high-volume chat output.",
+          "limit": "provenance is only as good as the review process that uses it."
+        }
+      ]
+    }
+  ],
+  "evidence": [
+    {
+      "name": "Outlines",
+      "url": "https://github.com/dottxt-ai/outlines",
+      "query": "outlines structured generation json schema regex",
+      "signal": "outlines 1.3.3 released 2026-08-06 (Apache-2.0)"
+    },
+    {
+      "name": "XGrammar",
+      "url": "https://xgrammar.mlc.ai/",
+      "query": "xgrammar constrained decoding vllm sglang backend",
+      "signal": "xgrammar 0.2.8 released 2026-09-24 (Apache-2.0)"
+    },
+    {
+      "name": "llguidance",
+      "url": "https://github.com/guidance-ai/llguidance",
+      "query": "llguidance rust grammar engine guidance",
+      "signal": "llguidance 1.9.1 released 2026-09-30"
+    },
+    {
+      "name": "Instructor",
+      "url": "https://github.com/567-labs/instructor",
+      "query": "instructor pydantic validation retries structured outputs",
+      "signal": "instructor 1.17.0 released 2026-09-09 (MIT)"
+    },
+    {
+      "name": "Pydantic AI",
+      "url": "https://ai.pydantic.dev/",
+      "query": "pydantic ai output validator ModelRetry",
+      "signal": "pydantic-ai 2.54.0 released 2026-10-03"
+    },
+    {
+      "name": "BAML",
+      "url": "https://github.com/BoundaryML/baml",
+      "query": "baml boundaryml schema-aligned parsing typed clients",
+      "signal": "baml-py 0.226.2 released 2026-09-01"
+    },
+    {
+      "name": "LangExtract",
+      "url": "https://github.com/google/langextract",
+      "query": "google langextract source grounding long documents",
+      "signal": "langextract 1.7.0 released 2026-09-13"
+    }
+  ],
+  "missing": "There is no shared metric for <em>semantic</em> validity — teams count parse failures but rarely count objects that parsed and were wrong, so the most expensive failure mode is the least measured. Streaming partial objects to a UI is still handled differently by every library, and constrained decoding over hosted APIs depends on whatever subset of JSON Schema each provider chooses to support. Until that converges, keep the schema in one place and validate on both sides of the model.",
+  "related": [
+    "llm-evaluation-testing-tools-mapped-by-failure-mode",
+    "llm-inference-serving-engines-mapped-by-failure-mode",
+    "document-ingestion-parsing-rag-mapped-by-failure-mode"
+  ],
+  "choose": [
+    "Layer these tools rather than picking one. Use constrained decoding (Outlines, or XGrammar inside your serving engine) or the provider's native structured-output mode so the output always parses. Put business-rule validation on top (Instructor or Pydantic AI validators) so it is also correct. If more than one service calls the same LLM function, make the schema the single source of truth (BAML or an equivalent shared package) so it cannot drift.",
+    "Measure all three failure rates separately: parse failures, validation failures and downstream corrections made by humans. Teams that only track the first conclude that structured output is solved, while the second and third quietly carry the real cost. A validation failure that is retried and succeeds is still a signal worth graphing — it tells you where the prompt or schema is fighting the model.",
+    "For document extraction that someone will audit, require provenance from day one. Retrofitting source spans onto an extraction pipeline after a compliance review is far harder than choosing a grounded extractor like LangExtract up front.",
+    "Whichever stack you pick, test it against the schema you actually ship, with nested objects, optional fields and enums, because support for the full JSON Schema specification still varies widely between libraries and providers."
+  ]
+}

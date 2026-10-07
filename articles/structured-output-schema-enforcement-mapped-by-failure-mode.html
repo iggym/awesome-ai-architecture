@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Structured Output &amp; Schema Enforcement Tools, Mapped by Failure Mode — Awesome AI Architecture</title>
+<meta name="description" content="A curated reference of structured-output and schema-enforcement tools for LLM systems, organized by the failure each one prevents: malformed output, valid-but-wrong values, schema drift and untraceable extractions.">
+<meta name="author" content="iggym">
+<link rel="canonical" href="https://iggym.github.io/awesome-ai-architecture/articles/structured-output-schema-enforcement-mapped-by-failure-mode.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Awesome AI Architecture">
+<meta property="og:title" content="Structured Output &amp; Schema Enforcement Tools, Mapped by Failure Mode">
+<meta property="og:description" content="A curated reference of structured-output and schema-enforcement tools for LLM systems, organized by the failure each one prevents: malformed output, valid-but-wrong values, schema drift and untraceable extractions.">
+<meta property="og:url" content="https://iggym.github.io/awesome-ai-architecture/articles/structured-output-schema-enforcement-mapped-by-failure-mode.html">
+<meta property="article:published_time" content="2026-10-07">
+<meta property="article:tag" content="structured-output">
+<meta property="article:tag" content="constrained-decoding">
+<meta property="article:tag" content="schema-validation">
+<meta property="article:tag" content="data-extraction">
+<meta property="article:tag" content="failure-mode-mapping">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Structured Output &amp; Schema Enforcement Tools, Mapped by Failure Mode">
+<meta name="twitter:description" content="A curated reference of structured-output and schema-enforcement tools for LLM systems, organized by the failure each one prevents: malformed output, valid-but-wrong values, schema drift and untraceable extractions.">
+<meta name="color-scheme" content="light dark">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "TechArticle", "headline": "Structured Output & Schema Enforcement Tools, Mapped by Failure Mode", "description": "A curated reference of structured-output and schema-enforcement tools for LLM systems, organized by the failure each one prevents: malformed output, valid-but-wrong values, schema drift and untraceable extractions.", "datePublished": "2026-10-07", "dateModified": "2026-10-07", "author": {"@type": "Person", "name": "iggym", "url": "https://github.com/iggym"}, "publisher": {"@type": "Organization", "name": "Awesome AI Architecture", "url": "https://iggym.github.io/awesome-ai-architecture/"}, "url": "https://iggym.github.io/awesome-ai-architecture/articles/structured-output-schema-enforcement-mapped-by-failure-mode.html", "mainEntityOfPage": "https://iggym.github.io/awesome-ai-architecture/articles/structured-output-schema-enforcement-mapped-by-failure-mode.html", "keywords": "structured-output, constrained-decoding, schema-validation, data-extraction, failure-mode-mapping", "isPartOf": {"@type": "WebSite", "name": "Awesome AI Architecture", "url": "https://iggym.github.io/awesome-ai-architecture/"}}</script>
+<style>
+:root{
+  --cream:#FAF6EE; --ink:#1F2421; --teal:#1F7A6C; --coral:#C4502B; --muted:#6F6A5E;
+  --surface:#FFFFFF; --border:rgba(31,36,33,0.14); --soft:#4B4738; --teal-soft:rgba(31,122,108,0.10);
+  --display:'Space Grotesk',sans-serif; --body:'Inter',sans-serif; --mono:'IBM Plex Mono',monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root{ --cream:#121412; --ink:#E9E6DF; --teal:#4FB8A6; --coral:#F08A63; --muted:#A39F94;
+    --surface:#1A1D1B; --border:rgba(233,230,223,0.14); --soft:#CFCAC0; --teal-soft:rgba(79,184,166,0.14); }
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion: reduce){ html{scroll-behavior:auto} *{animation-duration:.001ms!important;transition-duration:.001ms!important} }
+body{margin:0;background:var(--cream);color:var(--ink);font-family:var(--body);line-height:1.65;font-size:16px}
+a{color:var(--teal)}
+a:focus-visible,button:focus-visible{outline:2px solid var(--coral);outline-offset:2px}
+code{font-family:var(--mono);font-size:.88em;background:var(--teal-soft);padding:1px 5px;border-radius:4px}
+.topbar{position:sticky;top:0;z-index:20;background:var(--cream);border-bottom:1px solid var(--border);padding:12px 16px;display:flex;gap:16px;align-items:center;justify-content:space-between}
+.topbar a.home{font-family:var(--display);font-weight:700;font-size:14px;text-decoration:none;color:var(--ink);white-space:nowrap}
+.toc{display:flex;gap:14px;overflow-x:auto;font-family:var(--mono);font-size:12px;scrollbar-width:none}
+.toc a{color:var(--muted);text-decoration:none;white-space:nowrap}
+.toc a:hover{color:var(--teal)}
+header.hero,.wrap{max-width:760px;margin:0 auto;padding:0 16px}
+header.hero{padding-top:56px}
+.meta-line{font-family:var(--mono);font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--teal);margin-bottom:14px}
+h1{font-family:var(--display);font-weight:700;font-size:clamp(2rem,5vw,3rem);line-height:1.12;margin:0 0 16px;letter-spacing:-.01em}
+.standfirst{font-size:1.12rem;color:var(--soft);margin:0 0 8px}
+.tags{display:flex;gap:6px;flex-wrap:wrap;margin:18px 0 0;padding:0;list-style:none}
+.tags li{font-family:var(--mono);font-size:10.5px;color:var(--teal);border:1px solid var(--border);padding:3px 9px;border-radius:20px}
+section{margin:52px 0}
+h2{font-family:var(--display);font-weight:700;font-size:1.5rem;line-height:1.25;margin:0 0 14px}
+h3{font-family:var(--display);font-weight:700;font-size:1.1rem;margin:0 0 6px}
+p{margin:0 0 14px}
+.callout{background:var(--surface);border:1px solid var(--border);border-left:4px solid var(--coral);border-radius:8px;padding:20px 22px}
+.callout h2{font-size:1.2rem}
+.callout ul{margin:0 0 14px;padding-left:20px}
+.callout li{margin-bottom:8px}
+.bar{font-weight:500}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 8px}
+.chip{font-family:var(--mono);font-size:11.5px;padding:6px 14px;border-radius:20px;border:1px solid var(--border);background:var(--surface);color:var(--ink);cursor:pointer}
+.chip:hover{border-color:var(--teal)}
+.chip[aria-pressed="true"]{background:var(--teal);border-color:var(--teal);color:var(--cream)}
+.search{font-family:var(--mono);font-size:12.5px;border:1px solid var(--border);background:var(--surface);color:var(--ink);padding:7px 12px;border-radius:20px;width:100%;max-width:300px;margin-top:8px}
+.cards{display:grid;gap:14px;margin-top:18px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:18px 20px;transition:border-color .2s ease}
+.card:hover{border-color:var(--teal)}
+.card[hidden]{display:none}
+.card .label{font-family:var(--mono);font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
+.card h3 a{color:var(--ink);text-decoration:none;border-bottom:1px solid var(--teal)}
+.card p{font-size:14.5px;color:var(--soft);margin:6px 0 0}
+.card .limit{font-size:13.5px;color:var(--muted)}
+.card .limit strong{color:var(--coral);font-weight:500}
+.strip{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:28px 0 0}
+.strip div{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px 16px;font-size:14px}
+.strip .k{font-family:var(--mono);font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:4px}
+.strip .legacy .k{color:var(--muted)} .strip .modern{border-color:var(--teal)} .strip .modern .k{color:var(--teal)}
+.matrix{list-style:none;padding:0;margin:0}
+.matrix li{border-top:1px solid var(--border);padding:12px 0}
+.matrix li strong{font-family:var(--display)}
+.move{background:var(--teal);color:var(--cream);border-radius:8px;padding:20px 22px}
+.move h2{color:var(--cream)}
+.stack{display:grid;gap:10px;margin-top:16px}
+.layer{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px 14px}
+.layer[hidden]{display:none}
+.layer .lname{font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--teal);margin-bottom:8px}
+.layer .ltools{display:flex;gap:8px;flex-wrap:wrap}
+.layer .ltools span{font-family:var(--display);font-size:13.5px;border:1px solid var(--border);border-radius:6px;padding:4px 10px}
+.table-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:8px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:13.5px;min-width:620px}
+th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:top}
+th{font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+tr:last-child td{border-bottom:0}
+.reframe{font-family:var(--display);font-weight:700;font-size:1.35rem;line-height:1.35;border-left:4px solid var(--teal);padding-left:18px;margin:0 0 18px}
+.share-actions{display:flex;gap:8px;flex-wrap:wrap}
+.btn{font-family:var(--mono);font-size:12px;padding:8px 14px;border-radius:20px;border:1px solid var(--teal);background:var(--surface);color:var(--teal);cursor:pointer;text-decoration:none}
+.btn.primary{background:var(--teal);color:var(--cream)}
+.toast{font-family:var(--mono);font-size:12px;color:var(--teal);margin-left:6px;opacity:0;transition:opacity .2s ease}
+.toast.show{opacity:1}
+.evidence{list-style:none;padding:0;margin:0;font-family:var(--mono);font-size:12px;color:var(--soft)}
+.evidence li{border-top:1px solid var(--border);padding:10px 0;overflow-wrap:anywhere}
+.evidence strong{font-family:var(--display);font-size:14px;color:var(--ink)}
+.related{list-style:none;padding:0;margin:0;display:grid;gap:8px}
+.related a{font-family:var(--display);text-decoration:none}
+footer{border-top:1px solid var(--border);margin-top:64px;padding:28px 16px;text-align:center;font-family:var(--mono);font-size:12px}
+footer a{margin:0 10px;text-decoration:none}
+@media (max-width:560px){ .strip{grid-template-columns:1fr} .toc{display:none} }
+</style>
+</head>
+<body>
+<nav class="topbar" aria-label="Article sections"><a class="home" href="../">← Awesome AI Architecture</a><div class="toc"><a href="#preamble">Exclusions</a><a href="#cat-malformed">Malformed Output</a><a href="#cat-semantic">Valid but Wrong</a><a href="#cat-drift">Schema Drift</a><a href="#cat-provenance">Untraceable Extractions</a><a href="#choose">How to Choose</a><a href="#share">Share</a><a href="#evidence">Evidence</a></div></nav>
+<main id="top"><header class="hero"><div class="meta-line">Reference · 2026-10-07 · Window: 2026-09-01 → 2026-10-07 · 5 min</div><h1>Structured Output &amp; Schema Enforcement Tools, Mapped by Failure Mode</h1><p class="standfirst">For engineers wiring LLM output into code that expects types — organized by the four different ways "just return JSON" breaks, because each one needs a different tool.</p><ul class="tags"><li>structured-output</li><li>constrained-decoding</li><li>schema-validation</li><li>data-extraction</li><li>failure-mode-mapping</li></ul></header><div class="wrap"><section id="preamble" class="callout"><h2>Exclusion Criteria — Read First</h2><ul><li><strong>Prompt-only &quot;respond in JSON&quot; templates.</strong> asking nicely is not enforcement. It works until the model adds a friendly preamble at 2am.</li><li><strong>Regex post-processors that strip code fences.</strong> repairing the string after the fact hides the failure rate instead of measuring it.</li><li><strong>Content-safety guardrail suites.</strong> they validate whether output is <em>allowed</em>, not whether it is <em>well-typed</em>; they are covered in this site's agent-security essays.</li><li><strong>Single-provider features presented as a library.</strong> provider-native structured output is worth using, but it is a capability of an API, not a portable layer you can test and swap.</li></ul><p class="bar"><strong>Inclusion bar:</strong> the tool must either make invalid output impossible to generate or detect it deterministically and give the caller a typed result or a typed error — never a best-effort string.</p></section><section aria-label="Filter tools" style="margin-bottom:0"><div class="chips"><button type="button" class="chip" data-filter="" aria-pressed="true">All Tools</button><button type="button" class="chip" data-filter="malformed" aria-pressed="false">Malformed Output</button><button type="button" class="chip" data-filter="semantic" aria-pressed="false">Valid but Wrong</button><button type="button" class="chip" data-filter="drift" aria-pressed="false">Schema Drift</button><button type="button" class="chip" data-filter="provenance" aria-pressed="false">Untraceable Extractions</button></div><label class="sr" for="tool-search" style="position:absolute;left:-9999px">Filter tools</label><input class="search" id="tool-search" type="search" placeholder="filter tools by keyword…"></section><section id="cat-malformed" data-mode-section="malformed"><h2>Output That Doesn&#x27;t Parse</h2><p>A missing brace, a trailing comment, an enum value the model invented. At a few percent of requests this looks like noise in development and becomes a steady stream of 500s in production. The robust fix is to constrain decoding, so tokens that would break the grammar are never sampled.</p><div class="cards"><article class="card" data-mode="malformed"><div class="label">Malformed Output</div><h3><a href="https://github.com/dottxt-ai/outlines" target="_blank" rel="noopener noreferrer">Outlines</a></h3><p>Constrains generation to a JSON Schema, Pydantic model, regex or grammar for local and served open models; fits teams running their own models who want invalid output to be impossible, not retried.</p><p class="limit"><strong>Limit:</strong> constraining decoding can shift output quality if the schema fights the model's natural phrasing — evaluate, don't assume.</p></article><article class="card" data-mode="malformed"><div class="label">Malformed Output</div><h3><a href="https://github.com/mlc-ai/xgrammar" target="_blank" rel="noopener noreferrer">XGrammar</a></h3><p>A grammar-constrained decoding engine built for near-zero per-token overhead and integrated as a structured-output backend in serving engines such as vLLM and SGLang; fits platform teams who want schema enforcement at the serving layer for every caller, not per-application libraries.</p><p class="limit"><strong>Limit:</strong> you consume it through your serving engine; it is infrastructure, not an application API.</p></article><article class="card" data-mode="malformed"><div class="label">Malformed Output</div><h3><a href="https://github.com/guidance-ai/llguidance" target="_blank" rel="noopener noreferrer">llguidance</a></h3><p>The Rust grammar engine behind Microsoft's Guidance, with fast Earley-based parsing of context-free grammars and JSON Schema; fits teams that need grammars richer than JSON (DSLs, code subsets), not plain object extraction.</p><p class="limit"><strong>Limit:</strong> writing and debugging grammars is its own skill.</p></article></div></section><section id="cat-semantic" data-mode-section="semantic"><h2>Schema-Valid Objects With Wrong Values</h2><p>The object parses. The date is in the future, the total doesn't equal the sum of line items, the customer ID doesn't exist. Grammar constraints cannot catch this — it needs business-rule validation with the failure fed back to the model, and a hard stop when retries run out.</p><div class="cards"><article class="card" data-mode="semantic"><div class="label">Valid but Wrong</div><h3><a href="https://github.com/567-labs/instructor" target="_blank" rel="noopener noreferrer">Instructor</a></h3><p>Wraps provider clients so responses are parsed into Pydantic models, with validator errors sent back to the model for bounded re-asks; fits application teams using hosted APIs who want business-rule validation in the same place as their types, not a new framework.</p><p class="limit"><strong>Limit:</strong> re-asks cost latency and tokens — cap retries and log every validation failure as a metric.</p></article><article class="card" data-mode="semantic"><div class="label">Valid but Wrong</div><h3><a href="https://ai.pydantic.dev/" target="_blank" rel="noopener noreferrer">Pydantic AI</a></h3><p>Agent framework from the Pydantic team with typed outputs and output validators that can raise a retry, plus typed dependency injection; fits teams building agents in Python who want structured output to be the agent's contract, not a parsing step bolted on afterwards.</p><p class="limit"><strong>Limit:</strong> you adopt an agent framework, not just a validator.</p></article></div></section><section id="cat-drift" data-mode-section="drift"><h2>Prompts and Types Drift Apart Across the Codebase</h2><p>The schema lives in a Pydantic class, the instructions in a prompt string, the TypeScript consumer in a third file. Someone renames a field in one place. Nothing fails until a downstream service reads <code>undefined</code>. The failure is organisational: no single source of truth for what the LLM function returns.</p><div class="cards"><article class="card" data-mode="drift"><div class="label">Schema Drift</div><h3><a href="https://docs.boundaryml.com/" target="_blank" rel="noopener noreferrer">BAML</a></h3><p>A schema-first language where LLM functions, their types and prompts are declared together and compiled into typed clients for Python, TypeScript and other languages, with a tolerant parser for imperfect model output; fits polyglot teams where the same LLM function is called from several services, not a single script.</p><p class="limit"><strong>Limit:</strong> adds a DSL and a code-generation step to your build.</p></article></div></section><section id="cat-provenance" data-mode-section="provenance"><h2>Extractions Nobody Can Trace Back to the Source</h2><p>Extracting fields from a 60-page contract is easy to demo and hard to defend. When an auditor asks where the termination date came from, "the model said so" is not an answer. Long-document extraction needs every value grounded to a character span a human can check.</p><div class="cards"><article class="card" data-mode="provenance"><div class="label">Untraceable Extractions</div><h3><a href="https://github.com/google/langextract" target="_blank" rel="noopener noreferrer">LangExtract</a></h3><p>Google's open-source library for few-shot extraction from long documents that maps every extracted entity to its exact source span and renders an interactive review view; fits regulated and document-heavy workflows where reviewers must verify values, not high-volume chat output.</p><p class="limit"><strong>Limit:</strong> provenance is only as good as the review process that uses it.</p></article></div></section><section id="choose"><h2>How to Choose</h2><p>Layer these tools rather than picking one. Use constrained decoding (Outlines, or XGrammar inside your serving engine) or the provider's native structured-output mode so the output always parses. Put business-rule validation on top (Instructor or Pydantic AI validators) so it is also correct. If more than one service calls the same LLM function, make the schema the single source of truth (BAML or an equivalent shared package) so it cannot drift.</p><p>Measure all three failure rates separately: parse failures, validation failures and downstream corrections made by humans. Teams that only track the first conclude that structured output is solved, while the second and third quietly carry the real cost. A validation failure that is retried and succeeds is still a signal worth graphing — it tells you where the prompt or schema is fighting the model.</p><p>For document extraction that someone will audit, require provenance from day one. Retrofitting source spans onto an extraction pipeline after a compliance review is far harder than choosing a grounded extractor like LangExtract up front.</p><p>Whichever stack you pick, test it against the schema you actually ship, with nested objects, optional fields and enums, because support for the full JSON Schema specification still varies widely between libraries and providers.</p></section><section id="share"><h2>Bold Reframe</h2><p class="reframe">Valid JSON is the easy part. The failures that page you are the schema-valid object with the wrong value and the extraction nobody can trace back to its source.</p><div class="share-actions"><button type="button" class="btn primary" id="copy-share" data-text="Valid JSON is the easy part. The failures that page you are the schema-valid object with the wrong value and the extraction nobody can trace back to its source. — https://iggym.github.io/awesome-ai-architecture/articles/structured-output-schema-enforcement-mapped-by-failure-mode.html">Copy Text &amp; Link</button><a class="btn" href="https://twitter.com/intent/tweet?text=Valid%20JSON%20is%20the%20easy%20part.%20The%20failures%20that%20page%20you%20are%20the%20schema-valid%20object%20with%20the%20wrong%20value%20and%20the%20extraction%20nobody%20can%20trace%20back%20to%20its%20source.&amp;url=https%3A%2F%2Figgym.github.io%2Fawesome-ai-architecture%2Farticles%2Fstructured-output-schema-enforcement-mapped-by-failure-mode.html" target="_blank" rel="noopener noreferrer">Share on X</a><a class="btn" href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Figgym.github.io%2Fawesome-ai-architecture%2Farticles%2Fstructured-output-schema-enforcement-mapped-by-failure-mode.html" target="_blank" rel="noopener noreferrer">Share on LinkedIn</a><span class="toast" id="copy-toast" role="status" aria-live="polite">Copied to clipboard</span></div></section><section id="evidence"><h2>Evidence Log &amp; Citations</h2><p>Verified 2026-09-01 → 2026-10-07. Release dates are from each project's package registry (PyPI) unless noted.</p><ul class="evidence"><li><strong>Outlines</strong> — <a href="https://github.com/dottxt-ai/outlines" target="_blank" rel="noopener noreferrer">github.com/dottxt-ai/outlines</a> · query: "outlines structured generation json schema regex" · outlines 1.3.3 released 2026-08-06 (Apache-2.0)</li><li><strong>XGrammar</strong> — <a href="https://xgrammar.mlc.ai/" target="_blank" rel="noopener noreferrer">xgrammar.mlc.ai</a> · query: "xgrammar constrained decoding vllm sglang backend" · xgrammar 0.2.8 released 2026-09-24 (Apache-2.0)</li><li><strong>llguidance</strong> — <a href="https://github.com/guidance-ai/llguidance" target="_blank" rel="noopener noreferrer">github.com/guidance-ai/llguidance</a> · query: "llguidance rust grammar engine guidance" · llguidance 1.9.1 released 2026-09-30</li><li><strong>Instructor</strong> — <a href="https://github.com/567-labs/instructor" target="_blank" rel="noopener noreferrer">github.com/567-labs/instructor</a> · query: "instructor pydantic validation retries structured outputs" · instructor 1.17.0 released 2026-09-09 (MIT)</li><li><strong>Pydantic AI</strong> — <a href="https://ai.pydantic.dev/" target="_blank" rel="noopener noreferrer">ai.pydantic.dev</a> · query: "pydantic ai output validator ModelRetry" · pydantic-ai 2.54.0 released 2026-10-03</li><li><strong>BAML</strong> — <a href="https://github.com/BoundaryML/baml" target="_blank" rel="noopener noreferrer">github.com/BoundaryML/baml</a> · query: "baml boundaryml schema-aligned parsing typed clients" · baml-py 0.226.2 released 2026-09-01</li><li><strong>LangExtract</strong> — <a href="https://github.com/google/langextract" target="_blank" rel="noopener noreferrer">github.com/google/langextract</a> · query: "google langextract source grounding long documents" · langextract 1.7.0 released 2026-09-13</li></ul></section><section id="missing"><h2>What's Still Missing (as of Oct 2026)</h2><p>There is no shared metric for <em>semantic</em> validity — teams count parse failures but rarely count objects that parsed and were wrong, so the most expensive failure mode is the least measured. Streaming partial objects to a UI is still handled differently by every library, and constrained decoding over hosted APIs depends on whatever subset of JSON Schema each provider chooses to support. Until that converges, keep the schema in one place and validate on both sides of the model.</p></section><section id="related"><h2>Related on Awesome AI Architecture</h2><ul class="related"><li><a href="./llm-evaluation-testing-tools-mapped-by-failure-mode.html">LLM Evaluation &amp; Testing Tools, Mapped by Failure Mode</a></li><li><a href="./llm-inference-serving-engines-mapped-by-failure-mode.html">LLM Inference &amp; Serving Engines, Mapped by Failure Mode</a></li><li><a href="./document-ingestion-parsing-rag-mapped-by-failure-mode.html">Document Ingestion &amp; Parsing for RAG, Mapped by Failure Mode</a></li></ul></section></div></main><footer><a href="../">← Back to awesome-ai-architecture</a><a href="#top">↑ Scroll to top</a></footer>
+<script>
+(function(){
+  var chips = document.querySelectorAll('[data-filter]');
+  var cards = document.querySelectorAll('[data-mode]');
+  var search = document.getElementById('tool-search');
+  var active = '';
+  function apply(){
+    var q = search ? search.value.trim().toLowerCase() : '';
+    cards.forEach(function(c){
+      var okMode = !active || c.getAttribute('data-mode') === active;
+      var okQ = !q || c.textContent.toLowerCase().indexOf(q) !== -1;
+      c.hidden = !(okMode && okQ);
+    });
+    document.querySelectorAll('[data-mode-section]').forEach(function(s){
+      s.hidden = !!active && s.getAttribute('data-mode-section') !== active;
+    });
+  }
+  chips.forEach(function(chip){
+    chip.addEventListener('click', function(){
+      active = chip.getAttribute('data-filter');
+      chips.forEach(function(c){ c.setAttribute('aria-pressed', String(c === chip)); });
+      apply();
+    });
+  });
+  if (search) search.addEventListener('input', apply);
+
+  var copyBtn = document.getElementById('copy-share');
+  var toast = document.getElementById('copy-toast');
+  if (copyBtn) copyBtn.addEventListener('click', function(){
+    var text = copyBtn.getAttribute('data-text');
+    function done(){ toast.classList.add('show'); setTimeout(function(){ toast.classList.remove('show'); }, 1800); }
+    if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(text).then(done, function(){}); }
+    else { var t = document.createElement('textarea'); t.value = text; document.body.appendChild(t); t.select();
+      try { document.execCommand('copy'); done(); } catch (err) {} document.body.removeChild(t); }
+  });
+})();
+</script>
+</body>
+</html>

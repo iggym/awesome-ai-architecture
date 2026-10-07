@@ -100,15 +100,18 @@
   let allArticles = [];
   let activeTag = null;
 
+  function esc(v){ return String(v==null?'':v).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+  function safePath(p){ p=String(p||''); return /^(articles\/)?[a-z0-9._\/-]+\.html$/i.test(p) && !p.includes('..') ? p : '#'; }
+
   function fmtDate(iso){ try{ return new Date(iso+'T00:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}); }catch(e){return iso;} }
 
   function cardHTML(a,isPinned){
-    const tags = (a.tags||[]).map(t=>`<span class="tag-pill" data-tag="${t}">${t}</span>`).join('');
+    const tags = (a.tags||[]).map(t=>`<span class="tag-pill" data-tag="${esc(t)}">${esc(t)}</span>`).join('');
     return `
-      <a class="card ${isPinned?'pinned':''}" href="${a.path}" data-tags="${(a.tags||[]).join(',')}" data-search="${(a.title+' '+(a.hook||'')).toLowerCase()}">
-        <div class="card-meta"><span>${fmtDate(a.date)}</span><span>${a.reading_time_minutes||'—'} min</span></div>
-        <h2>${a.title}</h2>
-        <p class="hook">${a.hook||''}</p>
+      <a class="card ${isPinned?'pinned':''}" href="${safePath(a.path)}" data-tags="${esc((a.tags||[]).join(','))}" data-search="${esc((a.title+' '+(a.hook||'')+' '+(a.tags||[]).join(' ')).toLowerCase())}">
+        <div class="card-meta"><span>${esc(fmtDate(a.date))}</span><span>${esc(a.reading_time_minutes||'—')} min</span></div>
+        <h2>${esc(a.title)}</h2>
+        <p class="hook">${esc(a.hook)}</p>
         <div class="tags">${tags}</div>
       </a>`;
   }
@@ -128,7 +131,7 @@
     articles.forEach(a => (a.tags||[]).forEach(t => tagSet.add(t)));
     if(tagSet.size === 0){ filtersEl.innerHTML=''; return; }
     let html = `<span class="chip active" data-tag="">all</span>`;
-    tagSet.forEach(t => { html += `<span class="chip" data-tag="${t}">${t}</span>`; });
+    tagSet.forEach(t => { html += `<span class="chip" data-tag="${esc(t)}">${esc(t)}</span>`; });
     filtersEl.innerHTML = html;
     filtersEl.querySelectorAll('.chip').forEach(chip=>{
       chip.addEventListener('click', ()=>{

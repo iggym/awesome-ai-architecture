@@ -1,0 +1,194 @@
+{
+  "id": "0009",
+  "slug": "vector-hybrid-retrieval-stores-mapped-by-failure-mode",
+  "title": "Vector & Hybrid Retrieval Stores, Mapped by Failure Mode",
+  "format": "reference",
+  "date": "2026-10-07",
+  "research_window": [
+    "2026-09-01",
+    "2026-10-07"
+  ],
+  "description": "A curated reference of vector and hybrid retrieval stores for production RAG, organized by the retrieval failure each one prevents — not by benchmark leaderboard position.",
+  "standfirst": "For engineers choosing the retrieval layer under a RAG system or agent — organized by the way retrieval actually fails in production, not by who tops this month's ANN benchmark.",
+  "tags": [
+    "retrieval",
+    "vector-database",
+    "hybrid-search",
+    "rag",
+    "failure-mode-mapping"
+  ],
+  "hook": "Vector databases don't fail on recall benchmarks — they fail on the filter, the SKU and the re-embed. Choose the store by the failure you can't afford.",
+  "exclusions": {
+    "intro": "Every RAG tutorial ships with a vector store, and most \"best vector database\" lists are a leaderboard of synthetic recall numbers. This one is not.",
+    "items": [
+      {
+        "name": "In-memory libraries presented as databases",
+        "reason": "FAISS, hnswlib and Annoy are excellent index libraries, but they have no durability, no filtering model and no concurrent writes. If you have to build the database around it, it is a component, not a store."
+      },
+      {
+        "name": "Embedded toy stores in framework quick-starts",
+        "reason": "a vector store that exists to make a notebook run is not evidence of production behaviour under filters, updates and tenancy."
+      },
+      {
+        "name": "Closed SaaS with no published architecture",
+        "reason": "if the vendor cannot tell you how filtering, consistency and index rebuilds work, you cannot reason about its failure modes — and failure modes are the whole point of this list."
+      },
+      {
+        "name": "Benchmark-only claims",
+        "reason": "an ANN-Benchmarks win on unfiltered, static data says nothing about recall with a tenant filter on a corpus that changes every hour."
+      }
+    ],
+    "bar": "the store must persist data, support filtered queries and live updates, and document how it behaves when all three happen at once."
+  },
+  "failure_modes": [
+    {
+      "key": "filters",
+      "short": "Filtered Recall",
+      "title": "Recall Collapses the Moment You Add a Filter",
+      "body": "Real queries are never just \"nearest neighbours\" — they are nearest neighbours <em>for this tenant, this product line, documents newer than March</em>. Post-filtering an approximate index silently returns three results when you asked for ten, and pre-filtering can force a brute-force scan. Your offline eval, run without filters, never notices.",
+      "tools": [
+        {
+          "name": "Qdrant",
+          "url": "https://qdrant.tech/documentation/",
+          "fit": "Builds filter awareness into the HNSW graph via payload indexes, so selective filters stay on the fast path instead of degrading to a scan; fits multi-tenant and heavily-filtered RAG where every query carries metadata predicates, not single-corpus semantic search.",
+          "limit": "you must declare payload indexes for the fields you filter on — forget one and you are back to slow paths."
+        }
+      ]
+    },
+    {
+      "key": "lexical",
+      "short": "Lexical Misses",
+      "title": "Dense Embeddings Miss the Exact Token That Mattered",
+      "body": "Error codes, SKUs, function names, legal clause numbers: dense embeddings smear them into \"something similar\". A user who searches <code>ERR_4471</code> gets documents about errors in general. Hybrid retrieval — lexical BM25 fused with dense vectors — is the fix, but only if fusion and score normalisation are first-class, not a second system you glue on.",
+      "tools": [
+        {
+          "name": "Weaviate",
+          "url": "https://weaviate.io/developers/weaviate/search/hybrid",
+          "fit": "Runs BM25F and vector search in one query with configurable fusion and an alpha weight; fits teams that want hybrid search as a single API call rather than two systems and a merge function.",
+          "limit": "tuning alpha per query type is on you; one global weight rarely suits both keyword-heavy and conceptual queries."
+        },
+        {
+          "name": "Vespa",
+          "url": "https://docs.vespa.ai/",
+          "fit": "Expresses retrieval and multi-phase ranking (lexical, dense, learned rankers) as declarative rank profiles executed next to the data; fits search-heavy products that need ranking control beyond fusion, not teams that want a managed index in an afternoon.",
+          "limit": "the schema and rank-profile model is a real learning curve."
+        },
+        {
+          "name": "OpenSearch",
+          "url": "https://opensearch.org/docs/latest/vector-search/",
+          "fit": "Adds k-NN fields and hybrid queries with score-normalisation processors to an engine many platform teams already operate; fits organisations whose logs and site search already run on OpenSearch and who want one cluster to own, not another datastore.",
+          "limit": "vector performance depends heavily on engine and index settings; defaults are tuned for text search, not ANN."
+        }
+      ]
+    },
+    {
+      "key": "drift",
+      "short": "Store Drift",
+      "title": "The Vector Store Drifts Out of Sync with the System of Record",
+      "body": "A second datastore means a second copy of the truth. Deletes that never propagate, permission changes that lag, documents re-indexed out of order — the RAG system confidently cites a policy that was revoked last Tuesday. The cheapest consistency model is not having two databases.",
+      "tools": [
+        {
+          "name": "pgvector",
+          "url": "https://github.com/pgvector/pgvector",
+          "fit": "Vector columns and HNSW/IVFFlat indexes inside Postgres, so embeddings commit in the same transaction as the row and its permissions; fits teams whose source data already lives in Postgres and whose corpus is in the millions, not billions.",
+          "limit": "filtered ANN and very large indexes need careful tuning (iterative scans, partitioning); it is a Postgres extension, not a dedicated engine."
+        }
+      ]
+    },
+    {
+      "key": "scale",
+      "short": "Cost at Scale",
+      "title": "Memory Bills Explode Before Recall Does",
+      "body": "HNSW wants the graph in RAM. At hundreds of millions of vectors — or millions of small tenant namespaces — the index costs more than the models querying it. The failure is not a crash; it is a quarterly review where retrieval is the biggest line item and nobody can explain why idle tenants cost money.",
+      "tools": [
+        {
+          "name": "Milvus",
+          "url": "https://milvus.io/docs",
+          "fit": "Distributed engine with disk-based (DiskANN) and quantised indexes and separated storage/compute; fits billion-scale single collections where you need to trade RAM for SSD deliberately, not small corpora that fit on one node.",
+          "limit": "the distributed deployment has many moving parts; the operational surface is the price of the scale."
+        },
+        {
+          "name": "turbopuffer",
+          "url": "https://turbopuffer.com/docs",
+          "fit": "Object-storage-first search (vectors plus BM25 full-text) with NVMe/memory caching for hot namespaces, so cold tenants cost storage prices rather than RAM prices; fits SaaS products with many tenants and skewed access, not latency-critical workloads that are uniformly hot.",
+          "limit": "cold queries pay an object-storage round trip; it is a managed service, not self-hostable open source."
+        }
+      ]
+    },
+    {
+      "key": "reembed",
+      "short": "Re-embedding",
+      "title": "Changing the Embedding Model Means a Risky Big-Bang Migration",
+      "body": "Embedding models improve every few months. Switching means re-embedding the whole corpus, running old and new indexes side by side, comparing retrieval quality and cutting over without downtime. Stores that treat the index as immutable turn every model upgrade into a weekend migration — so teams stop upgrading.",
+      "tools": [
+        {
+          "name": "LanceDB",
+          "url": "https://lancedb.github.io/lancedb/",
+          "fit": "Built on the Lance columnar format with table versioning and cheap column additions, so a new embedding column can be backfilled next to the old one and compared before cutover; fits teams that iterate on embedding models and want retrieval data to behave like versioned tables, not a black-box index.",
+          "limit": "the multi-node, high-QPS story is younger than the dedicated servers above; check the deployment mode you need."
+        }
+      ]
+    }
+  ],
+  "evidence": [
+    {
+      "name": "Qdrant",
+      "url": "https://github.com/qdrant/qdrant",
+      "query": "qdrant filterable HNSW payload index",
+      "signal": "qdrant-client 1.19.1 released 2026-09-16 (Apache-2.0)"
+    },
+    {
+      "name": "Weaviate",
+      "url": "https://github.com/weaviate/weaviate",
+      "query": "weaviate hybrid search BM25F fusion alpha",
+      "signal": "weaviate-client 4.23.1 released 2026-09-07 (BSD-3-Clause)"
+    },
+    {
+      "name": "Vespa",
+      "url": "https://github.com/vespa-engine/vespa",
+      "query": "vespa rank profile hybrid retrieval phased ranking",
+      "signal": "pyvespa 1.2.8 released 2026-10-01 (Apache-2.0)"
+    },
+    {
+      "name": "OpenSearch",
+      "url": "https://github.com/opensearch-project/OpenSearch",
+      "query": "opensearch hybrid query normalization processor knn",
+      "signal": "opensearch-py 3.2.0 released 2026-04-27 (Apache-2.0); engine under the Linux Foundation"
+    },
+    {
+      "name": "pgvector",
+      "url": "https://github.com/pgvector/pgvector",
+      "query": "pgvector hnsw iterative index scans filtering",
+      "signal": "pgvector-python 0.5.0 released 2026-07-06"
+    },
+    {
+      "name": "Milvus",
+      "url": "https://github.com/milvus-io/milvus",
+      "query": "milvus diskann quantization billion scale",
+      "signal": "pymilvus 3.0.2 released 2026-09-18; LF AI & Data project"
+    },
+    {
+      "name": "turbopuffer",
+      "url": "https://turbopuffer.com/docs/architecture",
+      "query": "turbopuffer object storage architecture namespaces BM25",
+      "signal": "turbopuffer client 2.10.2 released 2026-09-23 (MIT client); architecture documented publicly"
+    },
+    {
+      "name": "LanceDB",
+      "url": "https://github.com/lancedb/lancedb",
+      "query": "lancedb lance format versioning add column embeddings",
+      "signal": "lancedb 0.39.0 released 2026-09-17"
+    }
+  ],
+  "missing": "Nobody ships a good answer for <em>evaluating</em> retrieval under production filters — recall is still measured on unfiltered benchmark sets while real traffic is almost entirely filtered. Permission-aware retrieval (document ACLs that change hourly) remains an exercise left to the application, and there is no portable format for moving an index plus its metadata between stores. Until those exist, the safest retrieval architecture is the one with the fewest copies of your data.",
+  "related": [
+    "llm-evaluation-testing-tools-mapped-by-failure-mode",
+    "document-ingestion-parsing-rag-mapped-by-failure-mode",
+    "memory-is-a-write-path"
+  ],
+  "choose": [
+    "Start with the data you already have. If the documents and their permissions live in Postgres and the corpus is in the low millions, pgvector removes an entire class of sync bugs, and that is worth more than any recall delta you will measure. Move to a dedicated store when you can name the failure that forces you to — not when a benchmark tells you to.",
+    "Then write down your real query shape before comparing engines. What fraction of queries carry a filter, and how selective is it? How many contain identifiers that must match exactly? How many tenants are there, and what share are active in a given hour? Those three numbers point to Qdrant, a hybrid engine or an object-storage design far more reliably than a recall chart does.",
+    "Finally, decide how you will change embedding models before you need to. Whatever store you choose, keep the raw text and metadata outside the index, version the embedding model name next to every vector, and rehearse a side-by-side re-embed on a sample. A store you cannot migrate off is a decision you make once and pay for every quarter."
+  ]
+}

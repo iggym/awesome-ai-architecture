@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vector &amp; Hybrid Retrieval Stores, Mapped by Failure Mode — Awesome AI Architecture</title>
+<meta name="description" content="A curated reference of vector and hybrid retrieval stores for production RAG, organized by the retrieval failure each one prevents — not by benchmark leaderboard position.">
+<meta name="author" content="iggym">
+<link rel="canonical" href="https://iggym.github.io/awesome-ai-architecture/articles/vector-hybrid-retrieval-stores-mapped-by-failure-mode.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Awesome AI Architecture">
+<meta property="og:title" content="Vector &amp; Hybrid Retrieval Stores, Mapped by Failure Mode">
+<meta property="og:description" content="A curated reference of vector and hybrid retrieval stores for production RAG, organized by the retrieval failure each one prevents — not by benchmark leaderboard position.">
+<meta property="og:url" content="https://iggym.github.io/awesome-ai-architecture/articles/vector-hybrid-retrieval-stores-mapped-by-failure-mode.html">
+<meta property="article:published_time" content="2026-10-07">
+<meta property="article:tag" content="retrieval">
+<meta property="article:tag" content="vector-database">
+<meta property="article:tag" content="hybrid-search">
+<meta property="article:tag" content="rag">
+<meta property="article:tag" content="failure-mode-mapping">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Vector &amp; Hybrid Retrieval Stores, Mapped by Failure Mode">
+<meta name="twitter:description" content="A curated reference of vector and hybrid retrieval stores for production RAG, organized by the retrieval failure each one prevents — not by benchmark leaderboard position.">
+<meta name="color-scheme" content="light dark">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "TechArticle", "headline": "Vector & Hybrid Retrieval Stores, Mapped by Failure Mode", "description": "A curated reference of vector and hybrid retrieval stores for production RAG, organized by the retrieval failure each one prevents — not by benchmark leaderboard position.", "datePublished": "2026-10-07", "dateModified": "2026-10-07", "author": {"@type": "Person", "name": "iggym", "url": "https://github.com/iggym"}, "publisher": {"@type": "Organization", "name": "Awesome AI Architecture", "url": "https://iggym.github.io/awesome-ai-architecture/"}, "url": "https://iggym.github.io/awesome-ai-architecture/articles/vector-hybrid-retrieval-stores-mapped-by-failure-mode.html", "mainEntityOfPage": "https://iggym.github.io/awesome-ai-architecture/articles/vector-hybrid-retrieval-stores-mapped-by-failure-mode.html", "keywords": "retrieval, vector-database, hybrid-search, rag, failure-mode-mapping", "isPartOf": {"@type": "WebSite", "name": "Awesome AI Architecture", "url": "https://iggym.github.io/awesome-ai-architecture/"}}</script>
+<style>
+:root{
+  --cream:#FAF6EE; --ink:#1F2421; --teal:#1F7A6C; --coral:#C4502B; --muted:#6F6A5E;
+  --surface:#FFFFFF; --border:rgba(31,36,33,0.14); --soft:#4B4738; --teal-soft:rgba(31,122,108,0.10);
+  --display:'Space Grotesk',sans-serif; --body:'Inter',sans-serif; --mono:'IBM Plex Mono',monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root{ --cream:#121412; --ink:#E9E6DF; --teal:#4FB8A6; --coral:#F08A63; --muted:#A39F94;
+    --surface:#1A1D1B; --border:rgba(233,230,223,0.14); --soft:#CFCAC0; --teal-soft:rgba(79,184,166,0.14); }
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion: reduce){ html{scroll-behavior:auto} *{animation-duration:.001ms!important;transition-duration:.001ms!important} }
+body{margin:0;background:var(--cream);color:var(--ink);font-family:var(--body);line-height:1.65;font-size:16px}
+a{color:var(--teal)}
+a:focus-visible,button:focus-visible{outline:2px solid var(--coral);outline-offset:2px}
+code{font-family:var(--mono);font-size:.88em;background:var(--teal-soft);padding:1px 5px;border-radius:4px}
+.topbar{position:sticky;top:0;z-index:20;background:var(--cream);border-bottom:1px solid var(--border);padding:12px 16px;display:flex;gap:16px;align-items:center;justify-content:space-between}
+.topbar a.home{font-family:var(--display);font-weight:700;font-size:14px;text-decoration:none;color:var(--ink);white-space:nowrap}
+.toc{display:flex;gap:14px;overflow-x:auto;font-family:var(--mono);font-size:12px;scrollbar-width:none}
+.toc a{color:var(--muted);text-decoration:none;white-space:nowrap}
+.toc a:hover{color:var(--teal)}
+header.hero,.wrap{max-width:760px;margin:0 auto;padding:0 16px}
+header.hero{padding-top:56px}
+.meta-line{font-family:var(--mono);font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--teal);margin-bottom:14px}
+h1{font-family:var(--display);font-weight:700;font-size:clamp(2rem,5vw,3rem);line-height:1.12;margin:0 0 16px;letter-spacing:-.01em}
+.standfirst{font-size:1.12rem;color:var(--soft);margin:0 0 8px}
+.tags{display:flex;gap:6px;flex-wrap:wrap;margin:18px 0 0;padding:0;list-style:none}
+.tags li{font-family:var(--mono);font-size:10.5px;color:var(--teal);border:1px solid var(--border);padding:3px 9px;border-radius:20px}
+section{margin:52px 0}
+h2{font-family:var(--display);font-weight:700;font-size:1.5rem;line-height:1.25;margin:0 0 14px}
+h3{font-family:var(--display);font-weight:700;font-size:1.1rem;margin:0 0 6px}
+p{margin:0 0 14px}
+.callout{background:var(--surface);border:1px solid var(--border);border-left:4px solid var(--coral);border-radius:8px;padding:20px 22px}
+.callout h2{font-size:1.2rem}
+.callout ul{margin:0 0 14px;padding-left:20px}
+.callout li{margin-bottom:8px}
+.bar{font-weight:500}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 8px}
+.chip{font-family:var(--mono);font-size:11.5px;padding:6px 14px;border-radius:20px;border:1px solid var(--border);background:var(--surface);color:var(--ink);cursor:pointer}
+.chip:hover{border-color:var(--teal)}
+.chip[aria-pressed="true"]{background:var(--teal);border-color:var(--teal);color:var(--cream)}
+.search{font-family:var(--mono);font-size:12.5px;border:1px solid var(--border);background:var(--surface);color:var(--ink);padding:7px 12px;border-radius:20px;width:100%;max-width:300px;margin-top:8px}
+.cards{display:grid;gap:14px;margin-top:18px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:18px 20px;transition:border-color .2s ease}
+.card:hover{border-color:var(--teal)}
+.card[hidden]{display:none}
+.card .label{font-family:var(--mono);font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
+.card h3 a{color:var(--ink);text-decoration:none;border-bottom:1px solid var(--teal)}
+.card p{font-size:14.5px;color:var(--soft);margin:6px 0 0}
+.card .limit{font-size:13.5px;color:var(--muted)}
+.card .limit strong{color:var(--coral);font-weight:500}
+.strip{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:28px 0 0}
+.strip div{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px 16px;font-size:14px}
+.strip .k{font-family:var(--mono);font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:4px}
+.strip .legacy .k{color:var(--muted)} .strip .modern{border-color:var(--teal)} .strip .modern .k{color:var(--teal)}
+.matrix{list-style:none;padding:0;margin:0}
+.matrix li{border-top:1px solid var(--border);padding:12px 0}
+.matrix li strong{font-family:var(--display)}
+.move{background:var(--teal);color:var(--cream);border-radius:8px;padding:20px 22px}
+.move h2{color:var(--cream)}
+.stack{display:grid;gap:10px;margin-top:16px}
+.layer{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px 14px}
+.layer[hidden]{display:none}
+.layer .lname{font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--teal);margin-bottom:8px}
+.layer .ltools{display:flex;gap:8px;flex-wrap:wrap}
+.layer .ltools span{font-family:var(--display);font-size:13.5px;border:1px solid var(--border);border-radius:6px;padding:4px 10px}
+.table-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:8px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:13.5px;min-width:620px}
+th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:top}
+th{font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+tr:last-child td{border-bottom:0}
+.reframe{font-family:var(--display);font-weight:700;font-size:1.35rem;line-height:1.35;border-left:4px solid var(--teal);padding-left:18px;margin:0 0 18px}
+.share-actions{display:flex;gap:8px;flex-wrap:wrap}
+.btn{font-family:var(--mono);font-size:12px;padding:8px 14px;border-radius:20px;border:1px solid var(--teal);background:var(--surface);color:var(--teal);cursor:pointer;text-decoration:none}
+.btn.primary{background:var(--teal);color:var(--cream)}
+.toast{font-family:var(--mono);font-size:12px;color:var(--teal);margin-left:6px;opacity:0;transition:opacity .2s ease}
+.toast.show{opacity:1}
+.evidence{list-style:none;padding:0;margin:0;font-family:var(--mono);font-size:12px;color:var(--soft)}
+.evidence li{border-top:1px solid var(--border);padding:10px 0;overflow-wrap:anywhere}
+.evidence strong{font-family:var(--display);font-size:14px;color:var(--ink)}
+.related{list-style:none;padding:0;margin:0;display:grid;gap:8px}
+.related a{font-family:var(--display);text-decoration:none}
+footer{border-top:1px solid var(--border);margin-top:64px;padding:28px 16px;text-align:center;font-family:var(--mono);font-size:12px}
+footer a{margin:0 10px;text-decoration:none}
+@media (max-width:560px){ .strip{grid-template-columns:1fr} .toc{display:none} }
+</style>
+</head>
+<body>
+<nav class="topbar" aria-label="Article sections"><a class="home" href="../">← Awesome AI Architecture</a><div class="toc"><a href="#preamble">Exclusions</a><a href="#cat-filters">Filtered Recall</a><a href="#cat-lexical">Lexical Misses</a><a href="#cat-drift">Store Drift</a><a href="#cat-scale">Cost at Scale</a><a href="#cat-reembed">Re-embedding</a><a href="#choose">How to Choose</a><a href="#share">Share</a><a href="#evidence">Evidence</a></div></nav>
+<main id="top"><header class="hero"><div class="meta-line">Reference · 2026-10-07 · Window: 2026-09-01 → 2026-10-07 · 6 min</div><h1>Vector &amp; Hybrid Retrieval Stores, Mapped by Failure Mode</h1><p class="standfirst">For engineers choosing the retrieval layer under a RAG system or agent — organized by the way retrieval actually fails in production, not by who tops this month's ANN benchmark.</p><ul class="tags"><li>retrieval</li><li>vector-database</li><li>hybrid-search</li><li>rag</li><li>failure-mode-mapping</li></ul></header><div class="wrap"><section id="preamble" class="callout"><h2>Exclusion Criteria — Read First</h2><p>Every RAG tutorial ships with a vector store, and most "best vector database" lists are a leaderboard of synthetic recall numbers. This one is not.</p><ul><li><strong>In-memory libraries presented as databases.</strong> FAISS, hnswlib and Annoy are excellent index libraries, but they have no durability, no filtering model and no concurrent writes. If you have to build the database around it, it is a component, not a store.</li><li><strong>Embedded toy stores in framework quick-starts.</strong> a vector store that exists to make a notebook run is not evidence of production behaviour under filters, updates and tenancy.</li><li><strong>Closed SaaS with no published architecture.</strong> if the vendor cannot tell you how filtering, consistency and index rebuilds work, you cannot reason about its failure modes — and failure modes are the whole point of this list.</li><li><strong>Benchmark-only claims.</strong> an ANN-Benchmarks win on unfiltered, static data says nothing about recall with a tenant filter on a corpus that changes every hour.</li></ul><p class="bar"><strong>Inclusion bar:</strong> the store must persist data, support filtered queries and live updates, and document how it behaves when all three happen at once.</p></section><section aria-label="Filter tools" style="margin-bottom:0"><div class="chips"><button type="button" class="chip" data-filter="" aria-pressed="true">All Tools</button><button type="button" class="chip" data-filter="filters" aria-pressed="false">Filtered Recall</button><button type="button" class="chip" data-filter="lexical" aria-pressed="false">Lexical Misses</button><button type="button" class="chip" data-filter="drift" aria-pressed="false">Store Drift</button><button type="button" class="chip" data-filter="scale" aria-pressed="false">Cost at Scale</button><button type="button" class="chip" data-filter="reembed" aria-pressed="false">Re-embedding</button></div><label class="sr" for="tool-search" style="position:absolute;left:-9999px">Filter tools</label><input class="search" id="tool-search" type="search" placeholder="filter tools by keyword…"></section><section id="cat-filters" data-mode-section="filters"><h2>Recall Collapses the Moment You Add a Filter</h2><p>Real queries are never just "nearest neighbours" — they are nearest neighbours <em>for this tenant, this product line, documents newer than March</em>. Post-filtering an approximate index silently returns three results when you asked for ten, and pre-filtering can force a brute-force scan. Your offline eval, run without filters, never notices.</p><div class="cards"><article class="card" data-mode="filters"><div class="label">Filtered Recall</div><h3><a href="https://qdrant.tech/documentation/" target="_blank" rel="noopener noreferrer">Qdrant</a></h3><p>Builds filter awareness into the HNSW graph via payload indexes, so selective filters stay on the fast path instead of degrading to a scan; fits multi-tenant and heavily-filtered RAG where every query carries metadata predicates, not single-corpus semantic search.</p><p class="limit"><strong>Limit:</strong> you must declare payload indexes for the fields you filter on — forget one and you are back to slow paths.</p></article></div></section><section id="cat-lexical" data-mode-section="lexical"><h2>Dense Embeddings Miss the Exact Token That Mattered</h2><p>Error codes, SKUs, function names, legal clause numbers: dense embeddings smear them into "something similar". A user who searches <code>ERR_4471</code> gets documents about errors in general. Hybrid retrieval — lexical BM25 fused with dense vectors — is the fix, but only if fusion and score normalisation are first-class, not a second system you glue on.</p><div class="cards"><article class="card" data-mode="lexical"><div class="label">Lexical Misses</div><h3><a href="https://weaviate.io/developers/weaviate/search/hybrid" target="_blank" rel="noopener noreferrer">Weaviate</a></h3><p>Runs BM25F and vector search in one query with configurable fusion and an alpha weight; fits teams that want hybrid search as a single API call rather than two systems and a merge function.</p><p class="limit"><strong>Limit:</strong> tuning alpha per query type is on you; one global weight rarely suits both keyword-heavy and conceptual queries.</p></article><article class="card" data-mode="lexical"><div class="label">Lexical Misses</div><h3><a href="https://docs.vespa.ai/" target="_blank" rel="noopener noreferrer">Vespa</a></h3><p>Expresses retrieval and multi-phase ranking (lexical, dense, learned rankers) as declarative rank profiles executed next to the data; fits search-heavy products that need ranking control beyond fusion, not teams that want a managed index in an afternoon.</p><p class="limit"><strong>Limit:</strong> the schema and rank-profile model is a real learning curve.</p></article><article class="card" data-mode="lexical"><div class="label">Lexical Misses</div><h3><a href="https://opensearch.org/docs/latest/vector-search/" target="_blank" rel="noopener noreferrer">OpenSearch</a></h3><p>Adds k-NN fields and hybrid queries with score-normalisation processors to an engine many platform teams already operate; fits organisations whose logs and site search already run on OpenSearch and who want one cluster to own, not another datastore.</p><p class="limit"><strong>Limit:</strong> vector performance depends heavily on engine and index settings; defaults are tuned for text search, not ANN.</p></article></div></section><section id="cat-drift" data-mode-section="drift"><h2>The Vector Store Drifts Out of Sync with the System of Record</h2><p>A second datastore means a second copy of the truth. Deletes that never propagate, permission changes that lag, documents re-indexed out of order — the RAG system confidently cites a policy that was revoked last Tuesday. The cheapest consistency model is not having two databases.</p><div class="cards"><article class="card" data-mode="drift"><div class="label">Store Drift</div><h3><a href="https://github.com/pgvector/pgvector" target="_blank" rel="noopener noreferrer">pgvector</a></h3><p>Vector columns and HNSW/IVFFlat indexes inside Postgres, so embeddings commit in the same transaction as the row and its permissions; fits teams whose source data already lives in Postgres and whose corpus is in the millions, not billions.</p><p class="limit"><strong>Limit:</strong> filtered ANN and very large indexes need careful tuning (iterative scans, partitioning); it is a Postgres extension, not a dedicated engine.</p></article></div></section><section id="cat-scale" data-mode-section="scale"><h2>Memory Bills Explode Before Recall Does</h2><p>HNSW wants the graph in RAM. At hundreds of millions of vectors — or millions of small tenant namespaces — the index costs more than the models querying it. The failure is not a crash; it is a quarterly review where retrieval is the biggest line item and nobody can explain why idle tenants cost money.</p><div class="cards"><article class="card" data-mode="scale"><div class="label">Cost at Scale</div><h3><a href="https://milvus.io/docs" target="_blank" rel="noopener noreferrer">Milvus</a></h3><p>Distributed engine with disk-based (DiskANN) and quantised indexes and separated storage/compute; fits billion-scale single collections where you need to trade RAM for SSD deliberately, not small corpora that fit on one node.</p><p class="limit"><strong>Limit:</strong> the distributed deployment has many moving parts; the operational surface is the price of the scale.</p></article><article class="card" data-mode="scale"><div class="label">Cost at Scale</div><h3><a href="https://turbopuffer.com/docs" target="_blank" rel="noopener noreferrer">turbopuffer</a></h3><p>Object-storage-first search (vectors plus BM25 full-text) with NVMe/memory caching for hot namespaces, so cold tenants cost storage prices rather than RAM prices; fits SaaS products with many tenants and skewed access, not latency-critical workloads that are uniformly hot.</p><p class="limit"><strong>Limit:</strong> cold queries pay an object-storage round trip; it is a managed service, not self-hostable open source.</p></article></div></section><section id="cat-reembed" data-mode-section="reembed"><h2>Changing the Embedding Model Means a Risky Big-Bang Migration</h2><p>Embedding models improve every few months. Switching means re-embedding the whole corpus, running old and new indexes side by side, comparing retrieval quality and cutting over without downtime. Stores that treat the index as immutable turn every model upgrade into a weekend migration — so teams stop upgrading.</p><div class="cards"><article class="card" data-mode="reembed"><div class="label">Re-embedding</div><h3><a href="https://lancedb.github.io/lancedb/" target="_blank" rel="noopener noreferrer">LanceDB</a></h3><p>Built on the Lance columnar format with table versioning and cheap column additions, so a new embedding column can be backfilled next to the old one and compared before cutover; fits teams that iterate on embedding models and want retrieval data to behave like versioned tables, not a black-box index.</p><p class="limit"><strong>Limit:</strong> the multi-node, high-QPS story is younger than the dedicated servers above; check the deployment mode you need.</p></article></div></section><section id="choose"><h2>How to Choose</h2><p>Start with the data you already have. If the documents and their permissions live in Postgres and the corpus is in the low millions, pgvector removes an entire class of sync bugs, and that is worth more than any recall delta you will measure. Move to a dedicated store when you can name the failure that forces you to — not when a benchmark tells you to.</p><p>Then write down your real query shape before comparing engines. What fraction of queries carry a filter, and how selective is it? How many contain identifiers that must match exactly? How many tenants are there, and what share are active in a given hour? Those three numbers point to Qdrant, a hybrid engine or an object-storage design far more reliably than a recall chart does.</p><p>Finally, decide how you will change embedding models before you need to. Whatever store you choose, keep the raw text and metadata outside the index, version the embedding model name next to every vector, and rehearse a side-by-side re-embed on a sample. A store you cannot migrate off is a decision you make once and pay for every quarter.</p></section><section id="share"><h2>Bold Reframe</h2><p class="reframe">Vector databases don&#x27;t fail on recall benchmarks — they fail on the filter, the SKU and the re-embed. Choose the store by the failure you can&#x27;t afford.</p><div class="share-actions"><button type="button" class="btn primary" id="copy-share" data-text="Vector databases don&#x27;t fail on recall benchmarks — they fail on the filter, the SKU and the re-embed. Choose the store by the failure you can&#x27;t afford. — https://iggym.github.io/awesome-ai-architecture/articles/vector-hybrid-retrieval-stores-mapped-by-failure-mode.html">Copy Text &amp; Link</button><a class="btn" href="https://twitter.com/intent/tweet?text=Vector%20databases%20don%27t%20fail%20on%20recall%20benchmarks%20%E2%80%94%20they%20fail%20on%20the%20filter%2C%20the%20SKU%20and%20the%20re-embed.%20Choose%20the%20store%20by%20the%20failure%20you%20can%27t%20afford.&amp;url=https%3A%2F%2Figgym.github.io%2Fawesome-ai-architecture%2Farticles%2Fvector-hybrid-retrieval-stores-mapped-by-failure-mode.html" target="_blank" rel="noopener noreferrer">Share on X</a><a class="btn" href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Figgym.github.io%2Fawesome-ai-architecture%2Farticles%2Fvector-hybrid-retrieval-stores-mapped-by-failure-mode.html" target="_blank" rel="noopener noreferrer">Share on LinkedIn</a><span class="toast" id="copy-toast" role="status" aria-live="polite">Copied to clipboard</span></div></section><section id="evidence"><h2>Evidence Log &amp; Citations</h2><p>Verified 2026-09-01 → 2026-10-07. Release dates are from each project's package registry (PyPI) unless noted.</p><ul class="evidence"><li><strong>Qdrant</strong> — <a href="https://github.com/qdrant/qdrant" target="_blank" rel="noopener noreferrer">github.com/qdrant/qdrant</a> · query: "qdrant filterable HNSW payload index" · qdrant-client 1.19.1 released 2026-09-16 (Apache-2.0)</li><li><strong>Weaviate</strong> — <a href="https://github.com/weaviate/weaviate" target="_blank" rel="noopener noreferrer">github.com/weaviate/weaviate</a> · query: "weaviate hybrid search BM25F fusion alpha" · weaviate-client 4.23.1 released 2026-09-07 (BSD-3-Clause)</li><li><strong>Vespa</strong> — <a href="https://github.com/vespa-engine/vespa" target="_blank" rel="noopener noreferrer">github.com/vespa-engine/vespa</a> · query: "vespa rank profile hybrid retrieval phased ranking" · pyvespa 1.2.8 released 2026-10-01 (Apache-2.0)</li><li><strong>OpenSearch</strong> — <a href="https://github.com/opensearch-project/OpenSearch" target="_blank" rel="noopener noreferrer">github.com/opensearch-project/OpenSearch</a> · query: "opensearch hybrid query normalization processor knn" · opensearch-py 3.2.0 released 2026-04-27 (Apache-2.0); engine under the Linux Foundation</li><li><strong>pgvector</strong> — <a href="https://github.com/pgvector/pgvector" target="_blank" rel="noopener noreferrer">github.com/pgvector/pgvector</a> · query: "pgvector hnsw iterative index scans filtering" · pgvector-python 0.5.0 released 2026-07-06</li><li><strong>Milvus</strong> — <a href="https://github.com/milvus-io/milvus" target="_blank" rel="noopener noreferrer">github.com/milvus-io/milvus</a> · query: "milvus diskann quantization billion scale" · pymilvus 3.0.2 released 2026-09-18; LF AI &amp; Data project</li><li><strong>turbopuffer</strong> — <a href="https://turbopuffer.com/docs/architecture" target="_blank" rel="noopener noreferrer">turbopuffer.com/docs/architecture</a> · query: "turbopuffer object storage architecture namespaces BM25" · turbopuffer client 2.10.2 released 2026-09-23 (MIT client); architecture documented publicly</li><li><strong>LanceDB</strong> — <a href="https://github.com/lancedb/lancedb" target="_blank" rel="noopener noreferrer">github.com/lancedb/lancedb</a> · query: "lancedb lance format versioning add column embeddings" · lancedb 0.39.0 released 2026-09-17</li></ul></section><section id="missing"><h2>What's Still Missing (as of Oct 2026)</h2><p>Nobody ships a good answer for <em>evaluating</em> retrieval under production filters — recall is still measured on unfiltered benchmark sets while real traffic is almost entirely filtered. Permission-aware retrieval (document ACLs that change hourly) remains an exercise left to the application, and there is no portable format for moving an index plus its metadata between stores. Until those exist, the safest retrieval architecture is the one with the fewest copies of your data.</p></section><section id="related"><h2>Related on Awesome AI Architecture</h2><ul class="related"><li><a href="./llm-evaluation-testing-tools-mapped-by-failure-mode.html">LLM Evaluation &amp; Testing Tools, Mapped by Failure Mode</a></li><li><a href="./document-ingestion-parsing-rag-mapped-by-failure-mode.html">Document Ingestion &amp; Parsing for RAG, Mapped by Failure Mode</a></li><li><a href="./memory-is-a-write-path.html">Memory Is a Write Path</a></li></ul></section></div></main><footer><a href="../">← Back to awesome-ai-architecture</a><a href="#top">↑ Scroll to top</a></footer>
+<script>
+(function(){
+  var chips = document.querySelectorAll('[data-filter]');
+  var cards = document.querySelectorAll('[data-mode]');
+  var search = document.getElementById('tool-search');
+  var active = '';
+  function apply(){
+    var q = search ? search.value.trim().toLowerCase() : '';
+    cards.forEach(function(c){
+      var okMode = !active || c.getAttribute('data-mode') === active;
+      var okQ = !q || c.textContent.toLowerCase().indexOf(q) !== -1;
+      c.hidden = !(okMode && okQ);
+    });
+    document.querySelectorAll('[data-mode-section]').forEach(function(s){
+      s.hidden = !!active && s.getAttribute('data-mode-section') !== active;
+    });
+  }
+  chips.forEach(function(chip){
+    chip.addEventListener('click', function(){
+      active = chip.getAttribute('data-filter');
+      chips.forEach(function(c){ c.setAttribute('aria-pressed', String(c === chip)); });
+      apply();
+    });
+  });
+  if (search) search.addEventListener('input', apply);
+
+  var copyBtn = document.getElementById('copy-share');
+  var toast = document.getElementById('copy-toast');
+  if (copyBtn) copyBtn.addEventListener('click', function(){
+    var text = copyBtn.getAttribute('data-text');
+    function done(){ toast.classList.add('show'); setTimeout(function(){ toast.classList.remove('show'); }, 1800); }
+    if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(text).then(done, function(){}); }
+    else { var t = document.createElement('textarea'); t.value = text; document.body.appendChild(t); t.select();
+      try { document.execCommand('copy'); done(); } catch (err) {} document.body.removeChild(t); }
+  });
+})();
+</script>
+</body>
+</html>

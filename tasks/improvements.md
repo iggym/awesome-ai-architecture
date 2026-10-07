@@ -10,7 +10,7 @@ Legend: **P0** = broken/incorrect today · **P1** = high impact · **P2** = qual
 
 ## P0 — Broken or incorrect today
 
-- [ ] **T01 · Fix duplicate multi-model routing entries in `metadata.json`.**
+- [x] **T01 · Fix duplicate multi-model routing entries in `metadata.json`.**
   Entries `0001` and `0002` share the same `slug` *and* `path`
   (`articles/multi-model-routing-ai-gateway-tools-mapped-by-failure-mode.html`), so the
   homepage shows two cards that open the same page. The 2026 version (`0002`, window
@@ -19,34 +19,39 @@ Legend: **P0** = broken/incorrect today · **P1** = high impact · **P2** = qual
   *Done when:* each entry points to its own file with a unique slug (e.g. rename `00012-…`
   to `multi-model-routing-ai-gateway-tools-mapped-by-failure-mode-2026.html`), or the older
   one is retired with `"status": "archived"` and the newer one supersedes it.
+  ✅ *Done (2026-10-07):* `00012-…html` renamed to `multi-model-routing-ai-gateway-tools-mapped-by-failure-mode-2026.html`; entries `0001` (2024 Edition) and `0002` (2026 Edition) now have unique slugs, paths and titles. No orphaned article files remain.
 
-- [ ] **T02 · Verify factual claims flagged during review.**
+- [x] **T02 · Verify factual claims flagged during review.**
   `watchtower-and-moat.html` describes "Archon (OpenAI)" at `github.com/openai/archon` as a
   capability-based agent sandbox. Confirm the project exists, its owner, and the described
   features; if it can't be verified, remove or replace it. Run the same check over every
   tool and external link in the four essay articles (they have no Evidence Log).
   *Done when:* every named tool resolves to a real primary source, and each essay has an
   Evidence Log section.
+  ✅ *Done (2026-10-07):* "Archon (OpenAI)" could not be verified — the real Archon is an unrelated YAML workflow engine by coleam00, and `github.com/openai/archon` is not an OpenAI capability sandbox. Replaced with Wasmtime (Bytecode Alliance), a verifiable capability-based runtime, in text, map, comparison table and citations. Also fixed Prompt Guard described as "~300M parameters" while linking the 86M model. Evidence Logs for the four older essays are still outstanding — tracked in new task T25.
 
-- [ ] **T03 · Normalise `metadata.json` schema.**
+- [x] **T03 · Normalise `metadata.json` schema.**
   The four essay entries lack `id`, `slug`, `format` and `research_window`; ids jump from
   `0003` to `0025`; tag casing is mixed (`"multi-model routing"` with a space vs.
   `multi-model-routing`).
   *Done when:* every entry has the same fields, ids are unique and sequential, all tags are
   lowercase kebab-case, and the fields match the schema in `docs/master-prompt-v1.md`.
+  ✅ *Done (2026-10-07):* all 14 entries share one schema (`id`, `slug`, `title`, `hook`, `path`, `date`, `date_modified`, `status`, `format`, `tags`, `reading_time_minutes`, `pinned`, `research_window`); ids are unique and sequential `0001`–`0014` (cost-governance `0025` → `0004`); tags are kebab-case. Essays without a recorded research window use `null`. Added `site.updated`.
 
-- [ ] **T04 · Escape metadata when rendering cards in `index.html`.**
+- [x] **T04 · Escape metadata when rendering cards in `index.html`.**
   `cardHTML()` interpolates `title`, `hook` and tags straight into `innerHTML`. A hook with a
   quote or `<` (the eval article's hook already contains `"…"`) can break the
   `data-search` attribute or inject markup.
   *Done when:* values are escaped (or nodes built with `textContent`) and a hook containing
   `"`, `<` and `&` renders correctly.
+  ✅ *Done (2026-10-07):* `index.html` escapes every metadata value (`esc()`) and only links paths matching `articles/*.html` (`safePath()`); tags are now also searchable.
 
-- [ ] **T05 · Fix share links that point to the site root.**
+- [x] **T05 · Fix share links that point to the site root.**
   `smoke-signals-in-production.html` shares
   `https://iggym.github.io/awesome-ai-architecture/` instead of the article URL; check all
   articles for the same issue.
   *Done when:* every X/LinkedIn/copy action shares the article's own canonical URL.
+  ✅ *Done (2026-10-07):* smoke-signals and watchtower share buttons now send the article URL; the copy actions in where-agents-break-free and where-the-sandbox-ends include the article URL. Other articles already used `window.location.href`.
 
 ## P1 — High impact
 
@@ -55,6 +60,7 @@ Legend: **P0** = broken/incorrect today · **P1** = high impact · **P2** = qual
   Graph, Twitter cards or JSON-LD. `index.html` has none either.
   *Done when:* every page has description, canonical, OG, Twitter and (`TechArticle` /
   `WebSite`) JSON-LD, consistent with `metadata.json`.
+  🟡 *Progress (2026-10-07):* the six new articles (0009–0014) ship with description, canonical, OG, Twitter and TechArticle JSON-LD. The eight older pages and `index.html` still need it.
 
 - [ ] **T07 · Add `sitemap.xml`, `robots.txt`, RSS/Atom feed and a social preview image.**
   The site's stated audience includes SEO; there is nothing for crawlers or feed readers.
@@ -74,6 +80,7 @@ Legend: **P0** = broken/incorrect today · **P1** = high impact · **P2** = qual
   CDN. Readers moving from the cream/teal homepage get a different site each click.
   *Done when:* a shared `assets/site.css` (tokens from `index.html`) is used by all pages,
   with a dark-mode variant; Font Awesome is replaced with inline SVG.
+  🟡 *Progress (2026-10-07):* `scripts/render_article.py` renders articles from `content/articles/*.json` with one shared token set (cream/teal/coral, Space Grotesk / Inter / IBM Plex Mono) and a dark mode. The six new articles use it; the eight older ones still have their own styles.
 
 - [ ] **T10 · Add a CI workflow for content checks.**
   *Done when:* a GitHub Action runs on PRs and fails on: invalid `metadata.json`, duplicate
@@ -101,10 +108,12 @@ Legend: **P0** = broken/incorrect today · **P1** = high impact · **P2** = qual
   focus styles; contrast of `--muted` on cream should be checked.
   *Done when:* chips are `<button aria-pressed>`, cards don't nest interactive elements,
   focus is visible, and Lighthouse accessibility ≥ 95 on every page.
+  🟡 *Progress (2026-10-07):* new articles use `<button aria-pressed>` filter chips, visible focus styles and AA-checked dark-mode colours. Homepage chips are still `<span>`s.
 
 - [ ] **T14 · Static, indexable tool cards.** `multi-model-routing-…html` renders its tools
   from a JS template (`${tool.name}`), so crawlers and no-JS readers see nothing.
   *Done when:* tool cards are in the static HTML.
+  🟡 *Progress (2026-10-07):* all new articles render tool cards as static HTML (verified with JavaScript disabled). The 2024 routing article still renders from a JS template.
 
 - [ ] **T15 · Homepage UX upgrades.** Show the format (reference/essay) on cards and allow
   filtering by it; collapse the tag cloud (20+ chips) behind "more"; sync the active
@@ -117,6 +126,7 @@ Legend: **P0** = broken/incorrect today · **P1** = high impact · **P2** = qual
 
 - [ ] **T17 · Article cross-linking.** Add "Related articles" (by shared tags) at the end of
   each article, e.g. the three agent-security essays should link to each other.
+  🟡 *Progress (2026-10-07):* new articles include a "Related on Awesome AI Architecture" section; older articles do not yet.
 
 - [ ] **T18 · Consolidate overlapping security essays.** *Watchtower and Moat*,
   *Where the Sandbox Ends* and *Where Agents Break Free* make the same LLM-layer vs. runtime
@@ -129,6 +139,7 @@ Legend: **P0** = broken/incorrect today · **P1** = high impact · **P2** = qual
   vector & hybrid retrieval, GraphRAG & memory, inference engines, structured output &
   schema repair, MCP / tool-calling protocols, LLM observability & tracing, prompt-injection
   defenses, PII & data residency, semantic caching.
+  🟡 *Progress (2026-10-07):* six of the promised categories now have articles: vector & hybrid retrieval, inference engines, structured output, document ingestion, agent memory (essay) and MCP / tool protocols (essay). Remaining: LLM observability & tracing, prompt-injection defenses, PII & data residency, semantic caching.
 
 - [ ] **T20 · Add contribution scaffolding.** `CONTRIBUTING.md` (inclusion bar, how to
   propose a tool, how to use the master prompt), an issue template "Suggest a tool / failure
@@ -148,3 +159,21 @@ Legend: **P0** = broken/incorrect today · **P1** = high impact · **P2** = qual
 - [ ] **T24 · Tidy `.gitignore`.** It's the default Node template; the repo has no Node
   tooling. Replace with a short list relevant to a static site (`.DS_Store`, editor files,
   any build output from T08).
+
+## Added 2026-10-07
+
+- [ ] **T25 · Evidence Logs for the four older essays.** *Smoke Signals in Production*,
+  *Watchtower and Moat*, *Where the Sandbox Ends* and *Where Agents Break Free* cite tools
+  without a dated Evidence Log, and their tool facts date from early 2025 (e.g. Llama Guard 2
+  and Prompt Guard 86M have newer successors). *Done when:* each essay has an Evidence Log
+  and a refreshed "as of" date, or is consolidated per T18.
+
+- [ ] **T26 · Migrate older articles onto the renderer.** Port the eight hand-built
+  articles into `content/articles/*.json` so every page shares one template, metadata
+  block and design system (closes most of T06, T09, T12–T14 and T17 in one move).
+  *Done when:* `python3 scripts/render_article.py --all` produces every article.
+
+- [ ] **T27 · Validate metadata in CI.** Turn the checks used during this change (unique
+  `id`/`slug`/`path`, every `path` exists, no orphaned files, kebab-case tags) into
+  `scripts/check_content.py` and run it from the T10 workflow.
+

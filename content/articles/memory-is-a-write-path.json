@@ -1,0 +1,221 @@
+{
+  "id": "0013",
+  "slug": "memory-is-a-write-path",
+  "title": "Memory Is a Write Path",
+  "format": "essay",
+  "eyebrow": "Agent Memory",
+  "date": "2026-10-07",
+  "research_window": [
+    "2026-09-01",
+    "2026-10-07"
+  ],
+  "description": "Why agent memory fails on writes, not reads — and how checkpointers, extracted-fact stores, temporal knowledge graphs and self-editing agents each handle conflict, staleness and forgetting.",
+  "standfirst": "Teams build agent memory as retrieval and then wonder why their assistant believes two contradictory things about the same user. Memory is a write path with conflict resolution — design it like one.",
+  "tags": [
+    "agent-memory",
+    "agent-frameworks",
+    "knowledge-graphs",
+    "state-management",
+    "architecture-evaluation"
+  ],
+  "hook": "Agent memory doesn't fail on recall — it fails on the write. If your memory layer can't decide which of two facts is current, you've built a contradiction cache.",
+  "maturity": {
+    "legacy": "Memory as RAG: embed every message, retrieve the top-k, hope the right version of a fact wins.",
+    "modern": "Memory as a write path: scoped state, explicit update and invalidation rules, and a time model for facts."
+  },
+  "problem": [
+    "Most \"agent memory\" starts the same way: dump the conversation into a vector store and retrieve similar snippets on the next turn. It demos well. Then the user moves cities, changes teams or corrects a preference, and the store now holds both versions. Retrieval returns whichever is semantically closer to the question — which is to say, at random.",
+    "The industry frames this as a recall problem and reaches for better embeddings or re-rankers. It is not. Recall is the easy half. The hard half is the <em>write</em>: deciding what is worth storing, whether a new fact updates, contradicts or coexists with an old one, when something stops being true, and who is allowed to change it. Databases solved these questions decades ago with transactions, constraints and temporal tables. Agent memory is relearning them one production incident at a time.",
+    "It also matters who is allowed to write. A support agent that stores \"customer prefers email\" is harmless; a planning agent that writes \"the user approved the refund\" into shared memory, where a payments agent later reads it, has created an authorization channel nobody designed. Memory written by one agent and trusted by another is an interface, and it deserves the same scrutiny as an API.",
+    "This essay maps four real approaches by how they handle the write path, because that is where they actually differ."
+  ],
+  "exclusions": {
+    "items": [
+      {
+        "name": "Raw context-window stuffing",
+        "reason": "very long context windows are not memory. Re-sending everything is a cost and latency strategy with no notion of truth, scope or forgetting."
+      },
+      {
+        "name": "Plain vector stores marketed as memory",
+        "reason": "a store without update semantics cannot resolve a contradiction; it is covered in this site's retrieval reference."
+      },
+      {
+        "name": "Chat-history persistence",
+        "reason": "saving the transcript is logging. It is necessary, but it is not a model of what the agent knows."
+      },
+      {
+        "name": "Provider-hosted memory features",
+        "reason": "consumer-assistant memory inside a single chat product is not something you can architect around, test or move."
+      }
+    ],
+    "bar": "the tool must expose explicit write semantics — update, supersede, scope or delete — that an engineer can reason about and test."
+  },
+  "taxonomy_title": "Four Ways to Write a Memory",
+  "taxonomy_intro": [
+    "The approaches below are not competitors on a leaderboard. They sit at different points on one axis: <strong>who decides what gets written, and how conflicts are resolved</strong>. Most production agents need more than one."
+  ],
+  "layers": [
+    {
+      "key": "state",
+      "name": "Scoped State & Checkpoints",
+      "intro": "The first kind of memory is not about facts at all — it is the agent's working state: where it is in a task, what it has already tried, what a human approved. Losing it means redoing work or repeating an action with side effects.",
+      "tools": [
+        {
+          "name": "LangGraph persistence",
+          "org": "LangChain",
+          "url": "https://docs.langchain.com/oss/python/langgraph/persistence",
+          "fit": "Checkpointers save graph state at every step, scoped to a thread, with Postgres and other backends; a separate long-term store holds namespaced cross-thread memories. Writes are deterministic — your code decides exactly what state is saved — so resume, replay and human-in-the-loop interrupts are reliable.",
+          "limit": "it gives you correct storage, not judgement. Deciding which facts deserve long-term memory, and resolving conflicts between them, is still your code."
+        }
+      ]
+    },
+    {
+      "key": "facts",
+      "name": "Extracted Fact Memory",
+      "intro": "The second approach lets a model read each interaction and extract discrete facts — preferences, entities, decisions — then reconcile them against what is already stored.",
+      "tools": [
+        {
+          "name": "Mem0",
+          "org": "Mem0",
+          "url": "https://docs.mem0.ai/",
+          "fit": "An LLM extraction step proposes candidate memories, and a reconciliation step compares them with similar existing memories and chooses to add, update, delete or ignore. Memories are scoped by user, agent or session. This is the most direct answer to the contradiction problem: the write path explicitly asks \"does this change something I already know?\"",
+          "limit": "reconciliation is itself an LLM decision — it can be wrong, and it costs a model call per write. Log every update and delete so a bad merge can be audited and reversed."
+        }
+      ]
+    },
+    {
+      "key": "temporal",
+      "name": "Temporal Knowledge Graphs",
+      "intro": "The third approach refuses to overwrite at all. Facts become edges in a graph with validity intervals; a contradiction does not delete the old fact, it ends it.",
+      "tools": [
+        {
+          "name": "Graphiti",
+          "org": "Zep",
+          "url": "https://github.com/getzep/graphiti",
+          "fit": "Builds a knowledge graph from episodes with a bi-temporal model — when a fact was true in the world and when the system learned it. New contradicting facts set an invalid_at timestamp on the old edge instead of deleting it, so the agent can answer both \"where does she work?\" and \"where did she work in March?\". It is the open-source engine behind Zep's memory service.",
+          "limit": "you operate a graph database and an extraction pipeline; ingestion is slower and more expensive than appending vectors, and graph quality depends on entity resolution."
+        }
+      ]
+    },
+    {
+      "key": "self",
+      "name": "Agent-Managed Memory",
+      "intro": "The fourth approach hands the write path to the agent itself, treating memory like an operating system treats RAM and disk: a small in-context working set and a larger archive, with the agent deciding what to page in and out.",
+      "tools": [
+        {
+          "name": "Letta",
+          "org": "Letta (formerly MemGPT)",
+          "url": "https://docs.letta.com/",
+          "fit": "Stateful agents with editable in-context memory blocks and archival memory; the agent calls tools to rewrite its own blocks and search its archive, and all state persists server-side. Fits long-lived assistants whose persona and user model must evolve over months rather than reset every session.",
+          "limit": "the model decides what to remember, so memory quality tracks model quality and prompt design; you need evals on memory edits, not just on answers."
+        }
+      ]
+    }
+  ],
+  "land": [
+    "Start from the write question, not the retrieval question. Ask: when two memories disagree, who decides, and is the old one deleted, overwritten or ended?",
+    "Almost every production agent needs the first layer — scoped, deterministic state for the task in flight — regardless of what else it uses. The other three are choices about long-term knowledge.",
+    "Whatever you choose, keep an append-only log of every memory write, update and delete, with the model, prompt and source message that caused it. When a user asks why the assistant believes something — or a regulator asks you to forget it — that log is the only honest answer. It is also the dataset you will need to evaluate whether your write path is improving.",
+    "Expect to combine layers. A typical production agent pairs checkpointed task state with one long-term store, and only adds a temporal graph when questions about history become frequent enough to justify running one.",
+    "Memory is the one layer of an agent that gets more valuable and more dangerous with every day it runs, so design its write path before it holds anything you cannot afford to lose or leak."
+  ],
+  "matrix": [
+    {
+      "if": "Your agent runs multi-step tasks with side effects or human approvals",
+      "then": "use checkpointed state (LangGraph persistence or equivalent) first — resumability is a correctness requirement, not a feature."
+    },
+    {
+      "if": "You need per-user preferences and facts that stay current",
+      "then": "use extracted fact memory (Mem0) with update and delete logging, scoped by user."
+    },
+    {
+      "if": "Questions involve time — \"what did we agree last quarter?\", audits, CRM-like histories",
+      "then": "use a temporal graph (Graphiti/Zep) so facts are ended, not overwritten."
+    },
+    {
+      "if": "You are building a long-lived assistant whose behaviour should evolve",
+      "then": "consider agent-managed memory (Letta), and budget for evals on the memory edits themselves."
+    },
+    {
+      "if": "You only need the last few turns",
+      "then": "you do not need a memory layer. Keep the transcript window and move on."
+    }
+  ],
+  "move": "Pick ten real users or sessions and write down three facts about each that changed over time. Replay those sessions through your memory layer and ask the agent the current value of each fact. If it gets the old value, or both, your problem is the write path — fix it before you touch embeddings.",
+  "comparison": {
+    "columns": [
+      "Tool",
+      "Layer",
+      "Who decides the write",
+      "On contradiction",
+      "Time model",
+      "Licence / hosting"
+    ],
+    "rows": [
+      [
+        "LangGraph persistence",
+        "Scoped state",
+        "Your code",
+        "Your code overwrites state",
+        "Checkpoint history per thread",
+        "MIT library; self-host or managed platform"
+      ],
+      [
+        "Mem0",
+        "Extracted facts",
+        "LLM extraction + reconciliation",
+        "Update or delete the existing memory",
+        "Timestamps; no validity intervals",
+        "Apache-2.0 library; managed platform available"
+      ],
+      [
+        "Graphiti (Zep)",
+        "Temporal graph",
+        "LLM extraction into a graph",
+        "Invalidate the old edge (keep history)",
+        "Bi-temporal: valid time + ingestion time",
+        "Apache-2.0 library; Zep managed service"
+      ],
+      [
+        "Letta",
+        "Agent-managed",
+        "The agent, via memory tools",
+        "Agent rewrites its memory block",
+        "Persisted state; archival search",
+        "Apache-2.0 server; managed cloud available"
+      ]
+    ]
+  },
+  "evidence": [
+    {
+      "name": "LangGraph",
+      "url": "https://docs.langchain.com/oss/python/langgraph/persistence",
+      "query": "langgraph checkpointer persistence long-term store namespaces",
+      "signal": "langgraph 1.2.14 released 2026-10-06; langgraph-checkpoint-postgres 3.1.2 released 2026-08-07"
+    },
+    {
+      "name": "Mem0",
+      "url": "https://github.com/mem0ai/mem0",
+      "query": "mem0 memory extraction update delete reconciliation",
+      "signal": "mem0ai 2.2.1 released 2026-09-25"
+    },
+    {
+      "name": "Graphiti",
+      "url": "https://github.com/getzep/graphiti",
+      "query": "graphiti bi-temporal edge invalidation invalid_at",
+      "signal": "graphiti-core 0.30.2 released 2026-09-08; temporal invalidation documented by Zep"
+    },
+    {
+      "name": "Letta",
+      "url": "https://github.com/letta-ai/letta",
+      "query": "letta memgpt memory blocks archival memory stateful agents",
+      "signal": "letta 0.34.4 released 2026-10-04"
+    }
+  ],
+  "missing": "There is no standard way to <em>evaluate</em> a memory write. Benchmarks test whether an agent can recall a fact, almost never whether it correctly retired an outdated one. Memory also has no portable format: moving a user's memories from one system to another, or honouring a deletion request across all of them, is custom work every time. And access control is thin — few tools let you say that a memory written by one agent may be read but not changed by another. Treat those as your responsibility until the tooling catches up.",
+  "related": [
+    "vector-hybrid-retrieval-stores-mapped-by-failure-mode",
+    "smoke-signals-in-production",
+    "the-plug-is-not-the-policy"
+  ]
+}
