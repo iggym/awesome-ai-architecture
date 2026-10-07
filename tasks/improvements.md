@@ -10,7 +10,7 @@ Legend: **P0** = broken/incorrect today · **P1** = high impact · **P2** = qual
 
 ## P0 — Broken or incorrect today
 
-- [ ] **T01 · Fix duplicate multi-model routing entries in `metadata.json`.**
+- [x] **T01 · Fix duplicate multi-model routing entries in `metadata.json`.**
   Entries `0001` and `0002` share the same `slug` *and* `path`
   (`articles/multi-model-routing-ai-gateway-tools-mapped-by-failure-mode.html`), so the
   homepage shows two cards that open the same page. The 2026 version (`0002`, window
